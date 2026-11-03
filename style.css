@@ -90,8 +90,9 @@ a:hover{text-decoration:underline;text-underline-offset:3px}
   width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;
   background:linear-gradient(150deg,var(--brand) 0%,#26525f 100%);
   box-shadow:0 1px 3px rgba(27,58,70,.3);
+  color:#fff;
 }
-.logo .mark svg{display:block;width:15px;height:15px}
+.logo .mark svg{display:block;width:16px;height:16px}
 .logo em{font-style:normal;color:var(--ink-3);font-size:13px;letter-spacing:.06em;margin-left:2px}
 
 .nav-links{display:flex;align-items:center;gap:2px;min-width:0}
@@ -719,32 +720,52 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   color:var(--ink-3);font-size:14px;background:var(--bg-2);
 }
 
-/* ============================================ 配图占位 */
+/* ============================================ 配图占位（文字版图解） */
+/* 图还没画出来时，画面/读法/记一句 三段就是图本身，所以按正式图卡来排，
+   不做成"这里缺了一张图"的补丁感。 */
 
 .fig-ph{margin:32px 0 36px}
 .fig-ph .ph-frame{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:9px;min-height:172px;padding:30px 26px;text-align:center;
-  border:1px dashed #d9d5c6;border-radius:12px;
-  background:
-    repeating-linear-gradient(45deg,#fcfbf6 0 10px,#f7f6f0 10px 20px);
+  border:1px solid var(--line);border-radius:14px;
+  background:linear-gradient(180deg,var(--bg-2) 0%,#fff 100%);
+  box-shadow:var(--shadow-1);
+  padding:18px 22px 8px;
+}
+.fig-ph .ph-head{
+  display:flex;align-items:center;gap:11px;
+  padding-bottom:13px;border-bottom:1px solid var(--line-2);
 }
 .fig-ph .ph-ico{
-  display:grid;place-items:center;width:34px;height:34px;border-radius:50%;
-  border:1px solid #ded9c9;color:var(--gold);font-size:12px;letter-spacing:.06em;
-  background:#fff;
+  display:grid;place-items:center;width:30px;height:30px;border-radius:50%;flex:none;
+  border:1px solid #eadfc6;color:var(--gold);background:#fff;
 }
+.fig-ph .ph-ico svg{display:block;width:16px;height:16px}
 .fig-ph .ph-t{
   margin:0;font-family:var(--serif);font-size:15.5px;font-weight:600;
-  color:var(--ink-2);letter-spacing:.04em;
+  color:var(--ink);letter-spacing:.03em;
 }
-.fig-ph .ph-d{
-  margin:0;max-width:520px;font-size:13.4px;line-height:1.75;color:var(--ink-3);
+.fig-ph .ph-rows{margin:0;padding:2px 0 0}
+.fig-ph .ph-row{
+  display:flex;gap:14px;padding:10px 0;border-bottom:1px dashed var(--line-2);
 }
+.fig-ph .ph-row:last-child{border-bottom:0}
+.fig-ph .ph-row dt{
+  flex:none;width:46px;padding-top:3px;
+  font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.14em;text-align:justify;
+  text-align-last:justify;
+}
+.fig-ph .ph-row dd{
+  margin:0;min-width:0;font-size:13.8px;line-height:1.9;color:var(--ink-2);
+}
+.fig-ph .ph-row.ph-key{
+  margin:6px -10px 0;padding:11px 10px;border-bottom:0;border-radius:10px;
+  background:var(--gold-soft);
+}
+.fig-ph .ph-row.ph-key dd{color:var(--ink);font-weight:500}
 .fig-ph figcaption{
-  margin-top:9px;font-size:12.2px;color:var(--ink-4);text-align:center;letter-spacing:.02em;
+  margin-top:8px;padding-top:10px;border-top:1px solid var(--line-2);
+  font-size:12.2px;color:var(--ink-4);text-align:center;letter-spacing:.05em;
 }
-.fig-ph figcaption code{font-size:11.8px;background:var(--bg-3);padding:1px 5px;border-radius:4px}
 
 /* ============================================ 作业与批阅状态 */
 
