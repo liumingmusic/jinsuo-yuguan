@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>思维导图总览 · 思维导图 · 金锁玉关</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="logo" href="index.html">
+      <span class="mark">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      金锁玉关<span class="brand-text">　<em>二十四山</em></span>
+    </a>
+    <nav class="nav-links"><a class="" href="section-Ⅰ.html">Ⅰ 课程线</a><a class="" href="section-Ⅱ.html">Ⅱ 卦山线</a><a class="" href="section-Ⅲ.html">Ⅲ 作业线</a><a class="" href="section-附.html">附 附录</a><a class="on" href="mind-index.html">思维导图</a></nav>
+    <div class="nav-right">
+      <a class="btn btn-line btn-sm" href="mind-index.html">全部导图</a>
+    </div>
+  </div>
+</header>
+
+<div class="layout center" style="grid-template-columns:minmax(0,1120px)">
+  <article class="doc">
+    <div class="crumb">
+      <a href="index.html">总览</a><span class="sep">/</span>
+      <a href="mind-index.html">思维导图</a><span class="sep">/</span>思维导图总览
+    </div>
+    <h1>思维导图总览</h1>
+    <p class="subtitle">共 5 张　·　源目录 脑图/</p>
+
+    <div style="display:none">
+      <div class="mind-bar">
+        <button onclick="fitNow()">适应窗口</button>
+        <button onclick="zoomBy(1.25)">放大</button>
+        <button onclick="zoomBy(0.8)">缩小</button>
+        <button onclick="toggleAll()">全部折叠 / 展开</button>
+        <span class="hint">默认只展开两级　·　点圆点展开下一层　·　滚轮缩放　·　拖拽平移</span>
+      </div>
+      <svg id="mind"></svg>
+    </div>
+
+  <div class="mind-cards"><a class="card" href="mind-00-全书总览.html"><div class="k">脑图</div><h3>金锁玉关 · 全书总览</h3><p>83 个节点　·　00 全书总览.md</p></a><a class="card" href="mind-01-九山总览.html"><div class="k">脑图</div><h3>金锁玉关 · 坎坤震九山总览</h3><p>77 个节点　·　01 九山总览.md</p></a><a class="card" href="mind-02-坎卦-壬子癸.html"><div class="k">脑图</div><h3>一白坎卦 · 壬子癸</h3><p>197 个节点　·　02 坎卦 壬子癸.md</p></a><a class="card" href="mind-03-坤卦-未坤申.html"><div class="k">脑图</div><h3>二黑坤卦 · 未坤申</h3><p>166 个节点　·　03 坤卦 未坤申.md</p></a><a class="card" href="mind-04-震卦-甲卯乙.html"><div class="k">脑图</div><h3>三碧震卦 · 甲卯乙</h3><p>188 个节点　·　04 震卦 甲卯乙.md</p></a></div><div class="sec" style="padding-bottom:0"><div class="sec-head"><span class="eyebrow">怎 么 用</span><h2>图是同一份大纲的另一个投影</h2><p>网页上看到的是渲染结果，导出的是同一棵树的文件。两者不会走样，因为都从 <code>脑图/*.md</code> 生成，不是互相转换。</p></div><div class="parts" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="part"><div class="rnum">源</div><h3>改结构改 Markdown</h3><p class="desc">缩进即层级。<code>#</code> 是一级分支，<code>-</code> 与缩进是子节点，不用开 XMind 也能改。</p></div><div class="part"><div class="rnum">出</div><h3>导出三种通用格式</h3><p class="desc"><code>.xmind</code>（XMind）、<code>.mm</code>（FreeMind / 幕布）、<code>.opml</code>（大纲工具），都在 <code>导出/</code>。</p></div><div class="part"><div class="rnum">校</div><h3>与老师原图比对</h3><p class="desc">坎卦、坤卦已有老师版本的，原图单独存档，逐节点比对后把差异记进备注。</p></div></div></div></article>
+</div>
+
+<script src="资源/vendor/d3.js"></script>
+<script src="资源/vendor/markmap-view.js"></script>
+<script src="资源/vendor/markmap-lib.js"></script>
+<script id="md-source" type="text/plain"># 思维导图</script>
+<script>
+var mm = null;
+function zoomBy(f){ if(mm) mm.rescale(f); }
+// 自适应缩放的唯一可靠来源是 markmap 自己算的 mm.state.rect（全部节点矩形并集）
+// 不要用 svg.querySelector('g').getBBox()：命中的是最外层高亮层，只会返回根节点大小，
+// 算出来会放大 4 倍多、把整棵树推到画布外（已踩过）。
+function fitNow(ratio){
+  if(!mm) return 0;
+  try{
+    var svgEl = document.getElementById('mind');
+    var box = svgEl.getBoundingClientRect();
+    var r = mm.state && mm.state.rect;
+    if(!r || !isFinite(r.x1) || !isFinite(r.x2)) return 0;
+    var w = Math.max(1, r.x2 - r.x1), h = Math.max(1, r.y2 - r.y1);
+    var s = Math.min(box.width / w, box.height / h) * (ratio || 0.95);
+    if(!isFinite(s) || s <= 0) return 0;
+    s = Math.min(s, 1.25);
+    var tx = (box.width - w * s) / 2 - r.x1 * s;
+    var ty = (box.height - h * s) / 2 - r.y1 * s;
+    mm.svg.call(mm.zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
+    return s;
+  }catch(e){ return 0; }
+}
+function toggleAll(){
+  if(!mm) return;
+  var nodes = mm.state.data ? mm.state.data.children||[] : [];
+  var anyOpen = false;
+  (function walk(ns){ ns.forEach(function(n){ if(n.payload && n.payload.fold===0){ anyOpen=true; } walk(n.children||[]); }); })(nodes);
+  (function walk(ns){ ns.forEach(function(n){ if(n.payload) n.payload.fold = anyOpen?1:0; walk(n.children||[]); }); })(nodes);
+  mm.renderData();
+}
+try{
+  var src = document.getElementById('md-source').textContent;
+  var T = window.markmap.Transformer, M = window.markmap.Markmap;
+  var t = new T();
+  var res = t.transform(src);
+  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:12, paddingX:16, colorFreezeLevel:2}, res.root);
+  window.mm = mm;
+  requestAnimationFrame(function(){ fitNow(); });
+  setTimeout(function(){ fitNow(); }, 300);
+  setTimeout(function(){ fitNow(); }, 900);
+  window.addEventListener('resize', function(){ fitNow(); });
+}catch(e){
+  document.getElementById('mind').insertAdjacentHTML('afterend','<p style="color:#a3543a">脑图渲染失败：'+e.message+'</p>');
+}
+</script>
+</body>
+</html>

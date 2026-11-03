@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>金锁玉关 · 坎坤震九山总览 · 思维导图 · 金锁玉关</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="logo" href="index.html">
+      <span class="mark">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      金锁玉关<span class="brand-text">　<em>二十四山</em></span>
+    </a>
+    <nav class="nav-links"><a class="" href="section-Ⅰ.html">Ⅰ 课程线</a><a class="" href="section-Ⅱ.html">Ⅱ 卦山线</a><a class="" href="section-Ⅲ.html">Ⅲ 作业线</a><a class="" href="section-附.html">附 附录</a><a class="on" href="mind-index.html">思维导图</a></nav>
+    <div class="nav-right">
+      <a class="btn btn-line btn-sm" href="mind-index.html">全部导图</a>
+    </div>
+  </div>
+</header>
+
+<div class="layout center" style="grid-template-columns:minmax(0,1120px)">
+  <article class="doc">
+    <div class="crumb">
+      <a href="index.html">总览</a><span class="sep">/</span>
+      <a href="mind-index.html">思维导图</a><span class="sep">/</span>金锁玉关 · 坎坤震九山总览
+    </div>
+    <h1>金锁玉关 · 坎坤震九山总览</h1>
+    <p class="subtitle">共 77 个节点　·　源文件 脑图/01 九山总览.md</p>
+
+    <div class="mind-wrap">
+      <div class="mind-bar">
+        <button onclick="fitNow()">适应窗口</button>
+        <button onclick="zoomBy(1.25)">放大</button>
+        <button onclick="zoomBy(0.8)">缩小</button>
+        <button onclick="toggleAll()">全部折叠 / 展开</button>
+        <span class="hint">默认只展开两级　·　点圆点展开下一层　·　滚轮缩放　·　拖拽平移</span>
+      </div>
+      <svg id="mind"></svg>
+    </div>
+<p class="subtitle" style="border:none;margin:16px 0 0;padding:0;font-size:13.5px">本图由 <code>脑图/01 九山总览.md</code> 生成。同一份大纲可导出 <code>.xmind</code> / <code>.mm</code> / <code>.opml</code>，见 <code>导出/</code> 目录。要改结构，改 Markdown 后重跑 <code>python3 _工具/build.py</code>。</p>
+  </article>
+</div>
+
+<script src="资源/vendor/d3.js"></script>
+<script src="资源/vendor/markmap-view.js"></script>
+<script src="资源/vendor/markmap-lib.js"></script>
+<script id="md-source" type="text/plain"># 金锁玉关 · 坎坤震九山总览
+
+## 这份导图怎么用
+- 三张分图：坎、坤、震，一卦一张
+- 每张先看「卦论断→卦见水→卦见砂→应期→兼卦」
+- 再看三山：中间山主健康，两侧山主人事
+- 网页正文与导图同一份源，改一处两边变
+- 导图是骨架，细节在正文对应锚点
+
+## 一卦三山总规律
+- 中间山主健康／身体
+- 两侧山主人事，人事应完才落到身体
+- 坎：子（中）＝精气神；壬癸＝财与理财
+- 坤：坤（中）＝妇科子宫；未申＝利润与链接
+- 震：卯（中）＝肝与关节；甲乙＝劲与用法
+- 三山常成一对阴阳：壬癸、甲与乙、未与申
+- 三元龙：地元龙＝有没有，天元龙＝根本，人元龙＝怎么用
+
+## 九山速查
+- 坎 · 壬子癸（一白）
+  - 壬：财富能力、主阳｜见砂武贵，见水气虚
+  - 子：财库、家运｜见砂有钱库，见水漏底
+  - 癸：理财、主阴｜见砂女当家，见水妇难孕
+  - 一句话：一家的「藏」，藏得住才谈得上发
+- 坤 · 未坤申（二黑）
+  - 未：利润、以利为先｜见砂挣着了，见水挣不着
+  - 坤：家运、幸福感｜见砂贤妻良母，见水女主不幸福
+  - 申：链接、文昌｜见砂知书达理，见水剑走偏锋
+  - 一句话：一家的「养」，养得住人才有家运
+- 震 · 甲卯乙（三碧）
+  - 甲：行动力｜见砂一马当先，见水佛系躺平
+  - 卯：人脉、桃花｜见砂人脉生财，见水为他人做嫁衣
+  - 乙：文气、自处｜见砂文昌内秀，见水浪漫虚无
+  - 一句话：一家的「动」，动得对才叫奋起
+
+## 技法总表
+- 三点定位
+  - 第一代：用神卦＋对宫＋先天位
+  - 优化版：用神卦＋用神先天位＋关联诉求卦
+  - 边界：对宫相催只增强、不调整
+- 兼卦
+  - 三条件：跨卦＋一喜一恶＋相邻
+  - 后果：凶性转移，不是相加
+- 临卦（邻卦）加强
+  - 相邻两卦互相叠 buff，不必一喜一恶
+  - 例：未水丁砂、丁水未砂
+- 四墓库
+  - 辰戌丑未不作核心、不宜过强
+  - 例外：孩子太弱可微调
+- 四官卦
+  - 乾＝作风与领导，震＝实权，艮＝下属，离＝名气
+  - 也能调家运：家风、没劲、孩子、规划
+- 元运
+  - 上中元看坎坤震
+  - 离九运先调离
+- 分龄核心卦
+  - 二十岁调震、三十岁调坎、五十岁以上调坤
+
+## 自译经文体例
+- 一山八句，两首七绝
+- 水先砂后：第一首写见水，第二首写见砂
+- 一首一韵，第三句可不押
+- 意象派：取象不取词，补骨点、不掉字
+- 直译派：一句一象，直接落应事（老师体例）
+- 坤卦三山有老师原版，逐字收；震卦为试作，待老师版校
+
+## 存疑清单（成书前必核）
+- 坎：兼亥山 vs 兼亥子
+- 坎：子山「形如项囊袋」的囊袋形
+- 坤：未水应三房，未砂应大中房，口径不一
+- 坤：未砂「丑水照当坏」与「家和有余粮」正相反
+- 坤：申水伤小女 vs 伤长女
+- 坤：「把酒喝桑麻」疑为「话桑麻」
+- 震：甲山先天位取艮还是取丙
+- 震：三神过水法的中神／大神分配
+- 震：「形若己案拱」疑为「几案」
+- 震：「卯亥午戌」不可读成两个三合局
+
+## 读的顺序
+- 先读Ⅰ课程线，懂理法怎么长出来
+- 再读Ⅱ卦山线，一卦一页，逐山落地
+- Ⅲ作业线只作校验：老师改过的地方才是重点
+- 附录最后读：经文对照、技法总表、存疑
+- 技法章必须等九山写完再反推，不能倒着写
+</script>
+<script>
+var mm = null;
+function zoomBy(f){ if(mm) mm.rescale(f); }
+// 自适应缩放的唯一可靠来源是 markmap 自己算的 mm.state.rect（全部节点矩形并集）
+// 不要用 svg.querySelector('g').getBBox()：命中的是最外层高亮层，只会返回根节点大小，
+// 算出来会放大 4 倍多、把整棵树推到画布外（已踩过）。
+function fitNow(ratio){
+  if(!mm) return 0;
+  try{
+    var svgEl = document.getElementById('mind');
+    var box = svgEl.getBoundingClientRect();
+    var r = mm.state && mm.state.rect;
+    if(!r || !isFinite(r.x1) || !isFinite(r.x2)) return 0;
+    var w = Math.max(1, r.x2 - r.x1), h = Math.max(1, r.y2 - r.y1);
+    var s = Math.min(box.width / w, box.height / h) * (ratio || 0.95);
+    if(!isFinite(s) || s <= 0) return 0;
+    s = Math.min(s, 1.25);
+    var tx = (box.width - w * s) / 2 - r.x1 * s;
+    var ty = (box.height - h * s) / 2 - r.y1 * s;
+    mm.svg.call(mm.zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
+    return s;
+  }catch(e){ return 0; }
+}
+function toggleAll(){
+  if(!mm) return;
+  var nodes = mm.state.data ? mm.state.data.children||[] : [];
+  var anyOpen = false;
+  (function walk(ns){ ns.forEach(function(n){ if(n.payload && n.payload.fold===0){ anyOpen=true; } walk(n.children||[]); }); })(nodes);
+  (function walk(ns){ ns.forEach(function(n){ if(n.payload) n.payload.fold = anyOpen?1:0; walk(n.children||[]); }); })(nodes);
+  mm.renderData();
+}
+try{
+  var src = document.getElementById('md-source').textContent;
+  var T = window.markmap.Transformer, M = window.markmap.Markmap;
+  var t = new T();
+  var res = t.transform(src);
+  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:12, paddingX:16, colorFreezeLevel:2}, res.root);
+  window.mm = mm;
+  requestAnimationFrame(function(){ fitNow(); });
+  setTimeout(function(){ fitNow(); }, 300);
+  setTimeout(function(){ fitNow(); }, 900);
+  window.addEventListener('resize', function(){ fitNow(); });
+}catch(e){
+  document.getElementById('mind').insertAdjacentHTML('afterend','<p style="color:#a3543a">脑图渲染失败：'+e.message+'</p>');
+}
+</script>
+</body>
+</html>
