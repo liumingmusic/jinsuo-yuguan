@@ -20,6 +20,7 @@ import sys
 import json
 import base64
 import subprocess
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -145,9 +146,21 @@ def push_branch(branch, files, message, prune=True):
     tree = api("POST", "/repos/%s/%s/git/trees" % (OWNER, REPO),
                {"tree": entries, "base_tree": base_tree} if base_tree
                else {"tree": entries})
-    commit = api("POST", "/repos/%s/%s/git/commits" % (OWNER, REPO),
-                 {"message": message, "tree": tree["sha"],
-                  "parents": [parent] if parent else []})
+    # GitHub 偶发「树已创建但还没就绪」：紧接着建 commit 会报 Tree SHA does not exist。
+    # 隔两秒重试一次即可，多数情况第一次就过。
+    commit = None
+    for attempt in range(2):
+        try:
+            commit = api("POST", "/repos/%s/%s/git/commits" % (OWNER, REPO),
+                         {"message": message, "tree": tree["sha"],
+                          "parents": [parent] if parent else []})
+            break
+        except SystemExit as e:
+            if attempt == 0 and "Tree SHA does not exist" in str(e):
+                print("  树未就绪，2 秒后重试建 commit ...")
+                time.sleep(2)
+                continue
+            raise
 
     if parent:
         # 注意：GitHub 这两个端点不对称 —— GET 用单数 /git/ref/，PATCH 用复数 /git/refs/

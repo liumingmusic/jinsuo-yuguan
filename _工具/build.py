@@ -31,6 +31,15 @@ SECTIONS = [
     ("附录", "附", "附录", "经文 · 技法 · 存疑", "#5a6068"),
 ]
 
+# 配图占位的小罗盘图标（跟随 CSS currentColor，占位框里是金色）
+FIG_ICO = (
+    '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+    '<circle cx="8" cy="8" r="6.1" stroke="currentColor" stroke-width="1.2"/>'
+    '<path d="M8 2.1 L9.3 8 L8 13.9 L6.7 8 Z" fill="currentColor"/>'
+    '<path d="M2.1 8 L8 6.7 L13.9 8 L8 9.3 Z" fill="currentColor" opacity=".38"/>'
+    '<circle cx="8" cy="8" r="1.2" fill="currentColor"/></svg>'
+)
+
 
 # ============ Markdown 渲染 ============
 
@@ -189,24 +198,58 @@ def render_md(md, base_title=""):
             out.append("".join(t))
             continue
 
-        # 配图占位：![图 3-1｜子山方位示意：说明文字](fig:3-1)
-        # 只占位、不引文件，等真正有图时把这一行换成 ![说明](图片/xxx.png) 即可
+        # 配图占位（图未画出时，文字版就是图的内容）：
+        #   ![图 3-1｜子山方位示意](fig:3-1)
+        #   > 画面：正北十五度扇区，两条箭头一指出龙、一指凹风，凹处注"必须补宫"
+        #   > 读法：先定扇区，再跟两条箭头一进一出，缺口那侧就是要补宫的地方
+        #   > 记一句：凹风从缺口进、气从缺口散，补宫补的是这个缺口
+        # ｜后是图题；「> 画面/读法/记一句」三行紧随图行、不留空行。
+        # 有图了把整组换成 ![说明](图片/xxx.png) 即可。
         fm = re.fullmatch(r"!\[([^\]]+)\]\(fig:([^)]*)\)", s)
         if fm:
             flush_para(); close_lists(); close_quote()
             label = fm.group(1).strip()
-            desc = ""
-            if "｜" in label:
-                label, desc = label.split("｜", 1)
             fig_id = fm.group(2).strip() or label
+            num, title, lead = label, "", ""
+            if "｜" in label:
+                num, rest = label.split("｜", 1)
+                m2 = re.split(r"[:：]", rest, maxsplit=1)
+                title = m2[0].strip()
+                if len(m2) > 1:
+                    lead = m2[1].strip()
+            num = num.strip()
+            rows = [("画面", lead)] if lead else []
+            # 紧随其后的「> 画面：… / > 读法：… / > 记一句：…」并入本图
+            j = i + 1
+            while j < n:
+                m3 = re.match(r"^>\s*(画面|读法|怎么看|记一句)[:：]\s*(.*)$",
+                              lines[j].strip())
+                if not m3:
+                    break
+                key = "读法" if m3.group(1) == "怎么看" else m3.group(1)
+                rows.append((key, m3.group(2).strip()))
+                j += 1
+            i = j
+            merged = []
+            for k, v in rows:
+                if merged and merged[-1][0] == k:
+                    merged[-1] = (k, merged[-1][1] + "；" + v)
+                else:
+                    merged.append((k, v))
+            head_txt = f"{num} · {title}" if title else num
             out.append(
                 f'<figure class="fig-ph" id="fig-{html.escape(fig_id)}">'
-                f'<div class="ph-frame"><span class="ph-ico">图</span>'
-                f'<p class="ph-t">{inline(label)}</p>'
-                + (f'<p class="ph-d">{inline(desc)}</p>' if desc else "")
-                + '</div><figcaption>此图待补</figcaption></figure>'
+                f'<div class="ph-frame">'
+                f'<div class="ph-head"><span class="ph-ico">{FIG_ICO}</span>'
+                f'<p class="ph-t">{inline(head_txt)}</p></div>'
+                + ('<dl class="ph-rows">'
+                   + "".join(
+                       f'<div class="ph-row{" ph-key" if k == "记一句" else ""}">'
+                       f'<dt>{k}</dt><dd>{inline(v)}</dd></div>'
+                       for k, v in merged if v)
+                   + "</dl>" if merged else "")
+                + '</div><figcaption>图待补 · 先读文字版</figcaption></figure>'
             )
-            i += 1
             continue
 
         # 引用块
@@ -592,8 +635,11 @@ def build_drawer(current="", sub=""):
         '<div class="drawer-head">'
         '<a class="logo" href="index.html"><span class="mark">'
         '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">'
-        '<path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" '
-        'stroke-width="1.5" stroke-linecap="round"/></svg></span>金锁玉关</a>'
+        '<circle cx="8" cy="8" r="6.1" stroke="currentColor" stroke-width="1.2"/>'
+        '<path d="M8 2.1 L9.3 8 L8 13.9 L6.7 8 Z" fill="currentColor"/>'
+        '<path d="M2.1 8 L8 6.7 L13.9 8 L8 9.3 Z" fill="currentColor" opacity=".38"/>'
+        '<circle cx="8" cy="8" r="1.2" fill="var(--gold-2)"/>'
+        '</svg></span>金锁玉关</a>'
         '<button class="drawer-close" id="drawerClose" type="button" aria-label="关闭导航">'
         '&times;</button>'
         '</div>'
