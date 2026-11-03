@@ -20,6 +20,11 @@ import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape
 
 
+# 与 build.py 保持一致：思维导图只按卦梳理，编号 00 的总览图不导出（md 保留不删）。
+# 只在目录模式下跳过；明确指定单个文件时仍然转换。
+HIDE_PREFIX = ("00",)
+
+
 # ---------- Markdown 大纲解析 ----------
 
 def parse_outline(md_text):
@@ -252,7 +257,8 @@ def main():
         fmts = ("xmind",)
 
     if os.path.isdir(src):
-        files = sorted(glob.glob(os.path.join(src, "*.md")))
+        files = sorted(f for f in glob.glob(os.path.join(src, "*.md"))
+                       if not os.path.basename(f).startswith(HIDE_PREFIX))
         for f in files:
             root, made = convert(f, out_dir, fmts)
             print(f"{os.path.basename(f)}  {node_count(root)} 节点 -> " +

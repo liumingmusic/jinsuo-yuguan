@@ -19,6 +19,9 @@ import os, re, sys, json, math, shutil, html, glob, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, "内容")
 MIND_DIR = os.path.join(ROOT, "脑图")
+# 思维导图只按卦梳理：编号 00 的「九山总览」不生成页面、不进任何索引
+# （md 文件保留不删；以后想放回来，把这个元组清空即可）。
+MIND_HIDE_PREFIX = ("00",)
 OUT_DIR = os.path.join(ROOT, "站点")
 IMG_DIR = os.path.join(ROOT, "_数据", "图片")
 VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
@@ -630,11 +633,17 @@ def build_nav(current=""):
     return "".join(parts)
 
 
-def mind_file_count():
-    """脑图张数：直接数 脑图/*.md，别再手写「五张」这种会过期的字。"""
+def mind_files():
+    """参与构建的脑图文件：只按卦梳理，编号 00 的总览图隐藏（文件保留不删）。"""
     if not os.path.isdir(MIND_DIR):
-        return 0
-    return len([f for f in os.listdir(MIND_DIR) if f.endswith(".md")])
+        return []
+    return sorted(f for f in os.listdir(MIND_DIR)
+                  if f.endswith(".md") and not f.startswith(MIND_HIDE_PREFIX))
+
+
+def mind_file_count():
+    """脑图张数：只数要展示的（总览已隐藏），别再手写「五张」这种会过期的字。"""
+    return len(mind_files())
 
 
 def build_drawer(current="", sub=""):
@@ -929,7 +938,7 @@ def build_minds():
     if not os.path.isdir(MIND_DIR):
         return made
     MIND_TMPL = tpl("mind.html")
-    files = sorted([f for f in os.listdir(MIND_DIR) if f.endswith(".md")])
+    files = mind_files()
     for f in files:
         p = os.path.join(MIND_DIR, f)
         md = open(p, encoding="utf-8").read()
@@ -1365,13 +1374,13 @@ def build_index(pages, mind_pages):
                      '<p>默认只展开两级。点节点前的圆点看下一层，双指缩放、拖动平移，手机上同样适用。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">对</span><div><h3>每张图对应一座卦</h3>'
-                     '<p>总览一张看全局九山，另外三张各对应一座卦，与卦山线里的条目一一对应。</p>'
+                     '<p>坎、坤、震各一张，与卦山线里的条目一一对应。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">据</span><div><h3>坎、坤有老师原图</h3>'
                      '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与自译混在一起。</p>'
                      '</div></li>'
                      '</ul></div>')
-        mind_sub = f"共 {len(mind_pages)} 张　·　总览一张，三卦各一张"
+        mind_sub = f"共 {len(mind_pages)} 张　·　一卦一张，按卦梳理"
         mind_md = "# 思维导图"
     else:
         mind_body = '<div class="empty-note">还没有脑图。</div>'
@@ -1390,7 +1399,7 @@ def build_index(pages, mind_pages):
     page = page.replace("<h6>本图</h6>", "<h6>导图</h6>")
     page = page.replace("@@NODES@@", f"共 {len(mind_pages)} 张")
     page = page.replace("读法　默认展开两级，点圆点再看下一层",
-                        "总览一张，坎、坤、震各一张")
+                        "坎、坤、震各一张")
     # 换成卡片列表，保留工具栏隐藏
     page = page.replace('<div class="mind-wrap">', '<div style="display:none">')
     page = page.replace('</article>', mind_body + '</article>')
