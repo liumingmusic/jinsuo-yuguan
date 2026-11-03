@@ -394,21 +394,42 @@ JS = """
       });
     });
   }
-  // 页内目录滚动高亮
+  // 页内目录滚动高亮（同时把当前小节名同步到折叠条的 .toc-cur）
   var heads = [].slice.call(document.querySelectorAll('.doc h2[id],.doc h3[id]'));
   var links = [].slice.call(document.querySelectorAll('.toc a'));
+  var tocCur = document.querySelector('.toc-cur');
   if(heads.length && links.length){
+    if(tocCur && !tocCur.textContent) tocCur.textContent = links[0].textContent;
     var map = {};
     links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
     var io = new IntersectionObserver(function(es){
       es.forEach(function(e){
         if(e.isIntersecting){
           links.forEach(function(a){ a.classList.remove('on'); });
-          var a = map[e.target.id]; if(a) a.classList.add('on');
+          var a = map[e.target.id];
+          if(a){
+            a.classList.add('on');
+            if(tocCur) tocCur.textContent = a.textContent;
+          }
         }
       });
     }, {rootMargin:'-90px 0px -70% 0px'});
     heads.forEach(function(h){ io.observe(h); });
+  }
+  // 页内目录折叠条：点标题行开合，点条目跳转后顺手收起
+  var tocBox = document.getElementById('pageToc');
+  var tocBtn = document.querySelector('.toc-toggle');
+  if(tocBox && tocBtn){
+    tocBtn.addEventListener('click', function(){
+      var open = tocBox.classList.toggle('open');
+      tocBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    [].slice.call(tocBox.querySelectorAll('.toc-panel a')).forEach(function(a){
+      a.addEventListener('click', function(){
+        tocBox.classList.remove('open');
+        tocBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
   }
   // 首屏二十四山转盘：滚过首屏时缓慢放大并淡出（缩放走 CSS 变量 --hs）
   var wheel = document.querySelector('.hero-wheel');
@@ -724,8 +745,19 @@ def build():
         )
         toc_block = ""
         if toc_items:
-            toc_block = ('<aside class="toc"><p class="toc-title">本 页 目 录</p>'
-                         + toc_html + '</aside>')
+            # 移动端「本页目录」折叠条：默认只露一行钮（标题 + 当前小节 + 箭头），
+            # 点开才是竖列表；桌面端 .toc-toggle 隐藏、显示 .toc-title，仍是右侧竖栏。
+            toc_block = ('<aside class="toc" id="pageToc">'
+                         '<p class="toc-title">本 页 目 录</p>'
+                         '<button class="toc-toggle" type="button" aria-expanded="false" aria-controls="tocPanel">'
+                         '<span class="toc-t">本页目录</span>'
+                         '<span class="toc-cur"></span>'
+                         '<svg class="toc-chev" viewBox="0 0 10 6" aria-hidden="true">'
+                         '<path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" '
+                         'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                         '</button>'
+                         '<div class="toc-panel" id="tocPanel">'
+                         + toc_html + '</div></aside>')
 
         # 左栏：本节 + 全站
         same = [q for q in pages if q["section"] == pg["section"]]

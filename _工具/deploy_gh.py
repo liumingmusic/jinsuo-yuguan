@@ -20,8 +20,6 @@ import sys
 import json
 import base64
 import subprocess
-import urllib.request
-import urllib.error
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,22 +46,34 @@ TOKEN = None
 
 def api(method, path, body=None, ok=(200, 201, 204)):
     url = path if path.startswith("http") else API + path
-    data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(url, data=data, method=method, headers={
-        "Authorization": "Bearer " + TOKEN,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json",
-        "User-Agent": "jinsuo-deploy",
-    })
+    # 本机沙箱会拦 python urllib 的 TLS（UNEXPECTED_EOF_WHILE_READING），
+    # 同一 shell 里 curl 却正常，所以统一走 curl 子进程发请求。
+    cmd = ["curl", "-sS", "-X", method, url,
+           "-H", "Authorization: Bearer " + TOKEN,
+           "-H", "Accept: application/vnd.github+json",
+           "-H", "User-Agent: jinsuo-deploy",
+           "-w", "\n%{http_code}"]
+    if body is not None:
+        cmd += ["-H", "Content-Type: application/json",
+                "--data-binary", json.dumps(body)]
+    out = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    if out.returncode != 0:
+        raise SystemExit("curl %s %s -> rc=%d %s"
+                         % (method, path, out.returncode, out.stderr[:300]))
+    # rpartition 返回 (头, 分隔符, 尾)：-w 把状态码写在最后，正文在前
+    payload, _, code_s = out.stdout.rpartition("\n")
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            raw = r.read()
-            return json.loads(raw) if raw else {}
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode("utf-8", "ignore")[:400]
-        if e.code in ok:
-            return {}
-        raise SystemExit("API %s %s -> %s\n%s" % (method, path, e.code, detail))
+        code = int(code_s.strip())
+    except ValueError:
+        raise SystemExit("curl %s %s -> 无法解析响应: %s"
+                         % (method, path, out.stdout[:300]))
+    if code not in ok:
+        raise SystemExit("API %s %s -> %s\n%s"
+                         % (method, path, code, payload[:400]))
+    try:
+        return json.loads(payload) if payload.strip() else {}
+    except json.JSONDecodeError:
+        return {}
 
 
 def walk(base, excludes=()):
