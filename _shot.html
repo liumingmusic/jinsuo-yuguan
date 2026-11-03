@@ -1,9 +1,0 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#fff}iframe{border:0;width:390px;display:block}</style></head>
-<body><iframe id="f"></iframe>
-<script>
-var q=new URLSearchParams(location.search);
-var f=document.getElementById('f');
-f.style.height=(q.get('h')||'1600')+'px';
-f.src=q.get('p')||'index.html';
-if(q.get('y')) f.addEventListener('load',function(){ f.contentWindow.scrollTo(0,parseInt(q.get('y'),10)); });
-</script></body></html>

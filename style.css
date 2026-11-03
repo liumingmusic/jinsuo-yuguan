@@ -200,6 +200,8 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .toc::-webkit-scrollbar{width:5px}
 .toc::-webkit-scrollbar-thumb{background:var(--bg-4);border-radius:3px}
 .toc-title{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--ink-3)}
+/* 折叠钮只给移动端用：桌面端目录本来就是右侧竖栏，直接列出 */
+.toc-toggle{display:none}
 .toc a{
   display:block;padding:5px 0 5px 13px;color:var(--ink-3);line-height:1.55;
   border-left:1px solid var(--line-2);transition:color .15s,border-color .15s;
@@ -1108,26 +1110,36 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
    2026-11-03 修：此前只做 display:none，没有替代入口，
    手机上进不去作业线、卦山线，只能停在当前页。 */
 
-/* 汉堡按钮：原来三条 1.6px 细线配 2.6px 大间距，撑在 38px 方框里又散又薄，
-   像没对齐的默认控件。改成 1.8px 线 + 5px 间距的常规比例，42px 命中区，
-   用 currentColor 上色，打开时收成一个 ×。 */
+/* 汉堡按钮：原来是散薄的细线方框，像个没调过的默认控件。
+   改成带「菜单/关闭」文字的胶囊钮：16px 三线图标点明用途，文字降低误读，
+   打开抽屉时图标收成 ×、文字换成「关闭」。深浅两种顶栏各有一套配色。 */
 .nav-toggle{
-  display:none;width:42px;height:42px;flex:none;padding:0;
-  border:1px solid var(--line);border-radius:11px;
+  display:none;height:38px;flex:none;padding:0 13px;
+  border:1px solid var(--line);border-radius:10px;
   background:var(--bg);color:var(--ink-2);
   cursor:pointer;-webkit-tap-highlight-color:transparent;
-  flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  transition:border-color .18s,background .18s,color .18s;
+  appearance:none;-webkit-appearance:none;
+  align-items:center;gap:8px;
+  font-family:inherit;font-size:13px;font-weight:500;letter-spacing:.08em;
+  transition:border-color .18s,background .18s,color .18s,transform .12s;
 }
-.nav-toggle:hover{border-color:var(--ink-4);color:var(--ink);text-decoration:none}
-.nav-toggle span{
-  display:block;width:18px;height:1.8px;border-radius:2px;
+.nav-toggle:hover{border-color:var(--ink-4);color:var(--ink);background:var(--bg-2);text-decoration:none}
+.nav-toggle:active{transform:scale(.96)}
+.nav-toggle .nt-bars{position:relative;display:block;width:16px;height:12px;flex:none}
+.nav-toggle .nt-bars i{
+  position:absolute;left:0;display:block;width:16px;height:1.8px;border-radius:2px;
   background:currentColor;
   transition:transform .22s ease,opacity .16s ease;
 }
-body.drawer-open .nav-toggle span:nth-child(1){transform:translateY(6.8px) rotate(45deg)}
-body.drawer-open .nav-toggle span:nth-child(2){opacity:0}
-body.drawer-open .nav-toggle span:nth-child(3){transform:translateY(-6.8px) rotate(-45deg)}
+.nav-toggle .nt-bars i:nth-child(1){top:0}
+.nav-toggle .nt-bars i:nth-child(2){top:5.1px}
+.nav-toggle .nt-bars i:nth-child(3){top:10.2px}
+.nav-toggle .nt-close{display:none}
+body.drawer-open .nav-toggle .nt-bars i:nth-child(1){transform:translateY(5.1px) rotate(45deg)}
+body.drawer-open .nav-toggle .nt-bars i:nth-child(2){opacity:0}
+body.drawer-open .nav-toggle .nt-bars i:nth-child(3){transform:translateY(-5.1px) rotate(-45deg)}
+body.drawer-open .nav-toggle .nt-menu{display:none}
+body.drawer-open .nav-toggle .nt-close{display:inline}
 .drawer,.scrim{display:none}
 .tbl-scroll-hint{display:none}
 
@@ -1209,38 +1221,58 @@ body.drawer-open .nav-toggle span:nth-child(3){transform:translateY(-6.8px) rota
   .d-sub li a .n{color:var(--ink-4);font-size:12px;flex:none;min-width:15px}
   .d-sub li a.on{background:var(--bg-3);color:var(--ink);font-weight:600}
 
-  /* ---------- 骨架：单列，页内目录变成顶部横滑条 ---------- */
+  /* ---------- 骨架：单列，页内目录收成「本页目录」折叠条 ---------- */
   .layout,.layout.two{
     display:flex;flex-direction:column;
     padding:20px 18px calc(72px + env(safe-area-inset-bottom));gap:0;
   }
-  /* 目录条吸顶占掉约 45px，锚点跳转要让目标落在它下面，否则标题被挡住 */
-  html{scroll-padding-top:calc(var(--nav-h) + 56px)}
+  /* 目录不再吸顶，锚点只要避开固定顶栏即可 */
+  html{scroll-padding-top:calc(var(--nav-h) + 14px)}
   .layout.center{display:block;padding:20px 16px 64px}
   .doc{order:2;min-width:0}
+  /* 折叠目录：默认只露一行钮，点开是竖列表。
+     原来是一排吸顶横滑胶囊，占着首屏还像条 tab 栏，已废弃。 */
   .toc{
-    display:block;order:1;position:sticky;top:var(--nav-h);z-index:60;
-    /* align-self:start 是桌面栅格用的，手机上必须清掉：
-       否则这行胶囊按 max-content 撑开（实测 12519px），整页被撑出横向滚动条 */
-    align-self:auto;width:auto;
-    max-height:none;margin:0 -18px 18px;padding:10px 18px 9px;
-    background:linear-gradient(var(--bg) 76%,rgba(255,255,255,.86));
-    border-bottom:1px solid var(--line-2);
-    white-space:nowrap;overflow-x:auto;overflow-y:hidden;
-    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    display:block;order:1;position:static;width:auto;
+    max-height:none;margin:0 0 20px;padding:0;
+    background:none;border:0;
+    white-space:normal;overflow:visible;
   }
-  .layout.center .toc{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
-  .toc::-webkit-scrollbar{display:none}
   .toc-title{display:none}
-  .toc a{
-    display:inline-block;padding:7px 12px;margin:0 6px 0 0;
-    border:1px solid var(--line);border-radius:99px;
-    font-size:12.8px;line-height:1.2;color:var(--ink-2);background:var(--bg);
-    white-space:nowrap;overflow:visible;text-overflow:clip;
+  .toc-toggle{
+    display:flex;width:100%;align-items:center;gap:9px;
+    padding:11px 13px;border:1px solid var(--line);border-radius:11px;
+    background:var(--bg-2);color:var(--ink-2);
+    font-family:inherit;font-size:13.5px;text-align:left;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    appearance:none;-webkit-appearance:none;
+    transition:border-color .15s,background .15s;
   }
-  .toc a:hover{text-decoration:none;border-color:var(--ink-4)}
-  .toc a.lv3{font-size:12px;color:var(--ink-3)}
-  .toc a.on{border-color:var(--brand-line);background:var(--brand-soft);color:var(--brand)}
+  .toc-toggle:active{background:var(--bg-3)}
+  .toc .toc-t{font-weight:600;color:var(--ink);letter-spacing:.06em;flex:none}
+  .toc .toc-cur{
+    flex:1;min-width:0;color:var(--ink-3);font-size:12.8px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .toc .toc-chev{width:10px;height:6px;flex:none;color:var(--ink-4);transition:transform .2s ease}
+  .toc.open .toc-chev{transform:rotate(180deg)}
+  .toc-panel{display:none}
+  .toc.open .toc-panel{
+    display:block;margin-top:8px;border:1px solid var(--line);border-radius:11px;
+    overflow:hidden;background:var(--bg);
+    animation:toc-drop .18s ease;
+  }
+  @keyframes toc-drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .toc-panel a{
+    display:block;padding:10px 13px;margin:0;color:var(--ink-2);line-height:1.5;
+    font-size:13.6px;border:0;border-bottom:1px solid var(--line-2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .toc-panel a:last-child{border-bottom:0}
+  .toc-panel a:hover{text-decoration:none;background:var(--bg-2);color:var(--ink)}
+  .toc-panel a.lv1{font-weight:600;color:var(--ink);margin-top:0}
+  .toc-panel a.lv3{padding-left:26px;font-size:12.8px;color:var(--ink-3)}
+  .toc-panel a.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
 
   /* ---------- 正文 ---------- */
   .doc{font-size:16px;line-height:1.88}
@@ -1309,7 +1341,6 @@ body.drawer-open .nav-toggle span:nth-child(3){transform:translateY(-6.8px) rota
 @media (max-width:560px){
   .nav-in{padding:0 14px}
   .layout,.layout.two{padding:16px 16px calc(64px + env(safe-area-inset-bottom))}
-  .toc{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
 
   .doc h1{font-size:23px}
   .doc h2{font-size:19.5px;margin-top:34px}
