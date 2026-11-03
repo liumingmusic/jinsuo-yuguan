@@ -923,7 +923,7 @@ def build():
         open(os.path.join(OUT_DIR, f"section-{num}.html"), "w", encoding="utf-8").write(page)
 
     # 脑图
-    mind_pages = build_minds()
+    mind_pages = build_minds(pages)
 
     # 首页
     build_index(pages, mind_pages)
@@ -932,7 +932,32 @@ def build():
     return pages, mind_pages
 
 
-def build_minds():
+def mind_side(no, pages):
+    """思维导图页的左侧栏：全部内容树 + 对照正文跳转。
+
+    和 section/正文页同一套侧栏体例——此前导图页是全站唯一没有侧栏的
+    两类页面，版式与其他内容页不一致（2026-11-03 用户反馈）。
+    """
+    tree = ('<div class="side-group"><p class="side-title">全部内容</p><ul>' + "".join(
+        f'<li><a class="{"on" if s[0] == "__mind__" else ""}" href="section-{s[1]}.html">'
+        f'<span class="n">{s[1]}</span><span>{s[2]}</span></a></li>' for s in SECTIONS
+    ) + '<li><a class="on" href="mind-index.html"><span class="n">图</span>'
+        '<span>思维导图</span></a></li>'
+        '<li><a href="index.html"><span class="n">首</span>'
+        '<span>返回首页</span></a></li></ul></div>')
+    cross = ""
+    for pg in pages:
+        # 脑图文件编号 01/02/03 ↔ 卦山线同序号正文页（slug 形如 Ⅱ-01-01坎卦壬子癸）
+        if pg["section"] == "Ⅱ-卦山线" and no and pg["slug"].startswith("Ⅱ-" + no.zfill(2) + "-"):
+            cross = ('<div class="side-group"><p class="side-title">对照正文</p><ul>'
+                     f'<li><a href="{pg["slug"]}.html"><span class="n">Ⅱ</span>'
+                     f'<span>{html.escape(pg["title"])}</span></a></li>'
+                     '</ul><p class="side-tip">图按层级收拢，正文按条目铺开，同一份内容。</p></div>')
+            break
+    return tree + cross
+
+
+def build_minds(pages):
     """把 脑图/*.md 渲染成 markmap 页面。"""
     made = []
     if not os.path.isdir(MIND_DIR):
@@ -951,6 +976,8 @@ def build_minds():
                 .replace("@@SUBTITLE@@", f"共 {nodes} 个节点")
                 .replace("@@NODES@@", str(nodes))
                 .replace("@@NAV@@", build_nav("__mind__"))
+                .replace("@@SIDE@@", mind_side(m.group(1) if m else "", pages))
+                .replace("@@LAYOUT_CLASS@@", " two")
                 .replace("@@MD@@", html.escape(md))
                 .replace("@@FOOT_SECTIONS@@", foot_sections())
                 .replace("@@DRAWER@@", build_drawer("__mind__"))
@@ -1391,10 +1418,15 @@ def build_index(pages, mind_pages):
             .replace("@@TITLE@@", "思维导图")
             .replace("@@SUBTITLE@@", html.escape(mind_sub))
             .replace("@@NAV@@", build_nav("__mind__"))
+            .replace("@@SIDE@@", mind_side("", pages))
+            .replace("@@LAYOUT_CLASS@@", " two")
             .replace("@@MD@@", html.escape(mind_md))
             .replace("@@FOOT_SECTIONS@@", foot_sections())
             .replace("@@DRAWER@@", build_drawer("__mind__"))
             .replace("@@MIND_NOTE@@", ""))
+    # 索引页自己就是导图区，右上角按钮换成回首页，别做成自环
+    page = page.replace('<a class="btn btn-line btn-sm" href="mind-index.html">思维导图</a>',
+                        '<a class="btn btn-line btn-sm" href="index.html">回首页</a>')
     # 这一页是导图总览，页脚「本图」一栏换成总数与读法
     page = page.replace("<h6>本图</h6>", "<h6>导图</h6>")
     page = page.replace("@@NODES@@", f"共 {len(mind_pages)} 张")
