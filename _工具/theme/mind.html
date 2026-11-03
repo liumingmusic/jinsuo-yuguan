@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>@@TITLE@@ · 思维导图 · 金锁玉关</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -21,6 +21,9 @@
     <nav class="nav-links">@@NAV@@</nav>
     <div class="nav-right">
       <a class="btn btn-line btn-sm" href="mind-index.html">全部导图</a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="drawer">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
@@ -41,12 +44,16 @@
         <button onclick="zoomBy(0.8)">缩小</button>
         <button onclick="toggleAll()">全部折叠 / 展开</button>
         <span class="hint">默认只展开两级　·　点圆点展开下一层　·　滚轮缩放　·　拖拽平移</span>
+        <span class="hint-m">双指缩放　·　拖动平移</span>
       </div>
       <svg id="mind"></svg>
     </div>
 @@MIND_NOTE@@
   </article>
 </div>
+
+@@DRAWER@@
+<div class="scrim" id="scrim"></div>
 
 <script src="资源/vendor/d3.js"></script>
 <script src="资源/vendor/markmap-view.js"></script>
@@ -88,7 +95,9 @@ try{
   var T = window.markmap.Transformer, M = window.markmap.Markmap;
   var t = new T();
   var res = t.transform(src);
-  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:12, paddingX:16, colorFreezeLevel:2}, res.root);
+  // 展开两级：只展开一级的话，手机上只剩一个根节点，等于没画
+  var narrow = window.innerWidth < 700;
+  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:narrow?10:12, paddingX:16, colorFreezeLevel:2}, res.root);
   window.mm = mm;
   requestAnimationFrame(function(){ fitNow(); });
   setTimeout(function(){ fitNow(); }, 300);

@@ -397,6 +397,43 @@ JS = """
     }, {passive:true});
     wheelTick();
   }
+  // 移动端抽屉：≤900px 时侧栏与顶部导航都被隐藏，这里是唯一入口
+  var toggle = document.getElementById('navToggle');
+  var drawer = document.getElementById('drawer');
+  var scrim = document.getElementById('scrim');
+  var drawerClose = document.getElementById('drawerClose');
+  function setDrawer(open){
+    document.body.classList.toggle('drawer-open', open);
+    if(toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(drawer) drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+  if(toggle){
+    toggle.addEventListener('click', function(){
+      setDrawer(!document.body.classList.contains('drawer-open'));
+    });
+  }
+  if(drawerClose){ drawerClose.addEventListener('click', function(){ setDrawer(false); }); }
+  if(scrim){ scrim.addEventListener('click', function(){ setDrawer(false); }); }
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') setDrawer(false); });
+  if(drawer){
+    [].slice.call(drawer.querySelectorAll('a')).forEach(function(a){
+      a.addEventListener('click', function(){ setDrawer(false); });
+    });
+  }
+  window.addEventListener('resize', function(){
+    if(window.innerWidth > 900) setDrawer(false);
+  });
+  // 宽表在窄屏要横滑：加一句提示，免得以为内容被截断
+  window.addEventListener('load', function(){
+    [].slice.call(document.querySelectorAll('.doc .tbl-wrap')).forEach(function(w){
+      if(w.scrollWidth - w.clientWidth > 8){
+        var s = document.createElement('span');
+        s.className = 'tbl-scroll-hint';
+        s.textContent = '← 左右滑动查看完整表格 →';
+        w.parentNode.insertBefore(s, w.nextSibling);
+      }
+    });
+  });
 })();
 """
 
@@ -470,6 +507,55 @@ def build_nav(current=""):
     on = " on" if current == "__mind__" else ""
     parts.append(f'<a class="{on.strip()}" href="mind-index.html">思维导图</a>')
     return "".join(parts)
+
+
+def build_drawer(current="", sub=""):
+    """移动端抽屉导航。桌面隐藏，≤900px 由汉堡键拉出。
+
+    侧栏在窄屏被隐藏，若不另给入口，手机上除了当前页哪都去不了——这是
+    2026-11-03 用户反馈「作业线、卦山线都看不到」的直接原因。
+    """
+    items = []
+    for d, num, short, desc, color in SECTIONS:
+        on = " on" if d == current else ""
+        items.append(
+            f'<li><a class="d-line{on}" href="section-{num}.html" style="--c:{color}">'
+            f'<b>{num}</b><span class="d-t">{short}<em>{desc}</em></span></a></li>'
+        )
+    on_home = " on" if current == "__home__" else ""
+    return (
+        '<div class="drawer" id="drawer" aria-hidden="true" aria-label="站点导航">'
+        '<div class="drawer-head">'
+        '<a class="logo" href="index.html"><span class="mark">'
+        '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+        '<path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" '
+        'stroke-width="1.5" stroke-linecap="round"/></svg></span>金锁玉关</a>'
+        '<button class="drawer-close" id="drawerClose" type="button" aria-label="关闭导航">'
+        '&times;</button>'
+        '</div>'
+        '<div class="drawer-body">'
+        f'<a class="d-home{on_home}" href="index.html"><span>总览 · 二十四山全图</span>'
+        '<em>首页</em></a>'
+        '<p class="side-title">四 条 线</p>'
+        '<ul class="d-lines">' + "".join(items) + '</ul>'
+        + sub +
+        '<p class="side-title">图</p>'
+        '<a class="d-home" href="mind-index.html"><span>思维导图</span><em>五张</em></a>'
+        '</div></div>'
+    )
+
+
+def drawer_sub(items, active_file=""):
+    """抽屉里的「本节」页面列表。"""
+    if not items:
+        return ""
+    lis = "".join(
+        f'<li><a class="{"on" if it["file"] == active_file else ""}" '
+        f'href="{it["slug"]}.html"><span class="n">{it["order"]:02d}</span>'
+        f'<span>{html.escape(it["title"])}</span></a></li>'
+        for it in items
+    )
+    return f'<p class="side-title">本 节</p><ul class="d-sub">{lis}</ul>'
 
 
 def foot_sections():
@@ -644,6 +730,7 @@ def build():
                         pager=pager,
                         source=os.path.relpath(pg["path"], ROOT),
                         foot_sections=foot_sections(),
+                        drawer=build_drawer(pg["section"], drawer_sub(same, pg["file"])),
                         )
         open(os.path.join(OUT_DIR, pg["slug"] + ".html"), "w", encoding="utf-8").write(html_out)
 
@@ -677,6 +764,7 @@ def build():
                     pager='<span class="empty"></span>',
                     source=f"内容/{d}/",
                     foot_sections=foot_sections(),
+                    drawer=build_drawer(d, drawer_sub(items)),
                     )
         open(os.path.join(OUT_DIR, f"section-{num}.html"), "w", encoding="utf-8").write(page)
 
@@ -709,6 +797,7 @@ def build_minds():
                 .replace("@@NAV@@", build_nav("__mind__"))
                 .replace("@@MD@@", html.escape(md))
                 .replace("@@SOURCE@@", f"脑图/{f}")
+                .replace("@@DRAWER@@", build_drawer("__mind__"))
                 .replace("@@MIND_NOTE@@",
                          '<p class="subtitle" style="border:none;margin:16px 0 0;padding:0;font-size:13.5px">'
                          f'本图由 <code>脑图/{f}</code> 生成。同一份大纲可导出 '
@@ -1100,6 +1189,14 @@ def build_index(pages, mind_pages):
                 foot_sections=foot_sections(),
                 page_count=len(pages),
                 mind_count=len(mind_pages),
+                drawer=build_drawer("__home__",
+                                    '<p class="side-title">本 页</p><ul class="d-sub">'
+                                    '<li><a href="#shan"><span class="n">图</span>'
+                                    '<span>二十四山全图</span></a></li>'
+                                    '<li><a href="#read"><span class="n">读</span>'
+                                    '<span>两种读法</span></a></li>'
+                                    '<li><a href="#lines"><span class="n">体</span>'
+                                    '<span>三条线怎么分</span></a></li></ul>'),
                 )
     open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8").write(page)
 
@@ -1141,6 +1238,7 @@ def build_index(pages, mind_pages):
             .replace("@@NAV@@", build_nav("__mind__"))
             .replace("@@MD@@", html.escape(mind_md))
             .replace("@@SOURCE@@", "脑图/")
+            .replace("@@DRAWER@@", build_drawer("__mind__"))
             .replace("@@MIND_NOTE@@", ""))
     # 换成卡片列表，保留工具栏隐藏
     page = page.replace('<div class="mind-wrap">', '<div style="display:none">')

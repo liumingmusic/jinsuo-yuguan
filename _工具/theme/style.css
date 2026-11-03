@@ -620,6 +620,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .mind-bar button:hover{border-color:var(--ink-4);color:var(--ink);background:var(--bg-3)}
 .mind-bar .hint{margin-left:auto;font-size:12.2px;color:var(--ink-4);padding-right:4px}
+.mind-bar .hint-m{display:none}
 #mind{display:block;width:100%;height:min(76vh,820px);min-height:480px;background:var(--bg)}
 
 /* 脑图索引 */
@@ -1021,6 +1022,237 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
   .mc{padding:9px 8px}
   .mc b{font-size:17px}
   .mc i{display:none}
+}
+
+/* ============================================ 移动端
+   ≤900px 时桌面侧栏与顶部导航都不显示，导航全部交给抽屉。
+   2026-11-03 修：此前只做 display:none，没有替代入口，
+   手机上进不去作业线、卦山线，只能停在当前页。 */
+
+.nav-toggle{
+  display:none;width:38px;height:38px;flex:none;padding:0;
+  border:1px solid var(--line);border-radius:9px;background:var(--bg);
+  cursor:pointer;place-items:center;
+}
+.nav-toggle span{
+  display:block;width:16px;height:1.6px;margin:2.6px auto;
+  background:var(--ink-2);border-radius:2px;
+}
+.drawer,.scrim{display:none}
+.tbl-scroll-hint{display:none}
+
+@media (max-width:900px){
+  :root{--nav-h:56px}
+
+  /* ---------- 顶栏 ---------- */
+  .nav-in{padding:0 16px;gap:12px}
+  .nav-links{display:none}
+  .nav-right{margin-left:auto;gap:8px}
+  .nav-toggle{display:grid}
+  .nav-right .btn-sm{padding:8px 12px;font-size:13px}
+  .brand-text{display:none}
+
+  /* ---------- 抽屉 ---------- */
+  .drawer{
+    display:block;position:fixed;top:0;left:0;bottom:0;z-index:420;
+    width:min(84vw,320px);background:var(--bg);
+    border-right:1px solid var(--line);
+    transform:translateX(-101%);
+    transition:transform .32s cubic-bezier(.32,.72,0,1);
+    overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:calc(26px + env(safe-area-inset-bottom));
+    box-shadow:0 0 44px rgba(18,24,27,.14);
+  }
+  body.drawer-open .drawer{transform:none}
+  .scrim{
+    display:block;position:fixed;inset:0;z-index:410;
+    background:rgba(9,15,18,.44);opacity:0;pointer-events:none;
+    transition:opacity .3s;
+  }
+  body.drawer-open .scrim{opacity:1;pointer-events:auto}
+  body.drawer-open{overflow:hidden}
+
+  .drawer-head{
+    position:sticky;top:0;z-index:2;display:flex;align-items:center;
+    justify-content:space-between;gap:10px;padding:12px 12px 12px 16px;
+    background:var(--bg);border-bottom:1px solid var(--line);
+  }
+  .drawer-head .logo{font-size:15.5px}
+  .drawer-close{
+    width:36px;height:36px;flex:none;padding:0;border:1px solid var(--line);
+    border-radius:9px;background:var(--bg);color:var(--ink-2);
+    font-size:19px;line-height:1;cursor:pointer;
+  }
+  .drawer-body{padding:14px 12px 8px}
+  .drawer-body .side-title{margin:22px 0 8px;padding-left:2px}
+  .drawer-body .side-title:first-child{margin-top:4px}
+  .d-home{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+    color:var(--ink);font-size:14.5px;background:var(--bg);line-height:1.4;
+  }
+  .d-home:hover{text-decoration:none;border-color:var(--ink-4)}
+  .d-home em{font-style:normal;font-size:11.5px;color:var(--ink-4);letter-spacing:.08em}
+  .d-home.on{border-color:var(--brand-line);background:var(--brand-soft)}
+  .d-lines{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+  .d-line{
+    display:flex;align-items:center;gap:11px;padding:11px 12px;
+    border:1px solid var(--line);border-radius:10px;color:var(--ink);
+  }
+  .d-line:hover{text-decoration:none;border-color:var(--ink-4)}
+  .d-line b{
+    width:27px;height:27px;flex:none;border-radius:8px;display:grid;place-items:center;
+    background:var(--bg-3);color:var(--c,var(--brand));
+    font-family:var(--serif);font-weight:600;font-size:13px;
+  }
+  .d-line .d-t{display:flex;flex-direction:column;line-height:1.34;font-size:14.5px}
+  .d-line em{font-style:normal;font-size:11.5px;color:var(--ink-4);letter-spacing:.03em}
+  .d-line.on{border-color:var(--brand-line);background:var(--brand-soft)}
+  .d-line.on b{background:var(--brand-soft);border:1px solid var(--brand-line)}
+  .d-sub{list-style:none;margin:0;padding:0}
+  .d-sub li a{
+    display:flex;gap:8px;padding:9px 10px;border-radius:8px;
+    font-size:13.8px;color:var(--ink-2);line-height:1.5;
+  }
+  .d-sub li a:hover{text-decoration:none;background:var(--bg-2)}
+  .d-sub li a .n{color:var(--ink-4);font-size:12px;flex:none;min-width:15px}
+  .d-sub li a.on{background:var(--bg-3);color:var(--ink);font-weight:600}
+
+  /* ---------- 骨架：单列，页内目录变成顶部横滑条 ---------- */
+  .layout,.layout.two{
+    display:flex;flex-direction:column;
+    padding:20px 18px calc(72px + env(safe-area-inset-bottom));gap:0;
+  }
+  .layout.center{display:block;padding:20px 16px 64px}
+  .doc{order:2;min-width:0}
+  .toc{
+    display:block;order:1;position:sticky;top:var(--nav-h);z-index:60;
+    max-height:none;margin:0 -18px 18px;padding:10px 18px 9px;
+    background:linear-gradient(var(--bg) 76%,rgba(255,255,255,.86));
+    border-bottom:1px solid var(--line-2);
+    white-space:nowrap;overflow-x:auto;overflow-y:hidden;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .layout.center .toc{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+  .toc::-webkit-scrollbar{display:none}
+  .toc-title{display:none}
+  .toc a{
+    display:inline-block;padding:7px 12px;margin:0 6px 0 0;
+    border:1px solid var(--line);border-radius:99px;
+    font-size:12.8px;line-height:1.2;color:var(--ink-2);background:var(--bg);
+    white-space:nowrap;overflow:visible;text-overflow:clip;
+  }
+  .toc a:hover{text-decoration:none;border-color:var(--ink-4)}
+  .toc a.lv3{font-size:12px;color:var(--ink-3)}
+  .toc a.on{border-color:var(--brand-line);background:var(--brand-soft);color:var(--brand)}
+
+  /* ---------- 正文 ---------- */
+  .doc{font-size:16px;line-height:1.88}
+  .doc h1{font-size:26px;line-height:1.36;margin-bottom:10px}
+  .subtitle{font-size:13.5px;margin-bottom:22px}
+  .crumb{font-size:12.5px;margin-bottom:16px;gap:6px}
+  .doc h2{font-size:21px;margin:40px 0 12px;line-height:1.42}
+  .doc h3{font-size:17.5px;margin-top:28px}
+  .doc p{margin:0 0 17px}
+  .doc ul,.doc ol{padding-left:20px}
+  .doc li{margin:5px 0}
+  .doc blockquote{margin:18px 0;padding:13px 16px;font-size:15.5px;border-radius:0 8px 8px 0}
+  .doc hr{margin:32px 0}
+  .doc code{font-size:.92em;word-break:break-word}
+  .doc pre{overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:13px;padding:14px 15px}
+  .doc img{max-width:100%;height:auto;border-radius:10px}
+
+  /* 宽表横向滑动，右侧留一道渐隐提示 */
+  .doc .tbl-wrap{
+    margin:20px 0;border-radius:10px;-webkit-overflow-scrolling:touch;
+    box-shadow:var(--shadow-1),inset -18px 0 16px -18px rgba(18,24,27,.45);
+  }
+  .doc .tbl-wrap table{min-width:520px}
+  /* 六列以上的宽表（经文对照、二十四山速查）再放宽一档 */
+  .doc .tbl-wrap table.wide{min-width:640px}
+  /* 作业总表七列：520 会把「题面要求」压成竖条，单独放宽 */
+  .doc .tbl-wrap table.hw-table{min-width:760px}
+  .doc th,.doc td{padding:9px 12px;font-size:13.2px}
+  .doc th{font-size:12.4px}
+  .tbl-scroll-hint{
+    display:block;margin:-10px 0 20px;text-align:right;
+    font-size:11.5px;color:var(--ink-4);letter-spacing:.02em;
+  }
+
+  .pager{grid-template-columns:1fr;gap:10px;margin-top:44px}
+  .pager a{padding:14px 16px}
+  .pager a.next{text-align:left}
+
+  /* ---------- 卡片 / 看板 ---------- */
+  .cards,.mind-cards{grid-template-columns:1fr;gap:14px;margin-top:20px}
+  .card{padding:18px 18px 16px}
+  .hw-nums{grid-template-columns:1fr 1fr}
+  .hw-nums>div{padding:15px 12px}
+  .hw-nums b{font-size:23px}
+  .hw-status{grid-template-columns:1fr 1fr}
+  .hw-cell{padding:12px 14px}
+  .hw-cell.grow{grid-column:1 / -1;border-top:1px solid var(--line-2);border-right:0}
+
+  /* ---------- 脑图 ---------- */
+  #mind{height:62vh;min-height:380px;touch-action:none}
+  .mind-wrap{margin-top:20px}
+  .mind-bar{padding:8px;gap:6px}
+  .mind-bar button{padding:9px 12px;font-size:12.5px;min-height:38px}
+  .mind-bar .hint{display:none}
+  .mind-bar .hint-m{
+    display:inline;margin-left:auto;font-size:11.5px;color:var(--ink-4);
+    letter-spacing:.04em;
+  }
+}
+
+@media (max-width:560px){
+  .nav-in{padding:0 14px}
+  .layout,.layout.two{padding:16px 16px calc(64px + env(safe-area-inset-bottom))}
+  .toc{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+
+  .doc h1{font-size:23px}
+  .doc h2{font-size:19.5px;margin-top:34px}
+  .doc h3{font-size:16.8px}
+  .doc{font-size:15.8px;line-height:1.9}
+
+  /* 首页首屏 */
+  .hero.hero-quote{padding:calc(var(--nav-h) + 40px) 0 50px;min-height:auto}
+  .hero-in.solo{padding:0 18px}
+  .hero.hero-quote h1{font-size:clamp(34px,11vw,44px);letter-spacing:.1em;text-indent:.1em}
+  .hero-sub{font-size:11.5px;letter-spacing:.26em;text-indent:.26em;margin-bottom:24px}
+  .manifesto{font-size:15px;line-height:1.98;letter-spacing:.01em;margin-bottom:30px}
+  .hero.hero-quote .hero-cta{gap:10px}
+  .hero-cta .btn{flex:1 1 100%;justify-content:center}
+  .hero.hero-quote .hero-stats{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px 0;
+    margin-top:34px;padding-top:20px;text-align:center;
+  }
+  .hero-stats .st{padding-right:0;margin-right:0;border-right:1px solid rgba(255,255,255,.1)}
+  .hero-stats .st:nth-child(3n){border-right:none}
+  .hero-stats b{font-size:24px}
+  .hero-stats em{font-size:11px;letter-spacing:.08em}
+  .hero-orbit{width:min(720px,150vw);opacity:.38}
+  .hero-wheel{opacity:.72}
+  .nav-right .btn-line{display:none}
+
+  .sec{padding:56px 0}
+  .wrap{padding:0 18px}
+  .sec-head h2{font-size:23px;line-height:1.35}
+  .sec-head p{font-size:14.6px}
+  .g8-grid{grid-template-columns:1fr}
+  .parts{grid-template-columns:1fr}
+  .cta{padding:30px 20px;margin-left:14px;margin-right:14px}
+  .cta h2{font-size:21px}
+  .foot-in{grid-template-columns:1fr;gap:26px}
+  .foot{padding:38px 0 calc(28px + env(safe-area-inset-bottom))}
+  .m24{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* 触摸设备不保留 hover 位移，避免点完还“悬”着 */
+@media (hover:none){
+  .card:hover{transform:none;box-shadow:none;border-color:var(--line)}
+  .btn:hover{transform:none}
 }
 
 @media print{

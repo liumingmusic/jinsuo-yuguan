@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>@@TITLE@@ · 金锁玉关 · 二十四山</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -21,6 +21,9 @@
     <nav class="nav-links">@@NAV@@</nav>
     <div class="nav-right">
       <a class="btn btn-line btn-sm" href="mind-index.html">思维导图</a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="drawer">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
@@ -63,6 +66,9 @@
     </div>
   </div>
 </footer>
+
+@@DRAWER@@
+<div class="scrim" id="scrim"></div>
 
 <script src="script.js"></script>
 </body>

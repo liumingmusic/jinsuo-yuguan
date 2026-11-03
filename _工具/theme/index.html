@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>金锁玉关 · 二十四山</title>
 <meta name="description" content="金锁玉关二十四山研读：八宫二十四山全图，一山十五度。当前精读坎、坤、震三卦九山，可先按卦读三山，也可按山查一座。">
 <link rel="stylesheet" href="style.css">
@@ -23,6 +23,9 @@
     <div class="nav-right">
       <a class="btn btn-line btn-sm" href="#read">两种读法</a>
       <a class="btn btn-dark btn-sm" href="@@FIRST_LINK@@">开始阅读</a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="drawer">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
@@ -138,6 +141,9 @@
     <span>本页由 <code>_工具/build.py</code> 从 Markdown 生成</span>
   </div>
 </footer>
+
+@@DRAWER@@
+<div class="scrim" id="scrim"></div>
 
 <script src="script.js"></script>
 </body>
