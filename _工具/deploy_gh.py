@@ -94,8 +94,12 @@ def upload_blob(ab):
     return res["sha"]
 
 
-def push_branch(branch, files, message):
-    """把 files 作为该分支的完整内容推上去（整树替换，不做 diff）。"""
+def push_branch(branch, files, message, prune=True):
+    """把 files 作为该分支的完整内容推上去（整树替换，不做 diff）。
+
+    prune=True 时会把远端已有、而本地这次没有的路径一并删掉（sha: null）。
+    否则改名/删文件只会新增，旧路径永远留在分支上（脑图改编号后就踩过）。
+    """
     ref_path = "/repos/%s/%s/git/ref/heads/%s" % (OWNER, REPO, branch)
     parent = None
     try:
@@ -114,6 +118,20 @@ def push_branch(branch, files, message):
 
     entries = [{"path": rel, "mode": "100644", "type": "blob", "sha": sha}
                for (rel, _), sha in zip(files, shas)]
+
+    if prune and base_tree:
+        keep = {rel for rel, _ in files}
+        tree_now = api("GET", "/repos/%s/%s/git/trees/%s?recursive=1"
+                       % (OWNER, REPO, base_tree))
+        gone = [e["path"] for e in tree_now.get("tree", [])
+                if e["type"] == "blob" and e["path"] not in keep]
+        for p in gone:
+            entries.append({"path": p, "mode": "100644", "type": "blob", "sha": None})
+        if gone:
+            print("  删除远端多余 %d 个（改名/废弃的旧路径）" % len(gone))
+            for p in gone:
+                print("    - " + p)
+
     tree = api("POST", "/repos/%s/%s/git/trees" % (OWNER, REPO),
                {"tree": entries, "base_tree": base_tree} if base_tree
                else {"tree": entries})
@@ -196,7 +214,7 @@ def main():
     if not site_only:
         ensure_repo()
         print("推 main（源码）...")
-        push_branch("main", src, "金锁玉关研习库：课程线 12 讲 / 卦山线九山 / 作业线 11 次 / 附录 5 篇 / 脑图 5 张")
+        push_branch("main", src, "金锁玉关研习库：课程线 12 讲 / 卦山线九山 / 作业线 11 次 / 附录 5 篇 / 脑图 4 张")
     print("推 gh-pages（站点）...")
     push_branch("gh-pages", site, "发布站点：%d 个页面" % len(site))
     if not site_only:

@@ -509,6 +509,13 @@ def build_nav(current=""):
     return "".join(parts)
 
 
+def mind_file_count():
+    """脑图张数：直接数 脑图/*.md，别再手写「五张」这种会过期的字。"""
+    if not os.path.isdir(MIND_DIR):
+        return 0
+    return len([f for f in os.listdir(MIND_DIR) if f.endswith(".md")])
+
+
 def build_drawer(current="", sub=""):
     """移动端抽屉导航。桌面隐藏，≤900px 由汉堡键拉出。
 
@@ -540,7 +547,8 @@ def build_drawer(current="", sub=""):
         '<ul class="d-lines">' + "".join(items) + '</ul>'
         + sub +
         '<p class="side-title">图</p>'
-        '<a class="d-home" href="mind-index.html"><span>思维导图</span><em>五张</em></a>'
+        f'<a class="d-home" href="mind-index.html"><span>思维导图</span>'
+        f'<em>{mind_file_count()} 张</em></a>'
         '</div></div>'
     )
 
@@ -791,12 +799,14 @@ def build_minds():
         title = extract_title(md, os.path.splitext(f)[0])
         slug = "mind-" + os.path.splitext(f)[0].replace(" ", "-")
         nodes = sum(1 for l in md.split("\n") if re.match(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s)", l))
+        m = re.match(r"^(\d+)", f)
         page = (MIND_TMPL
                 .replace("@@TITLE@@", html.escape(title))
                 .replace("@@SUBTITLE@@", f"共 {nodes} 个节点　·　源文件 脑图/{f}")
                 .replace("@@NAV@@", build_nav("__mind__"))
                 .replace("@@MD@@", html.escape(md))
                 .replace("@@SOURCE@@", f"脑图/{f}")
+                .replace("@@FOOT_SECTIONS@@", foot_sections())
                 .replace("@@DRAWER@@", build_drawer("__mind__"))
                 .replace("@@MIND_NOTE@@",
                          '<p class="subtitle" style="border:none;margin:16px 0 0;padding:0;font-size:13.5px">'
@@ -804,7 +814,8 @@ def build_minds():
                          '<code>.xmind</code> / <code>.mm</code> / <code>.opml</code>，见 <code>导出/</code> 目录。'
                          '要改结构，改 Markdown 后重跑 <code>python3 _工具/build.py</code>。</p>'))
         open(os.path.join(OUT_DIR, slug + ".html"), "w", encoding="utf-8").write(page)
-        made.append({"title": title, "slug": slug, "file": f, "nodes": nodes})
+        made.append({"title": title, "slug": slug, "file": f, "nodes": nodes,
+                     "no": m.group(1) if m else ""})
     return made
 
 
@@ -1203,28 +1214,30 @@ def build_index(pages, mind_pages):
     # 脑图索引
     if mind_pages:
         cards = "".join(
-            f'<a class="card" href="{m["slug"]}.html"><div class="k">脑图</div>'
+            f'<a class="card mind-card" href="{m["slug"]}.html" '
+            f'title="源文件 脑图/{html.escape(m["file"])}">'
+            f'<div class="k">{m["no"] or "图"}</div>'
             f'<h3>{html.escape(m["title"])}</h3>'
-            f'<p>{m["nodes"]} 个节点　·　{m["file"]}</p></a>'
+            f'<p>{m["nodes"]} 个节点</p></a>'
             for m in mind_pages
         )
+        # 底部说明：纵向三步，窄屏也不挤成竖排单字（原来三列大卡片在手机上就是一列一个字）
         mind_body = ('<div class="mind-cards">' + cards + '</div>'
-                     '<div class="sec" style="padding-bottom:0">'
-                     '<div class="sec-head"><span class="eyebrow">怎 么 用</span>'
+                     '<div class="mind-how">'
+                     '<span class="eyebrow">怎 么 用</span>'
                      '<h2>图是同一份大纲的另一个投影</h2>'
                      '<p>网页上看到的是渲染结果，导出的是同一棵树的文件。两者不会走样，'
-                     '因为都从 <code>脑图/*.md</code> 生成，不是互相转换。</p></div>'
-                     '<div class="parts" style="grid-template-columns:repeat(3,minmax(0,1fr))">'
-                     '<div class="part"><div class="rnum">源</div><h3>改结构改 Markdown</h3>'
-                     '<p class="desc">缩进即层级。<code>#</code> 是一级分支，'
-                     '<code>-</code> 与缩进是子节点，不用开 XMind 也能改。</p></div>'
-                     '<div class="part"><div class="rnum">出</div><h3>导出三种通用格式</h3>'
-                     '<p class="desc"><code>.xmind</code>（XMind）、<code>.mm</code>（FreeMind / 幕布）、'
-                     '<code>.opml</code>（大纲工具），都在 <code>导出/</code>。</p></div>'
-                     '<div class="part"><div class="rnum">校</div><h3>与老师原图比对</h3>'
-                     '<p class="desc">坎卦、坤卦已有老师版本的，原图单独存档，'
-                     '逐节点比对后把差异记进备注。</p></div>'
-                     '</div></div>')
+                     '因为都从 <code>脑图/*.md</code> 生成，不是互相转换。</p>'
+                     '<ul class="mh-list">'
+                     '<li><span class="mh-k">源</span><div><h3>改结构改 Markdown</h3>'
+                     '<p>缩进即层级。<code>#</code> 是一级分支，<code>-</code> 与缩进是子节点，'
+                     '不用开 XMind 也能改。</p></div></li>'
+                     '<li><span class="mh-k">出</span><div><h3>导出三种通用格式</h3>'
+                     '<p><code>.xmind</code>（XMind）、<code>.mm</code>（FreeMind / 幕布）、'
+                     '<code>.opml</code>（大纲工具），都在 <code>导出/</code>。</p></div></li>'
+                     '<li><span class="mh-k">校</span><div><h3>与老师原图比对</h3>'
+                     '<p>坎卦、坤卦已有老师版本的，原图单独存档，逐节点比对后把差异记进备注。</p></div></li>'
+                     '</ul></div>')
         mind_sub = f"共 {len(mind_pages)} 张　·　源目录 脑图/"
         mind_md = "# 思维导图"
     else:
@@ -1233,16 +1246,23 @@ def build_index(pages, mind_pages):
         mind_md = "# 思维导图"
 
     page = (tpl("mind.html")
-            .replace("@@TITLE@@", "思维导图总览")
+            .replace("@@TITLE@@", "思维导图")
             .replace("@@SUBTITLE@@", html.escape(mind_sub))
             .replace("@@NAV@@", build_nav("__mind__"))
             .replace("@@MD@@", html.escape(mind_md))
             .replace("@@SOURCE@@", "脑图/")
+            .replace("@@FOOT_SECTIONS@@", foot_sections())
             .replace("@@DRAWER@@", build_drawer("__mind__"))
             .replace("@@MIND_NOTE@@", ""))
     # 换成卡片列表，保留工具栏隐藏
     page = page.replace('<div class="mind-wrap">', '<div style="display:none">')
     page = page.replace('</article>', mind_body + '</article>')
+    # 这一页本身就叫「思维导图」，标题与面包屑不要再套一层同名
+    page = page.replace("<title>思维导图 · 思维导图 · 金锁玉关</title>",
+                        "<title>思维导图 · 金锁玉关</title>")
+    page = page.replace('<a href="mind-index.html">思维导图</a>'
+                        '<span class="sep">/</span>思维导图',
+                        '<a href="mind-index.html">思维导图</a>')
     open(os.path.join(OUT_DIR, "mind-index.html"), "w", encoding="utf-8").write(page)
 
 

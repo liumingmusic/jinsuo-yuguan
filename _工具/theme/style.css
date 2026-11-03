@@ -624,7 +624,40 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 #mind{display:block;width:100%;height:min(76vh,820px);min-height:480px;background:var(--bg)}
 
 /* 脑图索引 */
-.mind-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:30px}
+.mind-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:16px;margin-top:30px}
+.mind-card{padding:20px 20px 18px}
+.mind-card .k{
+  font-family:var(--serif);font-size:13px;letter-spacing:.16em;
+  color:var(--gold);margin-bottom:8px;
+}
+.doc .mind-card h3{font-size:17px;line-height:1.45;margin:0 0 8px}
+.doc .mind-card p{margin:0;font-size:12.8px;color:var(--ink-3)}
+
+/* 底部「怎么用」：纵向三步条。原来三列大卡片在手机上会挤成一列一个字 */
+.mind-how{
+  margin:46px 0 6px;padding:28px 30px 6px;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);
+}
+.mind-how .eyebrow{margin:0 0 10px}
+.doc .mind-how h2{
+  margin:0 0 10px;padding:0;border:none;
+  font-size:21px;line-height:1.45;
+}
+.mind-how>p{margin:0 0 4px;font-size:14.4px;color:var(--ink-2);line-height:1.8}
+.doc .mh-list{list-style:none;margin:8px 0 0;padding:0}
+.doc .mh-list>li{
+  display:grid;grid-template-columns:40px minmax(0,1fr);gap:16px;
+  align-items:start;margin:0;padding:16px 0;
+  border-top:1px solid var(--line);
+}
+.doc .mh-list>li:first-child{border-top:none;padding-top:6px}
+.mh-k{
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:17px;font-weight:600;line-height:1;color:var(--gold);
+  background:var(--gold-soft);border:1px solid #ecdfc4;border-radius:9px;
+}
+.doc .mh-list h3{margin:2px 0 4px;font-size:16px;line-height:1.5}
+.doc .mh-list p{margin:0;font-size:13.6px;color:var(--ink-2);line-height:1.75}
 
 /* 通用卡片 */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;margin-top:26px}
@@ -1251,6 +1284,18 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
   .foot-in{grid-template-columns:1fr;gap:26px}
   .foot{padding:38px 0 calc(28px + env(safe-area-inset-bottom))}
   .m24{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+  /* 脑图索引：手机上卡片收一圈，底部说明条缩字号缩印章 */
+  .mind-cards{grid-template-columns:1fr;gap:12px;margin-top:22px}
+  .mind-card{padding:16px 16px 14px}
+  .doc .mind-card h3{font-size:16px}
+  .mind-how{margin-top:32px;padding:22px 18px 4px}
+  .doc .mind-how h2{font-size:19px}
+  .mind-how>p{font-size:13.8px}
+  .doc .mh-list>li{grid-template-columns:34px minmax(0,1fr);gap:12px;padding:14px 0}
+  .mh-k{width:34px;height:34px;font-size:15px;border-radius:8px}
+  .doc .mh-list h3{font-size:15px;margin-top:1px}
+  .doc .mh-list p{font-size:13px}
 }
 
 /* 触摸设备不保留 hover 位移，避免点完还“悬”着 */

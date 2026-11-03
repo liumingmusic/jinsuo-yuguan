@@ -55,6 +55,31 @@
 @@DRAWER@@
 <div class="scrim" id="scrim"></div>
 
+<footer class="foot">
+  <div class="foot-in">
+    <div>
+      <div class="brandline">
+        <span class="mark">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        金锁玉关 · 二十四山
+      </div>
+      <p>每张图都对应 <code>脑图/</code> 里的一份 Markdown 大纲，网页与导出件同源，改一处两边一起变。</p>
+    </div>
+    <div>
+      <h6>本页</h6>
+      <p>内容源　<code>@@SOURCE@@</code></p>
+      <p>改完重跑　<code>python3 _工具/build.py</code></p>
+    </div>
+    <div>
+      <h6>导航</h6>
+      @@FOOT_SECTIONS@@
+    </div>
+  </div>
+</footer>
+
 <script src="资源/vendor/d3.js"></script>
 <script src="资源/vendor/markmap-view.js"></script>
 <script src="资源/vendor/markmap-lib.js"></script>
