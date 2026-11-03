@@ -60,6 +60,9 @@ body{
   font:400 16px/1.78 var(--sans);
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   text-rendering:optimizeLegibility;
+  /* 只允许竖向平移：横向滑动交给 .toc / .tbl-wrap / .doc pre 自己滚，
+     避免整页被带出左右横滚，也挡掉 iOS 上边缘左右回弹的手势 */
+  touch-action:pan-y;
 }
 a{color:var(--brand-2);text-decoration:none}
 a:hover{text-decoration:underline;text-underline-offset:3px}
@@ -1157,10 +1160,15 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
     display:flex;flex-direction:column;
     padding:20px 18px calc(72px + env(safe-area-inset-bottom));gap:0;
   }
+  /* 目录条吸顶占掉约 45px，锚点跳转要让目标落在它下面，否则标题被挡住 */
+  html{scroll-padding-top:calc(var(--nav-h) + 56px)}
   .layout.center{display:block;padding:20px 16px 64px}
   .doc{order:2;min-width:0}
   .toc{
     display:block;order:1;position:sticky;top:var(--nav-h);z-index:60;
+    /* align-self:start 是桌面栅格用的，手机上必须清掉：
+       否则这行胶囊按 max-content 撑开（实测 12519px），整页被撑出横向滚动条 */
+    align-self:auto;width:auto;
     max-height:none;margin:0 -18px 18px;padding:10px 18px 9px;
     background:linear-gradient(var(--bg) 76%,rgba(255,255,255,.86));
     border-bottom:1px solid var(--line-2);
@@ -1201,11 +1209,12 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
     margin:20px 0;border-radius:10px;-webkit-overflow-scrolling:touch;
     box-shadow:var(--shadow-1),inset -18px 0 16px -18px rgba(18,24,27,.45);
   }
-  .doc .tbl-wrap table{min-width:520px}
-  /* 六列以上的宽表（经文对照、二十四山速查）再放宽一档 */
-  .doc .tbl-wrap table.wide{min-width:640px}
+  /* 以前这里一律 min-width:520px，结果两列窄表也被撑出横向滚动。
+     现在改成自适应；估算放不下的表由 build.py 打 .stack，≤640px 变卡片。 */
+  .doc .tbl-wrap table{min-width:0;width:100%}
+  .doc .tbl-wrap table.wide{min-width:0}
   /* 作业总表七列：520 会把「题面要求」压成竖条，单独放宽 */
-  .doc .tbl-wrap table.hw-table{min-width:760px}
+  .doc .tbl-wrap table.hw-table{min-width:680px}
   .doc th,.doc td{padding:9px 12px;font-size:13.2px}
   .doc th{font-size:12.4px}
   .tbl-scroll-hint{
@@ -1296,6 +1305,61 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
   .mh-k{width:34px;height:34px;font-size:15px;border-radius:8px}
   .doc .mh-list h3{font-size:15px;margin-top:1px}
   .doc .mh-list p{font-size:13px}
+}
+
+/* 作业总表：≤640px 由表格变卡片。七列在手机上只能看到一半，横滑也读不成句
+   注意选择器必须写到 .doc .tbl-wrap table.hw-table（0,3,1）：
+   上面 ≤900px 的 .doc .tbl-wrap table.hw-table{min-width:760px} 同权重，
+   写成 .doc table.hw-table（0,2,1）会被压住，min-width 清不掉，
+   表格照样 760px 宽、把整页撑出横向滚动条（实测过） */
+@media (max-width:640px){
+  .doc .tbl-wrap.hw-wrap{overflow:visible;border:none;border-radius:0;background:none;box-shadow:none}
+  .doc .tbl-wrap table.hw-table{display:block;min-width:0;font-size:13.6px}
+  .doc .tbl-wrap table.hw-table thead{display:none}
+  .doc .tbl-wrap table.hw-table tbody{display:block}
+  .doc .tbl-wrap table.hw-table tr{
+    display:block;margin:0 0 10px;padding:12px 14px;
+    border:1px solid var(--line);border-radius:12px;background:var(--bg);
+  }
+  .doc .tbl-wrap table.hw-table tbody tr:hover{background:var(--bg)}
+  .doc .tbl-wrap table.hw-table td{
+    display:block;padding:3px 0;border:none;text-align:left;white-space:normal;
+    line-height:1.72;
+  }
+  .doc .tbl-wrap table.hw-table td::before{
+    content:attr(data-label) "　";color:var(--ink-4);font-size:11.5px;
+  }
+  .doc .tbl-wrap table.hw-table td:empty{display:none}
+  .doc .tbl-wrap table.hw-table td.c{text-align:left}
+  .doc .tbl-wrap table.hw-table td a{white-space:normal}
+  .doc .tbl-wrap table.hw-table td[data-label="作业"]{
+    font-weight:600;font-size:14.8px;color:var(--ink);padding:0 0 6px;
+  }
+  .doc .tbl-wrap table.hw-table td[data-label="作业"]::before{display:none}
+
+  /* 通用宽表（≥5 列）：同一套卡片堆叠，第一列当卡片标题 */
+  .doc .tbl-wrap.stack{overflow:visible;border:none;border-radius:0;background:none;box-shadow:none}
+  .doc .tbl-wrap.stack table{display:block;min-width:0;font-size:13.6px}
+  .doc .tbl-wrap.stack table thead{display:none}
+  .doc .tbl-wrap.stack table tbody{display:block}
+  .doc .tbl-wrap.stack table tr{
+    display:block;margin:0 0 10px;padding:12px 14px;
+    border:1px solid var(--line);border-radius:12px;background:var(--bg);
+  }
+  .doc .tbl-wrap.stack table tr:hover{background:var(--bg)}
+  .doc .tbl-wrap.stack table td{
+    display:block;padding:3px 0;border:none;text-align:left;white-space:normal;
+    line-height:1.72;
+  }
+  .doc .tbl-wrap.stack table td::before{
+    content:attr(data-label) "　";color:var(--ink-4);font-size:11.5px;
+  }
+  .doc .tbl-wrap.stack table td:empty{display:none}
+  .doc .tbl-wrap.stack table td:first-child{
+    font-weight:600;font-size:14.8px;color:var(--ink);padding:0 0 6px;
+  }
+  .doc .tbl-wrap.stack table td:first-child::before{display:none}
+  .doc .tbl-wrap.stack table td a{white-space:normal}
 }
 
 /* 触摸设备不保留 hover 位移，避免点完还“悬”着 */

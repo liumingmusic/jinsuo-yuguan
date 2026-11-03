@@ -161,11 +161,30 @@ def render_md(md, base_title=""):
                 i += 1
             # 六列以上的表在正文栏里会挤成一字一行，加类放宽、末列不折行
             wide = len(head) >= 6
-            t = [f'<div class="tbl-wrap"><table{" class=\"wide\"" if wide else ""}><thead><tr>']
+            # 窄屏是否改卡片堆叠：按内容估算自然宽度，跟列数无关。
+            # 「巽4｜离9｜坤2」这种三列数字格必须留着当表格，
+            # 而「句｜象｜现代转译」三列长文在 390px 下横滑读不成句，必须堆叠。
+            # 估算：每列取「表头与所有单元格」的最长字数 ×13.5px + 26px 内边距，
+            # 总和超过 300px（约 360px 视口下的可用宽度）就判放不下。
+            colw = []
+            for j in range(len(head)):
+                cells_j = [head[j]] + [r[j] for r in rows if j < len(r)]
+                colw.append(max((len(re.sub(r"<[^>]+>", "", inline(c)).strip())
+                                 for c in cells_j), default=0))
+            est = sum(w * 13.5 + 26 for w in colw)
+            stack = est > 300
+            t = [f'<div class="tbl-wrap{" stack" if stack else ""}">'
+                 f'<table{" class=\"wide\"" if wide else ""}><thead><tr>']
             t += [f"<th>{inline(c)}</th>" for c in head]
             t.append("</tr></thead><tbody>")
+            # data-label 给窄屏堆叠用（见 CSS 里的 ≤640px 分支）
+            labels = [re.sub(r"<[^>]+>", "", inline(c)).strip() for c in head]
             for r in rows:
-                t.append("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>")
+                cells = []
+                for j, c in enumerate(r):
+                    lb = labels[j] if j < len(labels) else ""
+                    cells.append(f'<td data-label="{html.escape(lb)}">{inline(c)}</td>')
+                t.append("<tr>" + "".join(cells) + "</tr>")
             t.append("</tbody></table></div>")
             out.append("".join(t))
             continue
@@ -301,17 +320,17 @@ def hw_board(items):
         rev_ok = i.get("review") == "已批阅"
         rows.append(
             "<tr>"
-            f'<td class="c">{i["no"]}</td>'
-            f'<td>{html.escape(i.get("title", ""))}</td>'
-            f'<td class="c dim">{html.escape(i.get("lecture", ""))}</td>'
-            f'<td class="dim">{html.escape(i.get("req", ""))}</td>'
-            f'<td class="c"><span class="tag {"ok" if sub_ok else "no"}">'
+            f'<td class="c" data-label="次">{i["no"]}</td>'
+            f'<td data-label="作业">{html.escape(i.get("title", ""))}</td>'
+            f'<td class="c dim" data-label="对应讲次">{html.escape(i.get("lecture", ""))}</td>'
+            f'<td class="dim" data-label="题面要求">{html.escape(i.get("req", ""))}</td>'
+            f'<td class="c" data-label="作业状态"><span class="tag {"ok" if sub_ok else "no"}">'
             f'{"已完成" if sub_ok else "未完成"}</span></td>'
-            f'<td class="c"><span class="tag {"ok" if rev_ok else "no"}">'
+            f'<td class="c" data-label="批阅状态"><span class="tag {"ok" if rev_ok else "no"}">'
             f'{"已批阅" if rev_ok else "未批阅"}</span></td>'
-            f'<td class="dim">{html.escape(i.get("note", ""))}</td>'
+            f'<td class="dim" data-label="备注">{html.escape(i.get("note", ""))}</td>'
             "</tr>")
-    table = ('<div class="tbl-wrap"><table class="hw-table"><thead><tr>'
+    table = ('<div class="tbl-wrap hw-wrap"><table class="hw-table"><thead><tr>'
              '<th class="c">次</th><th>作业</th><th class="c">对应讲次</th>'
              '<th>题面要求</th><th class="c">作业状态</th><th class="c">批阅状态</th>'
              "<th>备注</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>")
