@@ -55,26 +55,24 @@ def inline(t):
     t = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', t)
     t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
     t = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", t)
-    # 来源徽章：蓝＝老师口播，金＝整理者试作，灰＝待核。代码段里不包。
+    # 来源标记：渲染为中性注记，不上色。代码段里不包。
     parts = re.split(r"(<code>.*?</code>)", t)
     return "".join(p if p.startswith("<code>") else _src_tags(p) for p in parts)
 
 
-# 来源标记 → 徽章样式类。认颜色就知道这段话是谁的话：
-# src-oral 老师嘴里出的；src-draft 整理者手上写的；src-tbd 还没核实。
+# 来源标记 → 中性注记样式。〔口播〕/〔待校〕/〔待核〕/〔待考〕/〔原文如此〕/〔?〕
+# 都按同一中性注记呈现，不按来源分色，避免"蓝=口播、金=试作"那种隐含判断。
 SRC_TAG_RULES = [
-    (re.compile(r"〔(口播[^〕]*)〕"), "src-oral"),
-    (re.compile(r"〔(待校[^〕]*)〕"), "src-tbd"),
-    (re.compile(r"试作"), "src-draft"),
+    (re.compile(r"〔[^〕]*〕"), "src-note"),
 ]
 
 
 def _src_tags(t):
     for pat, cls in SRC_TAG_RULES:
         def _wrap(m, cls=cls):
-            # 短徽章不许折行（〔口播〕这类）；长备注（>12 字）允许折行，否则 390px 会溢出
+            # 短标记不许折行（〔口播〕这类）；长备注（>12 字）允许折行，否则 390px 会溢出
             extra = "" if len(m.group(0)) <= 12 else " src-long"
-            return f'<span class="src {cls}{extra}">{m.group(0)}</span>'
+            return f'<span class="{cls}{extra}">{m.group(0)}</span>'
         t = pat.sub(_wrap, t)
     return t
 

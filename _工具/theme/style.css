@@ -771,23 +771,22 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   font-size:12.2px;color:var(--ink-4);text-align:center;letter-spacing:.05em;
 }
 
-/* ============================================ 来源徽章 */
-/* 认颜色就知道这段话是谁的话：蓝＝老师口播，金＝整理者试作，灰＝还没核实。 */
-.src{
+/* ============================================ 来源标记（中性注记） */
+/* 〔口播〕/〔待校〕/〔待核〕/〔待考〕/〔原文如此〕/〔?〕 统一呈中性注记，不上色。 */
+.src-note{
   display:inline-block;
   font-size:.76em;line-height:1.5;
   padding:.02em .42em;margin:0 .1em;
-  border:1px solid transparent;border-radius:5px;
+  border:1px solid var(--line);border-radius:5px;
+  background:var(--bg-3);
+  color:var(--ink-2);
   font-weight:500;letter-spacing:.02em;
   vertical-align:.08em;white-space:nowrap;
 }
-.src-oral{color:var(--brand-2);background:var(--brand-soft);border-color:var(--brand-line)}
-.src-draft{color:var(--gold);background:var(--gold-soft);border-color:#e9d8b4}
-.src-tbd{color:var(--ink-2);background:var(--bg-3);border-color:var(--line)}
 /* 长备注（>12 字）放不开，允许折行 */
-.src.src-long{white-space:normal;line-height:1.6}
-/* 标题里徽章随字号缩放，深色标题上底色压深一档 */
-h1 .src,h2 .src,h3 .src,h4 .src{vertical-align:.12em}
+.src-note.src-long{white-space:normal;line-height:1.6}
+/* 标题里的注记随字号缩放 */
+h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 
 /* ============================================ 作业与批阅状态 */
 
