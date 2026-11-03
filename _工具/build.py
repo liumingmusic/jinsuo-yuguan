@@ -57,7 +57,7 @@ def render_md(md, base_title=""):
     out = []
     i = 0
     n = len(lines)
-    list_stack = []   # [(type, indent)]
+    list_stack = []   # [(type, indent, is_checklist)]
     in_quote = False
     in_code = False
     code_buf = []
@@ -204,8 +204,7 @@ def render_md(md, base_title=""):
                 f'<div class="ph-frame"><span class="ph-ico">图</span>'
                 f'<p class="ph-t">{inline(label)}</p>'
                 + (f'<p class="ph-d">{inline(desc)}</p>' if desc else "")
-                + '</div><figcaption>待补图　·　把图放进 <code>_数据/图片/</code>，'
-                  '本行换成 <code>![说明](文件名.png)</code> 即可</figcaption></figure>'
+                + '</div><figcaption>此图待补</figcaption></figure>'
             )
             i += 1
             continue
@@ -228,25 +227,38 @@ def render_md(md, base_title=""):
         else:
             close_quote()
 
-        # 列表
+        # 列表（含任务清单 - [ ] / - [x]）
         m = re.match(r"^([ \t]*)([-*+]|\d+[.)])\s+(.*)$", line)
         if m:
             flush_para()
             indent = len(m.group(1).replace("\t", "    "))
-            ordered = not m.group(2) in "-*+"
+            ordered = m.group(2) not in "-*+"
             typ = "ol" if ordered else "ul"
+            content = m.group(3)
+            ck = re.match(r"^\[([ xX])\]\s+(.*)$", content)
+            is_ck = ck is not None
+            if ck:
+                # 任务清单一律按无序表渲染，勾选框由 CSS 画，点一下能打勾
+                typ = "ul"
+                content = ck.group(2)
             while list_stack and list_stack[-1][1] > indent:
-                out.append("</li></%s>" % list_stack[-1][0])
-                list_stack.pop()
-            if list_stack and list_stack[-1][1] == indent and list_stack[-1][0] != typ:
-                out.append("</li></%s>" % list_stack[-1][0])
-                list_stack.pop()
+                out.append("</li></%s>" % list_stack.pop()[0])
+            if list_stack and list_stack[-1][1] == indent and (
+                    list_stack[-1][0] != typ or list_stack[-1][2] != is_ck):
+                out.append("</li></%s>" % list_stack.pop()[0])
             if not list_stack or list_stack[-1][1] < indent:
-                out.append(f"<{typ}>")
-                list_stack.append((typ, indent))
-                out.append("<li>" + inline(m.group(3)))
+                out.append('<ul class="ck-list">' if is_ck else f"<{typ}>")
+                list_stack.append((typ, indent, is_ck))
             else:
-                out.append("</li><li>" + inline(m.group(3)))
+                out.append("</li>")
+            if is_ck:
+                on = " on" if ck.group(1).lower() == "x" else ""
+                out.append('<li class="ck">'
+                           f'<button class="ck-box{on}" type="button" '
+                           'aria-label="标为已掌握"></button>'
+                           + "<span>" + inline(content) + "</span>")
+            else:
+                out.append("<li>" + inline(content))
             i += 1
             continue
 
@@ -334,9 +346,7 @@ def hw_board(items):
              '<th class="c">次</th><th>作业</th><th class="c">对应讲次</th>'
              '<th>题面要求</th><th class="c">作业状态</th><th class="c">批阅状态</th>'
              "<th>备注</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>")
-    tip = ('<p class="hw-tip">状态是活的：批阅推进后只改 '
-           '<code>_数据/作业状态.json</code>，重跑 <code>python3 _工具/build.py</code>，'
-           '各页徽标与本表一起更新。</p>')
+    tip = ('<p class="hw-tip">状态是活的：批阅推进后，各页徽标与本表一起更新，两处都以本表为准。</p>')
     return head + table + tip
 
 
@@ -441,6 +451,13 @@ JS = """
   }
   window.addEventListener('resize', function(){
     if(window.innerWidth > 900) setDrawer(false);
+  });
+  // 自检清单：点方框打勾，再点取消
+  [].slice.call(document.querySelectorAll('.ck-box')).forEach(function(b){
+    b.addEventListener('click', function(){
+      var on = b.classList.toggle('on');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   });
   // 宽表在窄屏要横滑：加一句提示，免得以为内容被截断
   window.addEventListener('load', function(){
@@ -755,7 +772,8 @@ def build():
                         toc_block=toc_block,
                         layout_class="",
                         pager=pager,
-                        source=os.path.relpath(pg["path"], ROOT),
+                        foot_line=f'{pg["num"]} {pg["short"]}',
+                        foot_pos=f'第 {pg["order"]} 篇 · 本节共 {len(same)} 篇',
                         foot_sections=foot_sections(),
                         drawer=build_drawer(pg["section"], drawer_sub(same, pg["file"])),
                         )
@@ -789,7 +807,8 @@ def build():
                     toc_block="",
                     layout_class=" two",
                     pager='<span class="empty"></span>',
-                    source=f"内容/{d}/",
+                    foot_line=f"{num} {short}",
+                    foot_pos=f"本节共 {len(items)} 篇",
                     foot_sections=foot_sections(),
                     drawer=build_drawer(d, drawer_sub(items)),
                     )
@@ -821,17 +840,13 @@ def build_minds():
         m = re.match(r"^(\d+)", f)
         page = (MIND_TMPL
                 .replace("@@TITLE@@", html.escape(title))
-                .replace("@@SUBTITLE@@", f"共 {nodes} 个节点　·　源文件 脑图/{f}")
+                .replace("@@SUBTITLE@@", f"共 {nodes} 个节点")
+                .replace("@@NODES@@", str(nodes))
                 .replace("@@NAV@@", build_nav("__mind__"))
                 .replace("@@MD@@", html.escape(md))
-                .replace("@@SOURCE@@", f"脑图/{f}")
                 .replace("@@FOOT_SECTIONS@@", foot_sections())
                 .replace("@@DRAWER@@", build_drawer("__mind__"))
-                .replace("@@MIND_NOTE@@",
-                         '<p class="subtitle" style="border:none;margin:16px 0 0;padding:0;font-size:13.5px">'
-                         f'本图由 <code>脑图/{f}</code> 生成。同一份大纲可导出 '
-                         '<code>.xmind</code> / <code>.mm</code> / <code>.opml</code>，见 <code>导出/</code> 目录。'
-                         '要改结构，改 Markdown 后重跑 <code>python3 _工具/build.py</code>。</p>'))
+                .replace("@@MIND_NOTE@@", ""))
         open(os.path.join(OUT_DIR, slug + ".html"), "w", encoding="utf-8").write(page)
         made.append({"title": title, "slug": slug, "file": f, "nodes": nodes,
                      "no": m.group(1) if m else ""})
@@ -1234,7 +1249,7 @@ def build_index(pages, mind_pages):
     if mind_pages:
         cards = "".join(
             f'<a class="card mind-card" href="{m["slug"]}.html" '
-            f'title="源文件 脑图/{html.escape(m["file"])}">'
+            f'title="{html.escape(m["title"])}">'
             f'<div class="k">{m["no"] or "图"}</div>'
             f'<h3>{html.escape(m["title"])}</h3>'
             f'<p>{m["nodes"]} 个节点</p></a>'
@@ -1244,24 +1259,24 @@ def build_index(pages, mind_pages):
         mind_body = ('<div class="mind-cards">' + cards + '</div>'
                      '<div class="mind-how">'
                      '<span class="eyebrow">怎 么 用</span>'
-                     '<h2>图是同一份大纲的另一个投影</h2>'
-                     '<p>网页上看到的是渲染结果，导出的是同一棵树的文件。两者不会走样，'
-                     '因为都从 <code>脑图/*.md</code> 生成，不是互相转换。</p>'
+                     '<h2>图和正文是同一套内容的两种排法</h2>'
+                     '<p>不是另一份材料。正文按讲次铺开，图按层级收拢；看完图，回正文看细目。</p>'
                      '<ul class="mh-list">'
-                     '<li><span class="mh-k">源</span><div><h3>改结构改 Markdown</h3>'
-                     '<p>缩进即层级。<code>#</code> 是一级分支，<code>-</code> 与缩进是子节点，'
-                     '不用开 XMind 也能改。</p></div></li>'
-                     '<li><span class="mh-k">出</span><div><h3>导出三种通用格式</h3>'
-                     '<p><code>.xmind</code>（XMind）、<code>.mm</code>（FreeMind / 幕布）、'
-                     '<code>.opml</code>（大纲工具），都在 <code>导出/</code>。</p></div></li>'
-                     '<li><span class="mh-k">校</span><div><h3>与老师原图比对</h3>'
-                     '<p>坎卦、坤卦已有老师版本的，原图单独存档，逐节点比对后把差异记进备注。</p></div></li>'
+                     '<li><span class="mh-k">看</span><div><h3>点圆点逐层展开</h3>'
+                     '<p>默认只展开两级。点节点前的圆点看下一层，双指缩放、拖动平移，手机上同样适用。</p>'
+                     '</div></li>'
+                     '<li><span class="mh-k">对</span><div><h3>每张图对应一座卦</h3>'
+                     '<p>总览一张看全局九山，另外三张各对应一座卦，与卦山线里的条目一一对应。</p>'
+                     '</div></li>'
+                     '<li><span class="mh-k">据</span><div><h3>坎、坤有老师原图</h3>'
+                     '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与自译混在一起。</p>'
+                     '</div></li>'
                      '</ul></div>')
-        mind_sub = f"共 {len(mind_pages)} 张　·　源目录 脑图/"
+        mind_sub = f"共 {len(mind_pages)} 张　·　总览一张，三卦各一张"
         mind_md = "# 思维导图"
     else:
         mind_body = '<div class="empty-note">还没有脑图。</div>'
-        mind_sub = "源目录 脑图/"
+        mind_sub = "总览与分卦图"
         mind_md = "# 思维导图"
 
     page = (tpl("mind.html")
@@ -1269,10 +1284,14 @@ def build_index(pages, mind_pages):
             .replace("@@SUBTITLE@@", html.escape(mind_sub))
             .replace("@@NAV@@", build_nav("__mind__"))
             .replace("@@MD@@", html.escape(mind_md))
-            .replace("@@SOURCE@@", "脑图/")
             .replace("@@FOOT_SECTIONS@@", foot_sections())
             .replace("@@DRAWER@@", build_drawer("__mind__"))
             .replace("@@MIND_NOTE@@", ""))
+    # 这一页是导图总览，页脚「本图」一栏换成总数与读法
+    page = page.replace("<h6>本图</h6>", "<h6>导图</h6>")
+    page = page.replace("@@NODES@@", f"共 {len(mind_pages)} 张")
+    page = page.replace("读法　默认展开两级，点圆点再看下一层",
+                        "总览一张，坎、坤、震各一张")
     # 换成卡片列表，保留工具栏隐藏
     page = page.replace('<div class="mind-wrap">', '<div style="display:none">')
     page = page.replace('</article>', mind_body + '</article>')
