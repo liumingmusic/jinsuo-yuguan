@@ -127,6 +127,18 @@ body.home .nav .nav-links a:hover{background:rgba(255,255,255,.1);color:#fff}
 body.home .nav .nav-links a.on{background:rgba(255,255,255,.14);color:#fff}
 body.home .nav .btn-line{border-color:rgba(255,255,255,.24);color:rgba(255,255,255,.86);background:transparent}
 body.home .nav .btn-line:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.45);color:#fff}
+/* 首页顶栏透明叠在深色 hero 上，汉堡按钮要跟着换成浅色描边 */
+body.home .nav .nav-toggle{
+  border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.88);
+}
+body.home .nav .nav-toggle:hover{
+  border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.14);color:#fff;
+}
+body.home .nav.scrolled .nav-toggle{
+  border-color:var(--line);background:var(--bg);color:var(--ink-2);
+}
+body.home .nav.scrolled .nav-toggle:hover{border-color:var(--ink-4);color:var(--ink)}
 body.home .nav.scrolled{
   background:rgba(255,255,255,.9);border-bottom-color:var(--line);
   -webkit-backdrop-filter:saturate(1.8) blur(14px);backdrop-filter:saturate(1.8) blur(14px);
@@ -245,6 +257,31 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .doc li{margin:6px 0}
 .doc li::marker{color:var(--ink-4)}
 .doc li>ul,.doc li>ol{margin:5px 0}
+
+/* 自检清单：- [ ] 语法，勾选框可点 */
+.doc ul.ck-list{list-style:none;padding-left:0;margin:0 0 20px}
+.doc ul.ck-list>li.ck{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:11px 14px;margin:0 0 8px;
+  border:1px solid var(--line);border-radius:10px;background:var(--bg);
+  line-height:1.72;
+}
+.doc ul.ck-list>li.ck:last-child{margin-bottom:0}
+.doc ul.ck-list>li.ck>span{flex:1;min-width:0}
+.ck-box{
+  flex:none;width:19px;height:19px;margin-top:3px;padding:0;
+  border:1.5px solid var(--ink-4);border-radius:5px;background:var(--bg);
+  cursor:pointer;position:relative;
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .15s,background .15s;
+}
+.ck-box:hover{border-color:var(--brand)}
+.ck-box.on{background:var(--brand);border-color:var(--brand)}
+.ck-box.on::after{
+  content:"";position:absolute;left:5px;top:2px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg);
+}
+.doc ul.ck-list>li.ck:has(.ck-box.on)>span{color:var(--ink-4);text-decoration:line-through}
 .doc strong{font-weight:600;color:#000}
 .doc em{font-style:normal;color:var(--sand)}
 
@@ -764,12 +801,18 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .hero-wheel svg{
   display:block;width:100%;height:100%;overflow:visible;
-  transform-origin:50% 50%;animation:wheel-breathe 34s ease-in-out infinite;
+  transform-origin:50% 50%;animation:wheel-breathe 22s ease-in-out infinite;
 }
 /* 山层与卦层固定：二十四山的位置本身有含义（子在下、午在上、乾在右下），
    跟着转就错了。动感交给刻度环、光扫与整体呼吸。 */
-.hero-wheel .w-ring{transform-origin:400px 400px;animation:spin 520s linear infinite reverse}
-.hero-wheel .w-halo{transform-origin:400px 400px;animation:halo 11s ease-in-out infinite}
+.hero-wheel .w-ring{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:spin 130s linear infinite reverse;
+}
+.hero-wheel .w-halo{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:halo 9s ease-in-out infinite;
+}
 /* 绕盘一周的光扫：只有一圈很淡的暖光，转得慢，不和文字抢 */
 .hero-wheel::after{
   content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
@@ -781,13 +824,13 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
     rgba(216,189,130,0) 360deg);
   -webkit-mask:radial-gradient(circle,transparent 0 30%,#000 46% 78%,transparent 96%);
   mask:radial-gradient(circle,transparent 0 30%,#000 46% 78%,transparent 96%);
-  animation:wheel-sweep 44s linear infinite;
+  animation:wheel-sweep 26s linear infinite;
 }
 @keyframes halo{
   0%,100%{opacity:.42;transform:scale(1)}
-  50%{opacity:.78;transform:scale(1.035)}
+  50%{opacity:.85;transform:scale(1.045)}
 }
-/* 整体呼吸：慢进慢出的放大缩小，和三层反向自转叠在一起才有"活"的感觉 */
+/* 整体呼吸：慢进慢出的放大缩小，和刻度环的反向自转叠在一起才有"活"的感觉 */
 @keyframes wheel-breathe{
   0%,100%{transform:scale(.955)}
   50%{transform:scale(1.045)}
@@ -1065,15 +1108,26 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
    2026-11-03 修：此前只做 display:none，没有替代入口，
    手机上进不去作业线、卦山线，只能停在当前页。 */
 
+/* 汉堡按钮：原来三条 1.6px 细线配 2.6px 大间距，撑在 38px 方框里又散又薄，
+   像没对齐的默认控件。改成 1.8px 线 + 5px 间距的常规比例，42px 命中区，
+   用 currentColor 上色，打开时收成一个 ×。 */
 .nav-toggle{
-  display:none;width:38px;height:38px;flex:none;padding:0;
-  border:1px solid var(--line);border-radius:9px;background:var(--bg);
-  cursor:pointer;place-items:center;
+  display:none;width:42px;height:42px;flex:none;padding:0;
+  border:1px solid var(--line);border-radius:11px;
+  background:var(--bg);color:var(--ink-2);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  transition:border-color .18s,background .18s,color .18s;
 }
+.nav-toggle:hover{border-color:var(--ink-4);color:var(--ink);text-decoration:none}
 .nav-toggle span{
-  display:block;width:16px;height:1.6px;margin:2.6px auto;
-  background:var(--ink-2);border-radius:2px;
+  display:block;width:18px;height:1.8px;border-radius:2px;
+  background:currentColor;
+  transition:transform .22s ease,opacity .16s ease;
 }
+body.drawer-open .nav-toggle span:nth-child(1){transform:translateY(6.8px) rotate(45deg)}
+body.drawer-open .nav-toggle span:nth-child(2){opacity:0}
+body.drawer-open .nav-toggle span:nth-child(3){transform:translateY(-6.8px) rotate(-45deg)}
 .drawer,.scrim{display:none}
 .tbl-scroll-hint{display:none}
 
@@ -1084,7 +1138,7 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
   .nav-in{padding:0 16px;gap:12px}
   .nav-links{display:none}
   .nav-right{margin-left:auto;gap:8px}
-  .nav-toggle{display:grid}
+  .nav-toggle{display:flex}
   .nav-right .btn-sm{padding:8px 12px;font-size:13px}
   .brand-text{display:none}
 
@@ -1279,7 +1333,13 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
   .hero-stats b{font-size:24px}
   .hero-stats em{font-size:11px;letter-spacing:.08em}
   .hero-orbit{width:min(720px,150vw);opacity:.38}
-  .hero-wheel{opacity:.72}
+  /* 手机上轮盘比视口宽，二十四山环只有上下两段露在可见区里，
+     亮度要提一档才读得出来；动画也要再快一档，小屏上才看得出在动 */
+  .hero-wheel{opacity:.9}
+  .hero-wheel svg{animation-duration:17s}
+  .hero-wheel .w-ring{animation-duration:64s}
+  .hero-wheel .w-halo{animation-duration:7s}
+  .hero-wheel::after{animation-duration:20s}
   .nav-right .btn-line{display:none}
 
   .sec{padding:56px 0}

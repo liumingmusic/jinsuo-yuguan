@@ -80,6 +80,13 @@
   window.addEventListener('resize', function(){
     if(window.innerWidth > 900) setDrawer(false);
   });
+  // 自检清单：点方框打勾，再点取消
+  [].slice.call(document.querySelectorAll('.ck-box')).forEach(function(b){
+    b.addEventListener('click', function(){
+      var on = b.classList.toggle('on');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  });
   // 宽表在窄屏要横滑：加一句提示，免得以为内容被截断
   window.addEventListener('load', function(){
     [].slice.call(document.querySelectorAll('.doc .tbl-wrap')).forEach(function(w){
