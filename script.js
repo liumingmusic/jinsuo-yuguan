@@ -54,4 +54,41 @@
     }, {passive:true});
     wheelTick();
   }
+  // 移动端抽屉：≤900px 时侧栏与顶部导航都被隐藏，这里是唯一入口
+  var toggle = document.getElementById('navToggle');
+  var drawer = document.getElementById('drawer');
+  var scrim = document.getElementById('scrim');
+  var drawerClose = document.getElementById('drawerClose');
+  function setDrawer(open){
+    document.body.classList.toggle('drawer-open', open);
+    if(toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(drawer) drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+  if(toggle){
+    toggle.addEventListener('click', function(){
+      setDrawer(!document.body.classList.contains('drawer-open'));
+    });
+  }
+  if(drawerClose){ drawerClose.addEventListener('click', function(){ setDrawer(false); }); }
+  if(scrim){ scrim.addEventListener('click', function(){ setDrawer(false); }); }
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') setDrawer(false); });
+  if(drawer){
+    [].slice.call(drawer.querySelectorAll('a')).forEach(function(a){
+      a.addEventListener('click', function(){ setDrawer(false); });
+    });
+  }
+  window.addEventListener('resize', function(){
+    if(window.innerWidth > 900) setDrawer(false);
+  });
+  // 宽表在窄屏要横滑：加一句提示，免得以为内容被截断
+  window.addEventListener('load', function(){
+    [].slice.call(document.querySelectorAll('.doc .tbl-wrap')).forEach(function(w){
+      if(w.scrollWidth - w.clientWidth > 8){
+        var s = document.createElement('span');
+        s.className = 'tbl-scroll-hint';
+        s.textContent = '← 左右滑动查看完整表格 →';
+        w.parentNode.insertBefore(s, w.nextSibling);
+      }
+    });
+  });
 })();

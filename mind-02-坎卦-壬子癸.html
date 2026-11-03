@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>一白坎卦 · 壬子癸 · 思维导图 · 金锁玉关</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -21,6 +21,9 @@
     <nav class="nav-links"><a class="" href="section-Ⅰ.html">Ⅰ 课程线</a><a class="" href="section-Ⅱ.html">Ⅱ 卦山线</a><a class="" href="section-Ⅲ.html">Ⅲ 作业线</a><a class="" href="section-附.html">附 附录</a><a class="on" href="mind-index.html">思维导图</a></nav>
     <div class="nav-right">
       <a class="btn btn-line btn-sm" href="mind-index.html">全部导图</a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="drawer">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
@@ -41,12 +44,16 @@
         <button onclick="zoomBy(0.8)">缩小</button>
         <button onclick="toggleAll()">全部折叠 / 展开</button>
         <span class="hint">默认只展开两级　·　点圆点展开下一层　·　滚轮缩放　·　拖拽平移</span>
+        <span class="hint-m">双指缩放　·　拖动平移</span>
       </div>
       <svg id="mind"></svg>
     </div>
 <p class="subtitle" style="border:none;margin:16px 0 0;padding:0;font-size:13.5px">本图由 <code>脑图/02 坎卦 壬子癸.md</code> 生成。同一份大纲可导出 <code>.xmind</code> / <code>.mm</code> / <code>.opml</code>，见 <code>导出/</code> 目录。要改结构，改 Markdown 后重跑 <code>python3 _工具/build.py</code>。</p>
   </article>
 </div>
+
+<div class="drawer" id="drawer" aria-hidden="true" aria-label="站点导航"><div class="drawer-head"><a class="logo" href="index.html"><span class="mark"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></span>金锁玉关</a><button class="drawer-close" id="drawerClose" type="button" aria-label="关闭导航">&times;</button></div><div class="drawer-body"><a class="d-home" href="index.html"><span>总览 · 二十四山全图</span><em>首页</em></a><p class="side-title">四 条 线</p><ul class="d-lines"><li><a class="d-line" href="section-Ⅰ.html" style="--c:#2c6a7c"><b>Ⅰ</b><span class="d-t">课程线<em>理法 · 技法 · 案例</em></span></a></li><li><a class="d-line" href="section-Ⅱ.html" style="--c:#8a6a3a"><b>Ⅱ</b><span class="d-t">卦山线<em>坎 · 坤 · 震 九山</em></span></a></li><li><a class="d-line" href="section-Ⅲ.html" style="--c:#7a4a52"><b>Ⅲ</b><span class="d-t">作业线<em>题面 · 批语 · 拆解</em></span></a></li><li><a class="d-line" href="section-附.html" style="--c:#5a6068"><b>附</b><span class="d-t">附录<em>经文 · 技法 · 存疑</em></span></a></li></ul><p class="side-title">图</p><a class="d-home" href="mind-index.html"><span>思维导图</span><em>五张</em></a></div></div>
+<div class="scrim" id="scrim"></div>
 
 <script src="资源/vendor/d3.js"></script>
 <script src="资源/vendor/markmap-view.js"></script>
@@ -295,7 +302,9 @@ try{
   var T = window.markmap.Transformer, M = window.markmap.Markmap;
   var t = new T();
   var res = t.transform(src);
-  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:12, paddingX:16, colorFreezeLevel:2}, res.root);
+  // 展开两级：只展开一级的话，手机上只剩一个根节点，等于没画
+  var narrow = window.innerWidth < 700;
+  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:narrow?10:12, paddingX:16, colorFreezeLevel:2}, res.root);
   window.mm = mm;
   requestAnimationFrame(function(){ fitNow(); });
   setTimeout(function(){ fitNow(); }, 300);
