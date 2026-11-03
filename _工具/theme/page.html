@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@@TITLE@@ · 金锁玉关 · 二十四山</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="logo" href="index.html">
+      <span class="mark">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      金锁玉关<span class="brand-text">　<em>二十四山</em></span>
+    </a>
+    <nav class="nav-links">@@NAV@@</nav>
+    <div class="nav-right">
+      <a class="btn btn-line btn-sm" href="mind-index.html">思维导图</a>
+    </div>
+  </div>
+</header>
+
+<div class="layout@@LAYOUT_CLASS@@">
+  <aside class="side">@@SIDE@@</aside>
+
+  <article class="doc">
+    <div class="crumb">@@CRUMB@@</div>
+    <h1>@@TITLE@@</h1>
+    <p class="subtitle">@@SUBTITLE@@</p>
+    @@BODY@@
+    <div class="pager">@@PAGER@@</div>
+  </article>
+
+@@TOC_BLOCK@@
+</div>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div>
+      <div class="brandline">
+        <span class="mark">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        金锁玉关 · 二十四山
+      </div>
+      <p>二十四山为全图，当前精讲坎、坤、震三卦九山。Ⅰ 讲理法与技法，Ⅱ 讲每座山本身，Ⅲ 只做引用与批语汇总。</p>
+    </div>
+    <div>
+      <h6>本页</h6>
+      <p>内容源　<code>@@SOURCE@@</code></p>
+      <p>改完重跑　<code>python3 _工具/build.py</code></p>
+    </div>
+    <div>
+      <h6>导航</h6>
+      @@FOOT_SECTIONS@@
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

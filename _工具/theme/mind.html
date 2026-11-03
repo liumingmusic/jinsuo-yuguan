@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@@TITLE@@ · 思维导图 · 金锁玉关</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="logo" href="index.html">
+      <span class="mark">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2.4 3.6h11.2M2.4 8h11.2M2.4 12.4h11.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      金锁玉关<span class="brand-text">　<em>二十四山</em></span>
+    </a>
+    <nav class="nav-links">@@NAV@@</nav>
+    <div class="nav-right">
+      <a class="btn btn-line btn-sm" href="mind-index.html">全部导图</a>
+    </div>
+  </div>
+</header>
+
+<div class="layout center" style="grid-template-columns:minmax(0,1120px)">
+  <article class="doc">
+    <div class="crumb">
+      <a href="index.html">总览</a><span class="sep">/</span>
+      <a href="mind-index.html">思维导图</a><span class="sep">/</span>@@TITLE@@
+    </div>
+    <h1>@@TITLE@@</h1>
+    <p class="subtitle">@@SUBTITLE@@</p>
+
+    <div class="mind-wrap">
+      <div class="mind-bar">
+        <button onclick="fitNow()">适应窗口</button>
+        <button onclick="zoomBy(1.25)">放大</button>
+        <button onclick="zoomBy(0.8)">缩小</button>
+        <button onclick="toggleAll()">全部折叠 / 展开</button>
+        <span class="hint">默认只展开两级　·　点圆点展开下一层　·　滚轮缩放　·　拖拽平移</span>
+      </div>
+      <svg id="mind"></svg>
+    </div>
+@@MIND_NOTE@@
+  </article>
+</div>
+
+<script src="资源/vendor/d3.js"></script>
+<script src="资源/vendor/markmap-view.js"></script>
+<script src="资源/vendor/markmap-lib.js"></script>
+<script id="md-source" type="text/plain">@@MD@@</script>
+<script>
+var mm = null;
+function zoomBy(f){ if(mm) mm.rescale(f); }
+// 自适应缩放的唯一可靠来源是 markmap 自己算的 mm.state.rect（全部节点矩形并集）
+// 不要用 svg.querySelector('g').getBBox()：命中的是最外层高亮层，只会返回根节点大小，
+// 算出来会放大 4 倍多、把整棵树推到画布外（已踩过）。
+function fitNow(ratio){
+  if(!mm) return 0;
+  try{
+    var svgEl = document.getElementById('mind');
+    var box = svgEl.getBoundingClientRect();
+    var r = mm.state && mm.state.rect;
+    if(!r || !isFinite(r.x1) || !isFinite(r.x2)) return 0;
+    var w = Math.max(1, r.x2 - r.x1), h = Math.max(1, r.y2 - r.y1);
+    var s = Math.min(box.width / w, box.height / h) * (ratio || 0.95);
+    if(!isFinite(s) || s <= 0) return 0;
+    s = Math.min(s, 1.25);
+    var tx = (box.width - w * s) / 2 - r.x1 * s;
+    var ty = (box.height - h * s) / 2 - r.y1 * s;
+    mm.svg.call(mm.zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
+    return s;
+  }catch(e){ return 0; }
+}
+function toggleAll(){
+  if(!mm) return;
+  var nodes = mm.state.data ? mm.state.data.children||[] : [];
+  var anyOpen = false;
+  (function walk(ns){ ns.forEach(function(n){ if(n.payload && n.payload.fold===0){ anyOpen=true; } walk(n.children||[]); }); })(nodes);
+  (function walk(ns){ ns.forEach(function(n){ if(n.payload) n.payload.fold = anyOpen?1:0; walk(n.children||[]); }); })(nodes);
+  mm.renderData();
+}
+try{
+  var src = document.getElementById('md-source').textContent;
+  var T = window.markmap.Transformer, M = window.markmap.Markmap;
+  var t = new T();
+  var res = t.transform(src);
+  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:12, paddingX:16, colorFreezeLevel:2}, res.root);
+  window.mm = mm;
+  requestAnimationFrame(function(){ fitNow(); });
+  setTimeout(function(){ fitNow(); }, 300);
+  setTimeout(function(){ fitNow(); }, 900);
+  window.addEventListener('resize', function(){ fitNow(); });
+}catch(e){
+  document.getElementById('mind').insertAdjacentHTML('afterend','<p style="color:#a3543a">脑图渲染失败：'+e.message+'</p>');
+}
+</script>
+</body>
+</html>

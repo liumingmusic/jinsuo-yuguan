@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>壬山 · 坎卦｜金锁玉关九山学习库</title>
+<style>
+  :root{
+    --paper:#f6f5f1; --paper2:#fbfaf7; --ink:#1c2427; --ink2:#4d585c; --ink3:#7d8789;
+    --line:#ddd8cc; --line2:#ebe6da;
+    --brass:#96763c; --brass-l:#c7ab72; --brass-bg:#f0e8d6;
+    --water:#2c6a7c; --water-bg:#e7eff1;
+    --sand:#a3543a; --sand-bg:#f4e9e2;
+    --seal:#a8362c;
+    --serif:"Songti SC","STSong","Noto Serif SC",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.85;
+       -webkit-font-smoothing:antialiased;font-size:15.5px}
+  a{color:inherit;text-decoration:none}
+
+  /* ============ 顶栏 ============ */
+  .top{position:sticky;top:0;z-index:20;background:rgba(246,245,241,.93);
+       backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top-in{max-width:1180px;margin:0 auto;padding:0 28px;height:58px;display:flex;align-items:center;gap:26px}
+  .brand{font-family:var(--serif);font-size:15px;letter-spacing:.14em;color:var(--ink)}
+  .brand b{color:var(--brass);font-weight:600}
+  .crumb{font-size:12.5px;color:var(--ink3);letter-spacing:.06em}
+  .crumb em{font-style:normal;color:var(--ink2)}
+  .top-nav{margin-left:auto;display:flex;gap:22px;font-size:13px;color:var(--ink2)}
+  .top-nav a{padding:4px 0;border-bottom:1px solid transparent;transition:.2s}
+  .top-nav a:hover{color:var(--brass);border-color:var(--brass-l)}
+  .top-nav a.on{color:var(--brass);border-color:var(--brass)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ============ 首屏 ============ */
+  .hero{display:grid;grid-template-columns:400px 1fr;gap:52px;align-items:center;
+        padding:54px 0 46px;border-bottom:1px solid var(--line)}
+  .dial-box{position:relative}
+  .dial-box svg{display:block;width:100%;height:auto}
+  .dial-cap{text-align:center;font-size:11.5px;color:var(--ink3);letter-spacing:.18em;margin-top:10px}
+
+  .shan-tag{display:inline-flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.2em;
+            color:var(--brass);border:1px solid var(--brass-l);padding:4px 12px;border-radius:2px;
+            background:var(--brass-bg)}
+  h1{font-family:var(--serif);font-size:56px;line-height:1.15;letter-spacing:.06em;margin:18px 0 6px;font-weight:600}
+  .sub{font-family:var(--serif);font-size:16px;color:var(--ink2);letter-spacing:.08em}
+  .thesis{font-family:var(--serif);font-size:19px;line-height:1.9;margin:22px 0 26px;padding-left:16px;
+          border-left:3px solid var(--brass);color:#2a3236}
+  .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+        border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .meta div{background:var(--paper2);padding:13px 15px}
+  .meta span{display:block;font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:3px}
+  .meta b{font-family:var(--serif);font-size:14.5px;font-weight:600}
+
+  /* ============ 章节 ============ */
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:26px}
+  .sec-no{font-family:var(--serif);font-size:13px;color:var(--brass);letter-spacing:.14em;
+          border:1px solid var(--brass-l);border-radius:2px;padding:2px 9px}
+  h2{font-family:var(--serif);font-size:27px;letter-spacing:.07em;font-weight:600}
+  .sec-note{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+
+  /* ============ 砂水切换 ============ */
+  .switch{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--paper2)}
+  .switch button{border:0;background:none;font-family:var(--serif);font-size:14.5px;letter-spacing:.12em;
+                 padding:8px 26px;cursor:pointer;color:var(--ink3);transition:.18s}
+  .switch button.on[data-k="water"]{background:var(--water);color:#fff}
+  .switch button.on[data-k="sand"]{background:var(--sand);color:#fff}
+  .switch-row{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+  .switch-hint{font-size:12.5px;color:var(--ink3)}
+
+  .pane{display:none;animation:fade .25s ease}
+  .pane.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* ============ 经文 ============ */
+  .texts{border:1px solid var(--line);border-radius:3px;background:var(--paper2);overflow:hidden}
+  .tabs{display:flex;border-bottom:1px solid var(--line);background:#f1eee5}
+  .tabs button{border:0;background:none;font-size:13px;padding:11px 20px;cursor:pointer;color:var(--ink3);
+               letter-spacing:.06em;border-right:1px solid var(--line2);transition:.18s}
+  .tabs button.on{background:var(--paper2);color:var(--brass);box-shadow:inset 0 -2px 0 var(--brass)}
+  .tabs button:hover{color:var(--ink)}
+  .verse{padding:26px 30px 24px;font-family:var(--serif);font-size:19px;line-height:2.15;letter-spacing:.05em}
+  .verse .v{display:none}
+  .verse .v.on{display:block}
+  .verse .src{display:block;font-family:var(--sans);font-size:11.5px;color:var(--ink3);
+              letter-spacing:.1em;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .verse.cre p{color:#2a3236}
+  .verse.cre p+p{margin-top:4px}
+  .verse.cre .hl{color:var(--brass)}
+
+  /* ============ 表格 ============ */
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 4px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line2);vertical-align:top;line-height:1.75}
+  th{font-family:var(--serif);font-weight:600;font-size:13px;color:var(--ink2);letter-spacing:.08em;
+     background:#f1eee5;border-bottom:1px solid var(--line)}
+  td:first-child{font-family:var(--serif);color:#2a3236;white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+
+  /* ============ 四级递进 ============ */
+  .ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0 20px}
+  .step{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:2px;padding:14px 15px;
+        background:var(--paper2);position:relative}
+  .step .n{font-family:var(--serif);font-size:11px;letter-spacing:.16em;color:var(--ink3)}
+  .step .t{font-family:var(--serif);font-size:15px;margin:5px 0 7px;font-weight:600}
+  .step .d{font-size:12.5px;color:var(--ink2);line-height:1.7}
+  .pane.water .step:nth-child(1){border-top-color:#8fb3bd}
+  .pane.water .step:nth-child(2){border-top-color:#5d8fa0}
+  .pane.water .step:nth-child(3){border-top-color:#3a7186}
+  .pane.water .step:nth-child(4){border-top-color:var(--water)}
+  .pane.sand .step:nth-child(1){border-top-color:#d6b49f}
+  .pane.sand .step:nth-child(2){border-top-color:#c08e72}
+  .pane.sand .step:nth-child(3){border-top-color:#ad6e4e}
+  .pane.sand .step:nth-child(4){border-top-color:var(--sand)}
+
+  /* ============ 卡片组 ============ */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{border:1px solid var(--line);border-radius:3px;padding:18px 20px;background:var(--paper2)}
+  .card h4{font-family:var(--serif);font-size:15.5px;margin-bottom:9px;letter-spacing:.05em}
+  .card p,.card li{font-size:13.5px;color:var(--ink2);line-height:1.8}
+  .card ul{padding-left:18px}
+  .card li+li{margin-top:5px}
+  .case{grid-column:1/-1;border-left:3px solid var(--brass);background:#f3efe3}
+  .case h4{color:var(--brass)}
+
+  /* ============ 三点定位图示 ============ */
+  .fa-grid{display:grid;grid-template-columns:360px 1fr;gap:44px;align-items:center}
+  .fa-steps{counter-reset:s}
+  .fa-step{display:flex;gap:15px;padding:12px 0;border-bottom:1px dashed var(--line)}
+  .fa-step:last-child{border:0}
+  .fa-step .k{font-family:var(--serif);font-size:12px;color:var(--brass);letter-spacing:.1em;
+             min-width:26px;padding-top:3px}
+  .fa-step .b b{display:block;font-family:var(--serif);font-size:15.5px;margin-bottom:3px}
+  .fa-step .b span{font-size:13px;color:var(--ink2)}
+  .warn{margin-top:18px;border:1px solid #e3c9c3;background:#f7ece9;border-radius:3px;padding:13px 16px;
+        font-size:13px;color:#7c3a2b;line-height:1.75}
+  .warn b{font-family:var(--serif);color:var(--seal)}
+
+  /* ============ 自编经文 ============ */
+  .poem-sec{background:linear-gradient(180deg,#f2eee2,#f6f5f1)}
+  .poem{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin:6px 0 26px}
+  .poem-col{border-top:2px solid var(--brass);padding-top:18px}
+  .poem-col .lab{font-size:11.5px;letter-spacing:.2em;color:var(--brass);margin-bottom:12px}
+  .poem-col p{font-family:var(--serif);font-size:18.5px;line-height:2.2;letter-spacing:.06em}
+  .poem-col.wet .lab{color:var(--water)}
+  .poem-col.wet{border-top-color:var(--water)}
+  .notes-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .q{font-family:var(--serif);font-size:14px;color:var(--brass);margin-bottom:8px}
+
+  /* ============ 脑图 ============ */
+  .mind{border:1px solid var(--line);border-radius:3px;background:var(--paper2);
+        padding:10px 20px 10px 18px;max-width:780px}
+  .mind details{border-left:1px solid var(--line2);margin-left:14px;padding-left:10px}
+  .mind>details{border-left:3px solid var(--brass);margin-left:0;padding:8px 0 8px 12px}
+  .mind summary{cursor:pointer;list-style:none;padding:6px 8px 6px 16px;border-radius:2px;font-size:14px;
+                transition:.15s;position:relative}
+  .mind summary::-webkit-details-marker{display:none}
+  .mind summary:before{content:"▸";color:var(--brass-l);position:absolute;left:2px;top:6px;font-size:10px}
+  .mind details[open]>summary:before{content:"▾";color:var(--brass)}
+  .mind summary:hover{background:#f1eee5}
+  .mind .lv1>summary{font-family:var(--serif);font-size:15.5px;letter-spacing:.04em}
+  .mind .lv2>summary{font-size:13.5px;color:var(--ink2)}
+  .mind .leaf{font-size:13px;color:var(--ink2);padding:4px 8px 4px 26px;line-height:1.7}
+  .mind .leaf b{font-weight:600;color:var(--ink)}
+  .mind .leaf.w{color:var(--water)} .mind .leaf.s{color:var(--sand)}
+
+  footer{padding:38px 0 60px;font-size:12.5px;color:var(--ink3);line-height:2}
+  footer b{color:var(--ink2);font-weight:600}
+
+  @media (max-width:960px){
+    body{overflow-x:hidden}
+    .hero{grid-template-columns:1fr;gap:26px;padding:34px 0}
+    .dial-box{max-width:330px;margin:0 auto}
+    h1{font-size:42px}
+    .meta{grid-template-columns:1fr 1fr}
+    .meta div{min-width:0}
+    .ladder,.cards,.poem,.notes-2,.fa-grid{grid-template-columns:1fr}
+    .wrap,.top-in{padding:0 18px}
+    .top-nav{display:none}
+    .verse{font-size:16.5px;padding:20px}
+    td:first-child{white-space:normal;word-break:break-word}
+    th,td{padding:9px 10px;font-size:13px}
+    .sec-head{flex-wrap:wrap;row-gap:6px}
+    .sec-note{margin-left:0;width:100%}
+    .mind{max-width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="top"><div class="top-in">
+  <div class="brand">金锁玉关 · <b>九山学习库</b></div>
+  <div class="crumb">坎卦 <em>／</em> 壬山</div>
+  <nav class="top-nav">
+    <a href="#" class="on">山页</a><a href="#">卦页</a><a href="#">技法台账</a>
+    <a href="#">经文对照</a><a href="#">作业墙</a><a href="#">脑图</a>
+  </nav>
+</div></div>
+
+<div class="wrap">
+
+  <!-- 首屏 -->
+  <header class="hero">
+    <div class="dial-box">
+      <svg id="dial" viewBox="0 0 360 360" aria-label="二十四山罗盘，坎卦三山高亮"></svg>
+      <div class="dial-cap">二十四山 · 已学三卦高亮</div>
+    </div>
+    <div>
+      <span class="shan-tag">坎 卦 ／ 阳 水 ／ 337.5°–352.5°</span>
+      <h1>壬山</h1>
+      <div class="sub">肾阳 · 男人的阳性能量</div>
+      <div class="thesis">
+        看的是一个男人立不立得住。<br>
+        立起来是武贵，塌下去是气虚。
+      </div>
+      <div class="meta">
+        <div><span>卦位</span><b>后天坎 / 先天坤</b></div>
+        <div><span>三山分主</span><b>阳 · 精 · 神 → 阳</b></div>
+        <div><span>房份</span><b>中男（老二次之老五老八）</b></div>
+        <div><span>应期</span><b>老二最先</b></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ① 山性 -->
+  <section>
+    <div class="sec-head"><span class="sec-no">壹</span><h2>山性 · 类象</h2>
+      <span class="sec-note">L3 §2 · L4 §2</span></div>
+    <table>
+      <tr><th style="width:110px">项</th><th>内容</th></tr>
+      <tr><td>字义</td><td>阳水，其性<strong>流动</strong>而<strong>蕴藏</strong>。壬子癸共有「藏」意，壬山主藏精神与资本。</td></tr>
+      <tr><td>分主</td><td>坎卦统生殖泌尿；三山分主——<strong>壬＝肾阳（气）· 子＝神 · 癸＝肾阴（血）</strong>。壬山先看到「没劲儿」，不是「没精神」。</td></tr>
+      <tr><td>人体</td><td>肾、膀胱、泌尿生殖系统、淋巴；延伸主腹泻、痢疾（坎坤先后天）。</td></tr>
+      <tr><td>性格</td><td>阳旺则 man、有安全感、让人信服；阳虚则自卑、驼背、点头哈腰。</td></tr>
+      <tr><td>存目</td><td>行业举例与「书贼」之说，讲师自评「扯淡 / 不能这么论」，<strong>不作论断依据</strong>。</td></tr>
+    </table>
+  </section>
+
+  <!-- ② 砂水 -->
+  <section>
+    <div class="sec-head"><span class="sec-no">贰</span><h2>见水 ／ 见砂</h2>
+      <span class="sec-note">同一座山，两种能量走向</span></div>
+
+    <div class="switch-row">
+      <div class="switch">
+        <button data-k="water" class="on">见 水</button>
+        <button data-k="sand">见 砂</button>
+      </div>
+      <span class="switch-hint">切换后经文、递进、应事、技法同步更换</span>
+    </div>
+
+    <!-- 见水 -->
+    <div class="pane water on" id="pane-water">
+      <div class="texts">
+        <div class="tabs">
+          <button class="on" data-v="v1">民国本 · 一</button>
+          <button data-v="v2">八九十年代本 · 二</button>
+          <button data-v="v3">对宫兼卦 · 三</button>
+          <button data-v="v4">自 编</button>
+        </div>
+        <div class="verse">
+          <div class="v on" data-v="v1">壬水没儿郎，先绝是二房。形如一箭去，小口命难长。<br>
+            形如葫芦样，亦主腰肾伤。四季澄清蓄，尤主淋卵囊。
+            <span class="src">底本一 · 民国李湘生本（据讲义逐页转录）</span></div>
+          <div class="v" data-v="v2">壬水势大没儿郎，先绝二房死水塘。水微贫穷可得子，富贵名扬没儿郎。<br>
+            形如箭样飞流去，二房小口命不长。形若葫芦大小样，腰肾血疾应二房。<br>
+            壬水四季澄清蓄，贫困劳苦最寒酸。
+            <span class="src">底本二 · 上世纪八九十年代流传本</span></div>
+          <div class="v" data-v="v3">壬水势大损儿郎，二房夭折死水塘。水微贫穷可得子，富贵名扬缺儿郎。<br>
+            水流悲乐哭啼声，二房小口命不长。壬水不整肾血液，贫困劳苦最寒酸。<br>
+            <b>壬水再得丙水照，男弱女强在文章。最怕壬水兼亥子，老父官非糖尿病。</b>
+            <span class="src">底本三 · 末两句为「对宫相催」与「兼卦」的经文出处，易漏</span></div>
+          <div class="v cre" data-v="v4">
+            <p>壬方水盛阳先伤，二子中年最早殃。</p>
+            <p>水如脱矢儿难养，瓢形倒扣腰难当。</p>
+            <p>一泓常静淋浊起，财旺翻教嗣息凉。</p>
+            <p>更逢亥上砂水接，血压官非暗里藏。</p>
+            <span class="src">自编 · 作业第一题，不抄原文，取象重写</span></div>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--serif);font-size:16px;margin:34px 0 12px;letter-spacing:.06em">四级递进 · 断事之前先定级</h3>
+      <div class="ladder">
+        <div class="step"><div class="n">第 一 级</div><div class="t">单纯见水</div><div class="d">阳气偏弱，首应老二</div></div>
+        <div class="step"><div class="n">第 二 级</div><div class="t">形成形煞</div><div class="d">阳虚症状显现：畏寒、盗汗、尿不尽</div></div>
+        <div class="step"><div class="n">第 三 级</div><div class="t">形煞较重</div><div class="d">腰疼腰酸、懒、不爱动、直不起腰</div></div>
+        <div class="step"><div class="n">第 四 级</div><div class="t">煞大 · 形丑 · 质差</div><div class="d">男子不育；延及母亲——脾胃、妇科</div></div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <h4>逐句转译</h4>
+          <ul>
+            <li><b>没儿郎</b>：不是「没儿子」，是难养——阳气不足、定期发烧、驼背、不爱吃饭</li>
+            <li><b>一箭去</b>：水直去，或房高屋下坡带楼梯 → 气被带走并「冷静住」</li>
+            <li><b>葫芦样</b>：倒扣的葫芦＝凹风煞，不是葫芦形状</li>
+            <li><b>腰肾伤</b>：腰＝中丹田＝脾胃，坎见水延到坤</li>
+            <li><b>澄清蓄</b>：常年静水不清 → 淋证、疝气、尿路反复</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>贫富二选一（不可叠断）</h4>
+          <p>水少而清 → 能有子，但穷。<br>
+             水大而势猛 → 能富贵，但子嗣艰难。</p>
+          <p style="margin-top:10px;color:var(--seal)">见到壬水不能一口气断「又穷又没孩子」——那是把两个极端摞在一起。</p>
+          <h4 style="margin-top:18px">病象与人群</h4>
+          <p>男子前列腺几乎必有问题，青年即腰疼肾虚；女子经期崩漏、漏尿；水质差则风险显著升高。</p>
+        </div>
+        <div class="card case">
+          <h4>案例 · 凯旋家</h4>
+          <p>祖宅正北极差，阴宅正北有高铁线（远）。结果：老二（其父）一支只余凯旋一人，老五、老八的孩子一走一夭；近处恰有一点砂，故这一支留住了人。</p>
+          <p style="margin-top:8px;font-size:12.5px;color:var(--ink3)">一张图讲完两条理法：排位 + 由远及近的能量对比。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 见砂 -->
+    <div class="pane sand" id="pane-sand">
+      <div class="texts">
+        <div class="tabs">
+          <button class="on" data-v="s1">底本 · 一二</button>
+          <button data-v="s2">底本 · 三</button>
+          <button data-v="s3">自 编</button>
+        </div>
+        <div class="verse">
+          <div class="v on" data-v="s1">壬砂高大发武贵，出入佳备振海内。再得丙水来对照，儿孙代代以文会。
+            <span class="src">底本一、二 · 见砂段</span></div>
+          <div class="v" data-v="s2">壬砂高大发武贵，出入佳备振海内。再得丙水来对照，儿孙代代以文会。<br>
+            若是庚水来相遇，风华正茂定老二。壬砂丙水见庚水，必出官员大富豪。<br>
+            壬亥两字火尖砂，头脑血压疾病疯。
+            <span class="src">底本三 · 末三句为三点定位与火尖砂的出处</span></div>
+          <div class="v cre" data-v="s3">
+            <p>北垣端秀起高峰，胆气声名众所依。</p>
+            <p>丙水对宫来一照，儿孙文武两相宜。</p>
+            <p>庚方更得清波应，三点成局贵可期。</p>
+            <p>莫向此山轻放水，一泓清浅便成疾。</p>
+            <span class="src">自编 · 作业第一题，砂四句</span></div>
+        </div>
+      </div>
+
+      <div class="cards" style="margin-top:24px">
+        <div class="card">
+          <h4>逐句转译</h4>
+          <ul>
+            <li><b>高大发武贵</b>：正北有秀丽高峰、家中做高大贵重之砂 → 位高权重、有决断、有担当</li>
+            <li><b>出入佳备振海内</b>：排场齐备，名声在外，贵人愿意簇拥</li>
+            <li><b>丙水来对照</b>：对宫相催，丙主文 → 文武双全（底本作「对照」，不作「照」）</li>
+            <li><b>庚水来相遇</b>：再补先天位 → 三点定位的经文出处</li>
+            <li><b>壬亥火尖砂</b>：两山同见尖破之砂 → 头脑、血压类病，与兼卦转移是两回事</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>为什么是武贵，不是文贵</h4>
+          <p>壬主阳气、行动力、外在气势——这是「体格与胆气」这一路。文气在离（丙）。</p>
+          <p style="margin-top:10px">壬山单独发，只能发武；要文，必须借对宫的水。<b>壬山自己不带文，这是坎的性质决定的。</b></p>
+          <h4 style="margin-top:18px">底本 vs 口播</h4>
+          <p style="font-size:12.5px">底本「壬砂高大发武贵，出入佳备振海内」；口播「壬砂发武贵，秀峰高大位……大名振海内」。两存，正文用底本。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 形煞 -->
+  <section>
+    <div class="sec-head"><span class="sec-no">叁</span><h2>形煞与叠加</h2>
+      <span class="sec-note">L4 §4 · §5.4 · §6.1</span></div>
+    <table>
+      <tr><th style="width:150px">形煞</th><th style="width:230px">判法</th><th>后果</th></tr>
+      <tr><td>一箭去（两形态）</td><td>① 水流直去　② 房高屋下坡、楼梯直下</td><td>孩子百分百没精神；男人同理</td></tr>
+      <tr><td>葫芦样（凹风煞）</td><td>倒扣葫芦：四面山夹、水汇其中</td><td>腰肾伤 + 延及脾胃（先后天翻卦）</td></tr>
+      <tr><td>兼亥（壬兼乾）</td><td>壬、亥两山跨卦相邻，砂水压在分界</td><td>转移内部矛盾：血压血脂血糖必有一伤、官非</td></tr>
+      <tr><td>壬亥火尖砂</td><td>两山同见尖形破面之砂</td><td>头脑、血压类病（经文「壬亥两字火尖砂，头脑血压疾病疯」）</td></tr>
+      <tr><td>脏臭水</td><td>水质</td><td>病与煞并上，最重一档</td></tr>
+    </table>
+
+    <div class="cards" style="margin-top:20px">
+      <div class="card">
+        <h4>兼山三条件 · 必须同时满足</h4>
+        <ul>
+          <li>不同卦的两个山（壬＝坎，亥＝乾）</li>
+          <li>一喜一恶（坎喜砂、乾喜水）</li>
+          <li>两山相邻</li>
+        </ul>
+        <p style="margin-top:10px;font-size:12.5px;color:var(--ink3)">三条同时成立，才会「转移内部矛盾」。</p>
+      </div>
+      <div class="card">
+        <h4>砂水两种走向正好相反</h4>
+        <p><b style="color:var(--water)">壬见水 + 亥见水</b> → 坎把「烦」倒给乾 → 老父受气、官非、三高。</p>
+        <p style="margin-top:8px"><b style="color:var(--sand)">壬见砂 + 亥见砂</b> → 乾把「烦」倒给坎 → 中年男子痛风、血压、偏头痛。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 技法 -->
+  <section>
+    <div class="sec-head"><span class="sec-no">肆</span><h2>技法 · 三点定位（第一代出处）</h2>
+      <span class="sec-note">L4 §5.6 · §6.2</span></div>
+
+    <div class="fa-grid">
+      <div>
+        <svg id="tri" viewBox="0 0 300 300" aria-label="壬山三点定位：壬山、对宫丙、先天位庚"></svg>
+        <div class="dial-cap">壬山 · 丙水 · 庚水 → 三点成局</div>
+      </div>
+      <div>
+        <div class="fa-steps">
+          <div class="fa-step"><div class="k">壹</div><div class="b"><b>定用神＝本卦</b>
+            <span>壬山（坎）。求男人阳气足、孩子有精神、家里男人能挣钱。</span></div></div>
+          <div class="fa-step"><div class="k">贰</div><div class="b"><b>催对宫</b>
+            <span>壬山直接催丙山（离）。丙主文，与壬的武合成文武双全。</span></div></div>
+          <div class="fa-step"><div class="k">叁</div><div class="b"><b>取本卦先天位</b>
+            <span>庚山——「回老家征集能量」，给壬山提供根儿。</span></div></div>
+          <div class="fa-step"><div class="k">成</div><div class="b"><b>壬砂 + 丙水 + 庚水</b>
+            <span>老家给根、对宫给势。布局名：飘转（布局用飘、论断用挖）。</span></div></div>
+        </div>
+        <div class="warn"><b>边界：</b>对宫相催只「增强」，不「调整」。壬山本身见水，丙水一催是坏上加坏——这是最容易用错的一步。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ 作业 -->
+  <section class="poem-sec">
+    <div class="sec-head"><span class="sec-no">伍</span><h2>作业三件套 · 自编经文</h2>
+      <span class="sec-note">L4 §7.2 原题</span></div>
+
+    <div class="poem">
+      <div class="poem-col wet">
+        <div class="lab">见 水 · 四 句</div>
+        <p>壬方水盛阳先伤，二子中年最早殃。<br>
+           水如脱矢儿难养，瓢形倒扣腰难当。<br>
+           一泓常静淋浊起，财旺翻教嗣息凉。<br>
+           更逢亥上砂水接，血压官非暗里藏。</p>
+      </div>
+      <div class="poem-col">
+        <div class="lab">见 砂 · 四 句</div>
+        <p>北垣端秀起高峰，胆气声名众所依。<br>
+           丙水对宫来一照，儿孙文武两相宜。<br>
+           庚方更得清波应，三点成局贵可期。<br>
+           莫向此山轻放水，一泓清浅便成疾。</p>
+      </div>
+    </div>
+
+    <div class="notes-2">
+      <div class="card">
+        <div class="q">写作取舍（自注）</div>
+        <ul style="font-size:13px;color:var(--ink2);padding-left:18px;line-height:1.85">
+          <li>「瓢形倒扣」代「葫芦样」——取凹风煞的形，不借原词</li>
+          <li>「水如脱矢」代「一箭去」，换成离弦之箭的意象</li>
+          <li>「一泓常静」代「四季澄清蓄」，避开原句用词</li>
+          <li>「淋浊」统摄淋证、尿路、疝气，避粗俗与过时</li>
+          <li>「嗣息凉」承人丁稀，不用「命难长」——民国的生死断语今天不宜照搬</li>
+          <li>「北垣端秀起高峰」代「壬砂高大发武贵」，判断句改写景句，武气落在「胆气」</li>
+          <li>末句收总纲：此山宜砂不宜水</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="q">个人理解（作业第三题）</div>
+        <p style="font-size:13.2px">壬山是坎卦的「阳气」那一层，管一个人立不立得住。它的能量性向外、向上、能扛事——见砂（高、实、稳）正好接住这股气，人就有体格、有胆气、有排场，出的是武贵。文气不在坎在离，所以壬山自己发不出文贵，必须借对宫丙水来照。</p>
+        <p style="font-size:13.2px;margin-top:8px">见水则相反：水把气泄掉、把温度降下来，根火就弱。气虚则没气质，阳虚则腰膝无力，第四级连生殖都撑不住。不是「风水不好所以倒霉」，而是同一个物理过程——能量被抽走，人自然塌下去。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ 脑图 -->
+  <section>
+    <div class="sec-head"><span class="sec-no">陆</span><h2>山级脑图</h2>
+      <span class="sec-note">与内容卡同源 · 可折叠 · 可导出 .xmind</span></div>
+
+    <div class="mind">
+      <details open><summary class="lv1">壬山 · 肾阳 · 中男</summary>
+
+        <details open><summary class="lv1">山性</summary>
+          <div class="leaf">阳水 · 流动 + 蕴藏</div>
+          <div class="leaf">三山分主：<b>壬＝气 · 子＝神 · 癸＝血</b></div>
+          <div class="leaf">人体：肾膀胱 · 泌尿生殖 · 淋巴</div>
+          <div class="leaf">房份：中男 → 老五 → 老八</div>
+        </details>
+
+        <details><summary class="lv1">见水</summary>
+          <details><summary class="lv2">经文四版</summary>
+            <div class="leaf w">民国本（一）：没儿郎 · 一箭去 · 葫芦样 · 澄清蓄</div>
+            <div class="leaf w">八九十年代本（二）：加「贫富二选一」</div>
+            <div class="leaf w">对宫兼卦本（三）：丙水照 · 兼亥子 · 老父官非</div>
+            <div class="leaf w">自编：八句（水四砂四）</div>
+          </details>
+          <details><summary class="lv2">四级递进</summary>
+            <div class="leaf w">① 单纯见水 → 阳弱应老二</div>
+            <div class="leaf w">② 形煞 → 阳虚症状</div>
+            <div class="leaf w">③ 煞重 → 腰疼懒动</div>
+            <div class="leaf w">④ 煞大形丑质差 → 不育 · 延母</div>
+          </details>
+          <details><summary class="lv2">应事</summary>
+            <div class="leaf w">男：前列腺 · 青年腰疼 · 精力低</div>
+            <div class="leaf w">女：崩漏 · 漏尿 · 体味</div>
+            <div class="leaf w">家：男丁少 · 孩子难养 · 驼背</div>
+          </details>
+          <details><summary class="lv2">病机</summary>
+            <div class="leaf w">腰＝中丹田＝脾胃 → 坎坤先后天</div>
+            <div class="leaf w">五更泻 = 脾肾不调 = 气虚不固摄</div>
+          </details>
+        </details>
+
+        <details><summary class="lv1">见砂</summary>
+          <div class="leaf s">高大发武贵 · 佳备振海内（底本）</div>
+          <div class="leaf s">丙水对照 → 文武双全（丙主文）</div>
+          <div class="leaf s">庚水相遇 → 三点定位 → 出官员大富豪</div>
+          <div class="leaf s">壬亥火尖砂 → 头脑血压</div>
+          <div class="leaf s">单砂只发武，不带文</div>
+        </details>
+
+        <details><summary class="lv1">形煞</summary>
+          <div class="leaf">一箭去：水流直去 / 房高坡下</div>
+          <div class="leaf">葫芦样：倒扣 = 凹风煞</div>
+          <div class="leaf">兼亥：血压官非（转移矛盾三条件）</div>
+        </details>
+
+        <details><summary class="lv1">技法</summary>
+          <div class="leaf">三点定位一代：本卦 + 对宫 + 先天位</div>
+          <div class="leaf">兼山三条件：跨卦 · 一喜一恶 · 相邻</div>
+          <div class="leaf">对宫相催：只放大不矫正</div>
+        </details>
+
+        <details><summary class="lv1">作业</summary>
+          <div class="leaf">自编经文 8 句（见水四 · 见砂四）</div>
+          <div class="leaf">技法记录：兼山 · 三点定位 · 对宫</div>
+          <div class="leaf">个人理解 160 字：为何武贵不文贵</div>
+        </details>
+
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>本页内容</b>　取自 L3《壬山与金锁用神》、L4《坎卦三山经文解读（上）》、L5《坎卦经文（下）》；经文按讲义底本逐页转录校对，口播差异另记。</p>
+    <p><b>存疑存目</b>　①「兼亥山」（笔记）与「兼亥子」（讲义底本）并列，底本更自洽，待听原音；②「小口命难长」为民国语境，不作生死断语；③ 壬山先天位口播作「正西」、讲师自注待核；④「书贼」与行业举例均属存目。</p>
+    <p style="margin-top:8px;color:#9aa3a4">九山学习库 · 坎 / 坤 / 震 三卦九山 · 样板页</p>
+  </footer>
+</div>
+
+<script>
+/* ---------- 二十四山盘 ---------- */
+(function(){
+  const CX=180, CY=180;
+  const shan=[
+    ['壬','坎',337.5],['子','坎',352.5],['癸','坎',7.5],
+    ['丑','艮',22.5],['艮','艮',37.5],['寅','艮',52.5],
+    ['甲','震',67.5],['卯','震',82.5],['乙','震',97.5],
+    ['辰','巽',112.5],['巽','巽',127.5],['巳','巽',142.5],
+    ['丙','离',157.5],['午','离',172.5],['丁','离',187.5],
+    ['未','坤',202.5],['坤','坤',217.5],['申','坤',232.5],
+    ['庚','兑',247.5],['酉','兑',262.5],['辛','兑',277.5],
+    ['戌','乾',292.5],['乾','乾',307.5],['亥','乾',322.5]
+  ];
+  // 已学三卦的着色：坎＝铜、坤＝靛、震＝赭
+  const guaStyle={
+    '坎':{fill:'#c7ab72',line:'#a8874a',txt:'#fbfaf7'},
+    '坤':{fill:'#c9dbe1',line:'#9dbfc9',txt:'#24596a'},
+    '震':{fill:'#e3c9bb',line:'#c79f8b',txt:'#8c452f'}
+  };
+  const R_OUT=150, R_IN=111, R_NAME=(R_OUT+R_IN)/2, R_GUA=92;
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.getElementById('dial');
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+  const pt=(ang,r)=>{const t=(ang-90)*Math.PI/180;return [CX+r*Math.cos(t),CY+r*Math.sin(t)];};
+
+  // 底
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R_OUT,fill:'#fbfaf7'}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R_OUT+9,fill:'none',stroke:'#e7e1d2','stroke-width':1}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R_IN,fill:'none',stroke:'#e0d9c8','stroke-width':1}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R_GUA-16,fill:'none',stroke:'#f0ebde','stroke-width':1}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:58,fill:'#fbfaf7',stroke:'#e7e1d2','stroke-width':1}));
+
+  shan.forEach(([name,gua,start])=>{
+    const st=guaStyle[gua]||{fill:'#f2f0e9',line:'#e6e1d4',txt:'#a9b0b0'};
+    const isRen = name==='壬';
+    const a0=start, a1=start+15;
+    const p1=pt(a0,R_OUT),p2=pt(a1,R_OUT),p3=pt(a1,R_IN),p4=pt(a0,R_IN);
+    const d=`M${p1[0]} ${p1[1]} A${R_OUT} ${R_OUT} 0 0 1 ${p2[0]} ${p2[1]} L${p3[0]} ${p3[1]} A${R_IN} ${R_IN} 0 0 0 ${p4[0]} ${p4[1]} Z`;
+    svg.appendChild(mk('path',{d,fill:isRen?'#8d6d35':st.fill,stroke:'none'}));
+
+    // 山名（水平）
+    const mp=pt(start+7.5,R_NAME);
+    const t=mk('text',{x:mp[0],y:mp[1],'text-anchor':'middle','dominant-baseline':'central',
+      'font-size':isRen?13:11.5,'font-family':'"Songti SC",serif',
+      fill:isRen?'#fbfaf7':st.txt,'font-weight':isRen?700:400});
+    t.textContent=name; svg.appendChild(t);
+  });
+
+  // 分隔线
+  for(let i=0;i<24;i++){
+    const a=337.5+i*15;
+    const s=pt(a,R_IN), e=pt(a,R_OUT);
+    svg.appendChild(mk('line',{x1:s[0],y1:s[1],x2:e[0],y2:e[1],stroke:'#fbfaf7','stroke-width':1.4}));
+  }
+
+  // 八卦名（每卦中心）
+  const guaTxt={'坎':'#8d6d35','坤':'#24596a','震':'#8c452f'};
+  ['坎','艮','震','巽','离','坤','兑','乾'].forEach((g,i)=>{
+    const p=pt(i*45,R_GUA);
+    const t=mk('text',{x:p[0],y:p[1],'text-anchor':'middle','dominant-baseline':'central',
+      'font-size':11,'font-family':'"Songti SC",serif','letter-spacing':1,
+      fill:guaTxt[g]||'#c6cbca','font-weight':guaTxt[g]?600:400});
+    t.textContent=g; svg.appendChild(t);
+  });
+
+  // 中心
+  const c1=mk('text',{x:CX,y:CY-6,'text-anchor':'middle','dominant-baseline':'central',
+    'font-size':17,'font-family':'"Songti SC",serif',fill:'#8d6d35'});c1.textContent='壬';svg.appendChild(c1);
+  const c2=mk('text',{x:CX,y:CY+16,'text-anchor':'middle','dominant-baseline':'central',
+    'font-size':9,'font-family':'PingFang SC','fill':'#9aa2a3','letter-spacing':1.5});c2.textContent='阳水 · 坎';svg.appendChild(c2);
+
+  // 北
+  const n0=pt(0,R_OUT+3), n1=pt(0,R_OUT+9);
+  svg.appendChild(mk('line',{x1:n0[0],y1:n0[1],x2:n1[0],y2:n1[1],stroke:'#c7ab72','stroke-width':1.2}));
+  const nt=mk('text',{x:CX,y:CY-R_OUT-16,'text-anchor':'middle','font-size':9.5,fill:'#b6bcbd','letter-spacing':1});nt.textContent='北';svg.appendChild(nt);
+})();
+
+/* ---------- 三点定位图 ---------- */
+(function(){
+  const NS='http://www.w3.org/2000/svg', CX=150,CY=150;
+  const svg=document.getElementById('tri');
+  const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+  const pt=(ang,r)=>{const t=(ang-90)*Math.PI/180;return [CX+r*Math.cos(t),CY+r*Math.sin(t)];};
+  const R=118;
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R,fill:'#fbfaf7',stroke:'#ddd8cc'}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R-30,fill:'none',stroke:'#f0ebde'}));
+  // 十字
+  [[[CX,CY-R+6],[CX,CY+R-6]],[[CX-R+6,CY],[CX+R-6,CY]]].forEach(([a,b])=>{
+    svg.appendChild(mk('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'#f0ebde','stroke-width':1}));
+  });
+  const nodes=[
+    {n:'壬',a:345,r:R-16,c:'#96763c',note:'本卦 · 用神'},
+    {n:'丙',a:165,r:R-16,c:'#2c6a7c',note:'对宫 · 主文'},
+    {n:'庚',a:255,r:R-16,c:'#a3543a',note:'先天位 · 根'}
+  ];
+  const P=nodes.map(o=>pt(o.a,o.r));
+  // 连线
+  const tri=mk('path',{d:`M${P[0][0]} ${P[0][1]} L${P[1][0]} ${P[1][1]} L${P[2][0]} ${P[2][1]} Z`,
+    fill:'rgba(150,118,60,.06)',stroke:'#c7ab72','stroke-width':1.2,'stroke-dasharray':'5 4'});
+  svg.appendChild(tri);
+  nodes.forEach((o,i)=>{
+    svg.appendChild(mk('circle',{cx:P[i][0],cy:P[i][1],r:19,fill:o.c,opacity:.94}));
+    const t=mk('text',{x:P[i][0],y:P[i][1],'text-anchor':'middle','dominant-baseline':'central',
+      'font-size':13,fill:'#fff','font-family':'Songti SC, serif'});t.textContent=o.n;svg.appendChild(t);
+    const lp=pt(o.a,R+16);
+    const lb=mk('text',{x:lp[0],y:lp[1],'text-anchor':'middle','dominant-baseline':'central',
+      'font-size':9,fill:'#8d9496','font-family':'PingFang SC'});lb.textContent=o.note;svg.appendChild(lb);
+  });
+  const c=mk('text',{x:CX,y:CY+4,'text-anchor':'middle','font-size':10,fill:'#b6bcbd','font-family':'PingFang SC','letter-spacing':'1'});c.textContent='三点成局';svg.appendChild(c);
+})();
+
+/* ---------- 砂水切换 ---------- */
+document.querySelectorAll('.switch button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.switch button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const k=b.dataset.k;
+    document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='pane-'+k));
+  });
+});
+
+/* ---------- 经文版本切换 ---------- */
+document.querySelectorAll('.texts').forEach(box=>{
+  box.querySelectorAll('.tabs button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      box.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      box.querySelectorAll('.verse .v').forEach(v=>v.classList.toggle('on',v.dataset.v===b.dataset.v));
+    });
+  });
+});
+</script>
+</body>
+</html>
