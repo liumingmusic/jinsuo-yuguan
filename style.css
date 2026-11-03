@@ -1187,6 +1187,10 @@ a.mc.full:hover{text-decoration:none;filter:brightness(1.1)}
   /* ---------- 卡片 / 看板 ---------- */
   .cards,.mind-cards{grid-template-columns:1fr;gap:14px;margin-top:20px}
   .card{padding:18px 18px 16px}
+  /* 上面 .doc h3 / .doc p 的移动端规则会漏进卡片里，这里收回 */
+  .doc .card h3{margin:0 0 7px;font-size:17.5px}
+  .doc .card p{margin:0;font-size:13.4px;line-height:1.7}
+  .doc .card .k{margin-bottom:9px}
   .hw-nums{grid-template-columns:1fr 1fr}
   .hw-nums>div{padding:15px 12px}
   .hw-nums b{font-size:23px}
