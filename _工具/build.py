@@ -760,6 +760,8 @@ def build():
     if os.path.isdir(OUT_DIR):
         shutil.rmtree(OUT_DIR)
     os.makedirs(OUT_DIR)
+    # 纯静态站：加 .nojekyll 跳过 GitHub Pages 的 Jekyll 构建，避免偶发 Page build failed
+    open(os.path.join(OUT_DIR, ".nojekyll"), "w", encoding="utf-8").close()
     os.makedirs(os.path.join(OUT_DIR, "资源", "vendor"), exist_ok=True)
 
     # 样式与脚本
