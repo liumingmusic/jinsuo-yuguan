@@ -845,13 +845,13 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 }
 .hero-wheel svg{
   display:block;width:100%;height:100%;overflow:visible;
-  transform-origin:50% 50%;animation:wheel-breathe 22s ease-in-out infinite;
+  transform-origin:50% 50%;animation:wheel-breathe 15s ease-in-out infinite;
 }
 /* 山层与卦层固定：二十四山的位置本身有含义（子在下、午在上、乾在右下），
    跟着转就错了。动感交给刻度环、光扫与整体呼吸。 */
 .hero-wheel .w-ring{
   transform-box:view-box;transform-origin:400px 400px;
-  animation:spin 130s linear infinite reverse;
+  animation:spin 60s linear infinite reverse;
 }
 .hero-wheel .w-halo{
   transform-box:view-box;transform-origin:400px 400px;
@@ -871,13 +871,13 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   animation:wheel-sweep 26s linear infinite;
 }
 @keyframes halo{
-  0%,100%{opacity:.42;transform:scale(1)}
-  50%{opacity:.85;transform:scale(1.045)}
+  0%,100%{opacity:.5;transform:scale(1)}
+  50%{opacity:.95;transform:scale(1.07)}
 }
 /* 整体呼吸：慢进慢出的放大缩小，和刻度环的反向自转叠在一起才有"活"的感觉 */
 @keyframes wheel-breathe{
-  0%,100%{transform:scale(.955)}
-  50%{transform:scale(1.045)}
+  0%,100%{transform:scale(.92)}
+  50%{transform:scale(1.08)}
 }
 @keyframes wheel-sweep{
   from{transform:rotate(0deg)}
