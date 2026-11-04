@@ -22,15 +22,25 @@ MIND_DIR = os.path.join(ROOT, "脑图")
 # 思维导图只按卦梳理：编号 00 的「九山总览」不生成页面、不进任何索引
 # （md 文件保留不删；以后想放回来，把这个元组清空即可）。
 MIND_HIDE_PREFIX = ("00",)
+# Ⅳ 导图线的「线名」：脑图页不是从 内容/ 来的，而是从 脑图/ 来的，
+# 但它和其它三条线一样有自己的编号、索引页、侧栏与页脚位置。
+MIND_SECTION = "Ⅳ-导图线"
+# 自编经文的唯一来源。经文/*.md 投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处，
+# 三处内容必须一致，所以只此一份 md，别处不要另写。
+JINGWEN_DIR = os.path.join(ROOT, "经文")
+JW_NOTE = ("研习库自撰的一套经文，依课堂所讲的结论重新提炼。"
+           "不抄民国底本原句，也不套老师逐字自译。")
 OUT_DIR = os.path.join(ROOT, "站点")
 IMG_DIR = os.path.join(ROOT, "_数据", "图片")
 VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
 
-# 三大部分的元信息：目录名 -> (编号, 标题, 短名, 主色)
+# 四条线的元信息：目录名 -> (编号, 标题, 短名, 主色)
+# 顺序即导航顺序：Ⅰ 课程线 → Ⅱ 卦山线 → Ⅲ 作业线 → Ⅳ 导图线 → 附录
 SECTIONS = [
     ("Ⅰ-课程线", "Ⅰ", "课程线", "理法 · 技法 · 案例", "#2c6a7c"),
     ("Ⅱ-卦山线", "Ⅱ", "卦山线", "坎 · 坤 · 震 九山", "#8a6a3a"),
     ("Ⅲ-作业线", "Ⅲ", "作业线", "题面 · 批语 · 拆解", "#7a4a52"),
+    (MIND_SECTION, "Ⅳ", "导图线", "骨架 · 脉络 · 一卦一图", "#3f6b7a"),
     ("附录", "附", "附录", "经文 · 技法 · 存疑", "#5a6068"),
 ]
 
@@ -621,13 +631,11 @@ STAT_LABEL = {"full": "已成篇", "taught": "待补", "none": "未及"}
 
 
 def build_nav(current=""):
-    """顶栏导航：三部分 + 思维导图。"""
+    """顶栏导航：四条线 + 附录。"""
     parts = []
     for d, num, short, desc, color in SECTIONS:
         on = " on" if d == current else ""
         parts.append(f'<a class="{on.strip()}" href="section-{num}.html">{num} {short}</a>')
-    on = " on" if current == "__mind__" else ""
-    parts.append(f'<a class="{on.strip()}" href="mind-index.html">思维导图</a>')
     return "".join(parts)
 
 
@@ -639,24 +647,19 @@ def mind_files():
                   if f.endswith(".md") and not f.startswith(MIND_HIDE_PREFIX))
 
 
-def mind_file_count():
-    """脑图张数：只数要展示的（总览已隐藏），别再手写「五张」这种会过期的字。"""
-    return len(mind_files())
-
-
 def build_drawer(current="", sub=""):
     """移动端抽屉导航。桌面隐藏，≤900px 由汉堡键拉出。
 
     侧栏在窄屏被隐藏，若不另给入口，手机上除了当前页哪都去不了——这是
     2026-11-03 用户反馈「作业线、卦山线都看不到」的直接原因。
     """
-    items = []
+    items, extra = [], []
     for d, num, short, desc, color in SECTIONS:
         on = " on" if d == current else ""
-        items.append(
-            f'<li><a class="d-line{on}" href="section-{num}.html" style="--c:{color}">'
-            f'<b>{num}</b><span class="d-t">{short}<em>{desc}</em></span></a></li>'
-        )
+        li = (f'<li><a class="d-line{on}" href="section-{num}.html" style="--c:{color}">'
+              f'<b>{num}</b><span class="d-t">{short}<em>{desc}</em></span></a></li>')
+        # 附录不是「线」，单列一组，免得「四 条 线」下面挂五条
+        (extra if num == "附" else items).append(li)
     on_home = " on" if current == "__home__" else ""
     return (
         '<div class="drawer" id="drawer" aria-hidden="true" aria-label="站点导航">'
@@ -676,10 +679,9 @@ def build_drawer(current="", sub=""):
         '<em>首页</em></a>'
         '<p class="side-title">四 条 线</p>'
         '<ul class="d-lines">' + "".join(items) + '</ul>'
+        '<p class="side-title">附 录</p>'
+        '<ul class="d-lines">' + "".join(extra) + '</ul>'
         + sub +
-        '<p class="side-title">图</p>'
-        f'<a class="d-home" href="mind-index.html"><span>思维导图</span>'
-        f'<em>{mind_file_count()} 张</em></a>'
         '</div></div>'
     )
 
@@ -698,10 +700,97 @@ def drawer_sub(items, active_file=""):
 
 
 def foot_sections():
-    out = "".join(
+    """页脚导航：四条线 + 附录，与顶栏完全一致。"""
+    return "".join(
         f'<a href="section-{num}.html">{num} {short}</a>' for d, num, short, desc, color in SECTIONS
     )
-    return out + '<a href="mind-index.html">思维导图</a>'
+
+
+# ---------- 研习库自编经文（唯一源：经文/*.md） ----------
+
+def jingwen_files():
+    """参与构建的自编经文文件。"""
+    if not os.path.isdir(JINGWEN_DIR):
+        return []
+    return sorted(f for f in os.listdir(JINGWEN_DIR) if f.endswith(".md"))
+
+
+def jingwen_gua(fname):
+    """从文件名取卦字：01 坎卦 壬子癸.md -> 坎。"""
+    stem = os.path.splitext(fname)[0]
+    for g in ALL_GUA:
+        if g["g"] in stem:
+            return g["g"]
+    return stem
+
+
+def load_jingwen():
+    """读全部自编经文，返回 [(卦字, 文件名, md)]，按文件名排序。"""
+    out = []
+    for f in jingwen_files():
+        md = open(os.path.join(JINGWEN_DIR, f), encoding="utf-8").read()
+        out.append((jingwen_gua(f), f, md))
+    return out
+
+
+_JW_CACHE = None
+
+
+def jingwen_by_stem():
+    """经文按文件名主干索引：'01 坎卦 壬子癸' -> (卦字, 文件名, md)。
+
+    卦山线的页面文件名与经文文件名同主干（01 坎卦 壬子癸），
+    所以按主干一比一配对，不用在 md 里另写标记。
+    """
+    global _JW_CACHE
+    if _JW_CACHE is None:
+        _JW_CACHE = {os.path.splitext(f)[0]: (g, f, md) for g, f, md in load_jingwen()}
+    return _JW_CACHE
+
+
+def jingwen_title(md, fallback=""):
+    """取经文篇名（第一行 h1）。"""
+    for l in md.split("\n"):
+        if l.startswith("# "):
+            return l[2:].strip()
+    return fallback
+
+
+def jingwen_fragment(md, prefix):
+    """把一篇经文渲染成 HTML 片段。
+
+    两处讲究：
+    1. 标题统一下沉一级（h1 去掉、h2→h3、h3→h4），这样同一份片段贴到
+       Ⅱ 卦山线的卦页、Ⅲ 作业线的总表页、Ⅳ 导图线的脑图页时，
+       渲染结果一字不差——三处内容必须一样，是用户的硬要求。
+    2. 锚点加前缀（jw-卦-），三卦同页时（如 Ⅲ 线总表页）不至于串号。
+    """
+    shifted = []
+    for l in md.split("\n"):
+        m = re.match(r"^(#{1,5})(\s+)(.*)$", l)
+        if m:
+            lv = len(m.group(1))
+            if lv == 1:
+                continue          # 卦名由所在页面的标题承担，不重复
+            shifted.append("#" * (lv + 1) + m.group(2) + m.group(3))
+        else:
+            shifted.append(l)
+    out, _ = render_md("\n".join(shifted))
+    out = re.sub(r'id="(?!' + re.escape(prefix) + ')', 'id="' + prefix, out)
+    return out
+
+
+def jingwen_block(md, gua, heading="研习库自编经文"):
+    """经文整块：小节标题 + 来源说明 + 片段。Ⅱ Ⅲ Ⅳ 三处共用同一段。"""
+    prefix = f"jw-{gua}-"
+    return (f'<h2 class="chap" id="{prefix}sec">{heading}</h2>'
+            f'<p class="jw-note">{JW_NOTE}</p>'
+            + jingwen_fragment(md, prefix))
+
+
+def jingwen_all():
+    """全部经文拼成一大段，给 Ⅲ 作业线的「自编经文总表」页用。"""
+    return "".join(jingwen_block(md, gua) for gua, f, md in load_jingwen())
 
 
 def extract_lead(md, fallback=""):
@@ -816,6 +905,15 @@ def build():
                 k = pg["order"] - 2
                 body_html = hw_badge(HW_ITEMS[k] if 0 <= k < len(HW_ITEMS) else None) + body_html
 
+        # 自编经文：唯一源是 经文/*.md，投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处。
+        # Ⅲ 线总表页一次挂全；Ⅱ 线每卦页末尾挂本卦那套（文件名与经文同名，一比一配）。
+        if "@@JINGWEN_ALL@@" in body_html:
+            body_html = body_html.replace("<p>@@JINGWEN_ALL@@</p>", jingwen_all())
+        elif pg["section"] == "Ⅱ-卦山线":
+            jw = jingwen_by_stem().get(os.path.splitext(pg["file"])[0])
+            if jw:
+                body_html += jingwen_block(jw[2], jw[0])
+
         toc_html = "".join(
             f'<a class="lv{lv}" href="#{a}" title="{t}">{t}</a>' for lv, t, a in toc_items
         )
@@ -851,7 +949,8 @@ def build():
                 continue
             side.append(f'<li><a href="section-{num}.html"><span class="n">{num}</span>'
                         f'<span>{short}</span></a></li>')
-        side.append('<li><a href="mind-index.html"><span class="n">图</span><span>思维导图</span></a></li>')
+        side.append('<li><a href="index.html"><span class="n">首</span>'
+                    '<span>返回首页</span></a></li>')
         side.append("</ul></div>")
 
         # 上下页
@@ -887,27 +986,57 @@ def build():
                         )
         open(os.path.join(OUT_DIR, pg["slug"] + ".html"), "w", encoding="utf-8").write(html_out)
 
+    # 脑图（Ⅳ 导图线）先建：章节索引页要用它出卡片
+    mind_pages = build_minds(pages)
+
     # 章节索引页
     for d, num, short, desc, color in SECTIONS:
-        items = [p for p in pages if p["section"] == d]
-        cards = "".join(
-            f'<a class="card" href="{p["slug"]}.html">'
-            f'<div class="k">{num} · {p["order"]:02d}</div>'
-            f'<h3>{html.escape(p["title"])}</h3>'
-            f'<p>{html.escape(p["lead"] or os.path.splitext(p["file"])[0])}</p></a>'
-            for p in items
-        )
-        body = (f'<div class="cards">{cards}</div>' if cards
-                else '<div class="empty-note">本节内容尚未开始整理。等课程推进或笔记补全后，这里会自动出现条目。</div>')
+        if d == MIND_SECTION:
+            # Ⅳ 导图线：条目是脑图页，不是 内容/ 下的正文
+            items = [{"slug": m["slug"], "order": m["order"], "title": m["title"],
+                      "file": m["file"], "lead": f"{m['nodes']} 个节点　·　{m['lead']}"} for m in mind_pages]
+            cards = "".join(
+                f'<a class="card" href="{p["slug"]}.html">'
+                f'<div class="k">{num} · {p["order"]:02d}</div>'
+                f'<h3>{html.escape(p["title"])}</h3>'
+                f'<p>{html.escape(p["lead"])}</p></a>'
+                for p in items
+            )
+            body = (f'<div class="cards">{cards}</div>' if cards
+                    else '<div class="empty-note">还没有导图。等卦的骨架梳理完，这里会自动出现条目。</div>')
+            body += ('<div class="mind-how">'
+                     '<span class="eyebrow">怎 么 用</span>'
+                     '<h2>图和正文是同一套内容的两种排法</h2>'
+                     '<p>不是另一份材料。正文按讲次铺开，图按层级收拢；看完图，回正文看细目。</p>'
+                     '<ul class="mh-list">'
+                     '<li><span class="mh-k">看</span><div><h3>点圆点逐层展开</h3>'
+                     '<p>默认只展开两级。点节点前的圆点看下一层，双指缩放、拖动平移，手机上同样适用。</p>'
+                     '</div></li>'
+                     '<li><span class="mh-k">对</span><div><h3>每张图对应一座卦</h3>'
+                     '<p>坎、坤、震各一张，与卦山线里的条目一一对应。</p>'
+                     '</div></li>'
+                     '<li><span class="mh-k">据</span><div><h3>坎、坤有老师原图</h3>'
+                     '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与自译混在一起。</p>'
+                     '</div></li>'
+                     '</ul></div>')
+        else:
+            items = [p for p in pages if p["section"] == d]
+            cards = "".join(
+                f'<a class="card" href="{p["slug"]}.html">'
+                f'<div class="k">{num} · {p["order"]:02d}</div>'
+                f'<h3>{html.escape(p["title"])}</h3>'
+                f'<p>{html.escape(p["lead"] or os.path.splitext(p["file"])[0])}</p></a>'
+                for p in items
+            )
+            body = (f'<div class="cards">{cards}</div>' if cards
+                    else '<div class="empty-note">本节内容尚未开始整理。等课程推进或笔记补全后，这里会自动出现条目。</div>')
         page = fill(PAGE_TMPL,
                     title=f"{num} {short}",
                     nav=build_nav(d),
                     side='<div class="side-group"><p class="side-title">全部内容</p><ul>' + "".join(
                         f'<li><a class="{"on" if s[0] == d else ""}" href="section-{s[1]}.html">'
                         f'<span class="n">{s[1]}</span><span>{s[2]}</span></a></li>' for s in SECTIONS
-                    ) + '<li><a href="mind-index.html"><span class="n">图</span>'
-                        '<span>思维导图</span></a></li>'
-                        '<li><a href="index.html"><span class="n">首</span>'
+                    ) + '<li><a href="index.html"><span class="n">首</span>'
                         '<span>返回首页</span></a></li></ul></div>',
                     crumb='<a href="index.html">总览</a>',
                     subtitle=html.escape(desc),
@@ -922,32 +1051,36 @@ def build():
                     )
         open(os.path.join(OUT_DIR, f"section-{num}.html"), "w", encoding="utf-8").write(page)
 
-    # 脑图
-    mind_pages = build_minds(pages)
-
     # 首页
     build_index(pages, mind_pages)
 
-    print(f"\n构建完成：{len(pages)} 页正文 + {len(mind_pages)} 张脑图 -> {os.path.relpath(OUT_DIR, ROOT)}/")
+    print(f"\n构建完成：{len(pages)} 页正文 + {len(mind_pages)} 张导图 -> {os.path.relpath(OUT_DIR, ROOT)}/")
     return pages, mind_pages
 
 
-def mind_side(no, pages):
-    """思维导图页的左侧栏：全部内容树 + 对照正文跳转。
+def mind_side(no, pages, minds=()):
+    """导图页的左侧栏：本节各张图 + 全部内容树 + 对照正文跳转。
 
-    和 section/正文页同一套侧栏体例——此前导图页是全站唯一没有侧栏的
-    两类页面，版式与其他内容页不一致（2026-11-03 用户反馈）。
+    和 section/正文页同一套侧栏体例——导图线既然是一条线，
+    版式就得跟其它三条线一致（2026-11-03 用户反馈）。
     """
+    mine = [m for m in minds if not no or m["no"] == no]
+    sub = ""
+    if minds:
+        lis = "".join(
+            f'<li><a class="{"on" if m["no"] == no else ""}" href="{m["slug"]}.html">'
+            f'<span class="n">{m["no"]}</span><span>{html.escape(m["title"])}</span></a></li>'
+            for m in minds
+        )
+        sub = '<p class="side-title">本 节</p><ul class="d-sub">' + lis + '</ul>'
     tree = ('<div class="side-group"><p class="side-title">全部内容</p><ul>' + "".join(
-        f'<li><a class="{"on" if s[0] == "__mind__" else ""}" href="section-{s[1]}.html">'
+        f'<li><a class="{"on" if s[0] == MIND_SECTION else ""}" href="section-{s[1]}.html">'
         f'<span class="n">{s[1]}</span><span>{s[2]}</span></a></li>' for s in SECTIONS
-    ) + '<li><a class="on" href="mind-index.html"><span class="n">图</span>'
-        '<span>思维导图</span></a></li>'
-        '<li><a href="index.html"><span class="n">首</span>'
+    ) + '<li><a href="index.html"><span class="n">首</span>'
         '<span>返回首页</span></a></li></ul></div>')
     cross = ""
     for pg in pages:
-        # 脑图文件编号 01/02/03 ↔ 卦山线同序号正文页（slug 形如 Ⅱ-01-01坎卦壬子癸）
+        # 脑图文件编号 01/02/03 ↔ 卦山线同序号正文页（slug 形如 Ⅱ-01-坎卦壬子癸）
         if pg["section"] == "Ⅱ-卦山线" and no and pg["slug"].startswith("Ⅱ-" + no.zfill(2) + "-"):
             cross = ('<div class="side-group"><p class="side-title">对照正文</p><ul>'
                      f'<li><a href="{pg["slug"]}.html"><span class="n">Ⅱ</span>'
@@ -964,27 +1097,51 @@ def build_minds(pages):
         return made
     MIND_TMPL = tpl("mind.html")
     files = mind_files()
+    JW = jingwen_by_stem()
+
+    # 先扫一遍拿到全部图，页面之间才能互相链接（侧栏「本 节」要用）
+    raw = []
     for f in files:
-        p = os.path.join(MIND_DIR, f)
-        md = open(p, encoding="utf-8").read()
+        md = open(os.path.join(MIND_DIR, f), encoding="utf-8").read()
         title = extract_title(md, os.path.splitext(f)[0])
-        slug = "mind-" + os.path.splitext(f)[0].replace(" ", "-")
-        nodes = sum(1 for l in md.split("\n") if re.match(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s)", l))
+        nodes = sum(1 for l in md.split("\n")
+                    if re.match(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s)", l))
         m = re.match(r"^(\d+)", f)
+        no = m.group(1) if m else ""
+        stem = os.path.splitext(f)[0]
+        gua = jingwen_gua(f)
+        # 文件名自带序号「01 坎卦 壬子癸」，序号已用在 Ⅳ-01 里，标题部分不再重复带号
+        name = re.sub(r"^\d+[\s.、]*", "", stem)
+        slug = "Ⅳ-" + no.zfill(2) + "-" + re.sub(r"\s+", "", name)
+        lead = next((g["note"] for g in ALL_GUA if g["g"] == gua), "")
+        raw.append(dict(md=md, title=title, nodes=nodes, no=no, stem=stem,
+                        gua=gua, slug=slug, lead=lead, file=f))
+
+    for it in raw:
+        # 本卦的自编经文：与 Ⅱ 卦山线的卦页、Ⅲ 作业线的总表页同一份源
+        jw = JW.get(it["stem"])
+        note = jingwen_block(jw[2], jw[0]) if jw else ""
+        sub = ("<p class=\"side-title\">本 节</p><ul class=\"d-sub\">"
+               + "".join(
+                   f'<li><a class="{"on" if x["no"] == it["no"] else ""}" href="{x["slug"]}.html">'
+                   f'<span class="n">{x["no"]}</span><span>{html.escape(x["title"])}</span></a></li>'
+                   for x in raw)
+               + '</ul>')
         page = (MIND_TMPL
-                .replace("@@TITLE@@", html.escape(title))
-                .replace("@@SUBTITLE@@", f"共 {nodes} 个节点")
-                .replace("@@NODES@@", str(nodes))
-                .replace("@@NAV@@", build_nav("__mind__"))
-                .replace("@@SIDE@@", mind_side(m.group(1) if m else "", pages))
+                .replace("@@TITLE@@", html.escape(it["title"]))
+                .replace("@@SUBTITLE@@", f"Ⅳ 导图线　·　共 {it['nodes']} 个节点")
+                .replace("@@NODES@@", str(it["nodes"]))
+                .replace("@@NAV@@", build_nav(MIND_SECTION))
+                .replace("@@SIDE@@", mind_side(it["no"], pages, raw))
                 .replace("@@LAYOUT_CLASS@@", " two")
-                .replace("@@MD@@", html.escape(md))
+                .replace("@@MD@@", html.escape(it["md"]))
                 .replace("@@FOOT_SECTIONS@@", foot_sections())
-                .replace("@@DRAWER@@", build_drawer("__mind__"))
-                .replace("@@MIND_NOTE@@", ""))
-        open(os.path.join(OUT_DIR, slug + ".html"), "w", encoding="utf-8").write(page)
-        made.append({"title": title, "slug": slug, "file": f, "nodes": nodes,
-                     "no": m.group(1) if m else ""})
+                .replace("@@DRAWER@@", build_drawer(MIND_SECTION, sub))
+                .replace("@@MIND_NOTE@@", note))
+        open(os.path.join(OUT_DIR, it["slug"] + ".html"), "w", encoding="utf-8").write(page)
+        made.append({"title": it["title"], "slug": it["slug"], "file": it["file"],
+                     "nodes": it["nodes"], "no": it["no"], "order": int(it["no"] or 0),
+                     "lead": it["lead"], "gua": it["gua"]})
     return made
 
 
@@ -1011,7 +1168,24 @@ def _sector(cx, cy, r1, r2, a1, a2):
 ROT = 180.0
 
 
-def _compass(full_slug):
+def shan_slug_map(pages):
+    """山名 -> Ⅱ 卦山线页 slug。
+
+    首页罗盘与「按卦读 / 按山读」两栏里，每一座山都要指到它自己的页，
+    不能全指到同一页（此前九座山全链到第一讲预热课，是明显的错链）。
+    """
+    m = {}
+    for pg in pages:
+        if pg["section"] != "Ⅱ-卦山线":
+            continue
+        stem = os.path.splitext(pg["file"])[0]
+        for ch in stem:
+            if ch in "壬子癸甲卯乙未坤申":
+                m.setdefault(ch, pg["slug"])
+    return m
+
+
+def _compass(slan):
     """二十四山罗盘（后天八卦，上南下北）。卦带 45°，山带 15°，单字直立不旋转。"""
     cx = cy = 380.0
     R_OUT, R_MID, R_IN = 338.0, 270.0, 208.0
@@ -1071,8 +1245,8 @@ def _compass(full_slug):
         txt = (f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" '
                f'dominant-baseline="central" font-family="Songti SC,serif" '
                f'font-size="21" fill="{tcol}"{tw}>{m["name"]}</text>')
-        if st == "full":
-            o.append(f'<a href="{full_slug}.html" class="mnt-link">'
+        if st == "full" and slan.get(m["name"]):
+            o.append(f'<a href="{slan[m["name"]]}.html" class="mnt-link">'
                      f'<title>{m["name"]}山 · {m["label"]}</title>{txt}</a>')
         else:
             o.append(txt)
@@ -1222,7 +1396,7 @@ def _map_side():
 
 # ---------- 两种读法 ----------
 
-def _by_gua(full_slug):
+def _by_gua(slan):
     cards = []
     for g in ALL_GUA:
         sz = g["sz"]
@@ -1233,8 +1407,8 @@ def _by_gua(full_slug):
                 label, st = g["shan"][i][1], g["shan"][i][2]
             else:
                 label, st = "", "none"
-            if st == "full":
-                rows.append(f'<a class="row full" href="{full_slug}.html">'
+            if st == "full" and slan.get(name):
+                rows.append(f'<a class="row full" href="{slan[name]}.html">'
                             f'<b>{name}</b><span>{label}</span><i>已成篇</i></a>')
             else:
                 rows.append(f'<span class="row {st}"><b>{name}</b>'
@@ -1254,7 +1428,7 @@ def _by_gua(full_slug):
     return '<div class="g8-grid">' + "".join(cards) + "</div>"
 
 
-def _by_shan(full_slug):
+def _by_shan(slan):
     cols = []
     for g in ALL_GUA:
         rows = []
@@ -1263,8 +1437,8 @@ def _by_shan(full_slug):
             label, st = (g["shan"][i][1], g["shan"][i][2]) if g["shan"] else ("", "none")
             tip = name + "山" + ("　" + label if label else "")
             inner = f'<b>{name}</b><i>{STAT_LABEL[st] if st != "none" else "未及"}</i>'
-            if st == "full":
-                rows.append(f'<a class="mc full" href="{full_slug}.html" title="{tip}">{inner}</a>')
+            if st == "full" and slan.get(name):
+                rows.append(f'<a class="mc full" href="{slan[name]}.html" title="{tip}">{inner}</a>')
             else:
                 rows.append(f'<span class="mc {st}" title="{tip}">{inner}</span>')
         cols.append(
@@ -1293,24 +1467,30 @@ def _stats(pages, mind_pages):
     return "".join(f'<div class="st"><b>{n}</b><em>{lab}</em></div>' for n, lab in items)
 
 
-def _parts(pages):
+def _parts(pages, mind_pages):
     meta = {
         "Ⅰ": ("按课次，一课不落",
                "老师每节课不只讲山，理法、技法、案例、答疑都在这里，按讲课顺序记。",
-               ["理法与砂水本质", "技法与做局", "案例复盘与答疑"]),
+               ["理法与砂水本质", "技法与做局", "案例复盘与答疑"], "篇"),
         "Ⅱ": ("一山一页，八段讲透",
                "每山固定八段：论断、见水、见砂、兼卦、形煞、应期、自译经文、速查。",
-               ["每山一句论断", "三版经文对照", "两种自译经文"]),
+               ["每山一句论断", "三版经文对照", "两种自译经文"], "篇"),
         "Ⅲ": ("只引用，不重复",
                "正文里已讲过的只给锚点。这里只写老师批语、未做题目拆解、题目到章节的映射表。",
-               ["老师批语汇总", "未做题面拆解", "题目映射表"]),
+               ["老师批语汇总", "未做题面拆解", "题目映射表"], "篇"),
+        "Ⅳ": ("一卦一张骨架图",
+               "把一卦三山的层级收成一张图：先看主干，再逐层展开。与正文同一套内容，不是另一份材料。",
+               ["逐层展开的节点", "与卦山线一一对应", "图下附本卦自编经文"], "张"),
     }
     cards = []
     for d, num, short, desc, color in SECTIONS:
         if num == "附":
             continue
-        cnt = len([p for p in pages if p["section"] == d])
-        title, text, bullets = meta.get(num, (short, desc, []))
+        if d == MIND_SECTION:
+            cnt, unit = len(mind_pages), "张"
+        else:
+            cnt, unit = len([p for p in pages if p["section"] == d]), "篇"
+        title, text, bullets, unit = meta.get(num, (short, desc, [], unit))
         lis = "".join(f"<li>{b}</li>" for b in bullets)
         cards.append(
             f'<a class="part" href="section-{num}.html">'
@@ -1318,7 +1498,7 @@ def _parts(pages):
             f'<h3>{title}</h3>'
             f'<p class="desc">{text}</p>'
             f'<ul>{lis}</ul>'
-            f'<span class="go">{(str(cnt) + " 篇") if cnt else "待整理"}　进入'
+            f'<span class="go">{(str(cnt) + " " + unit) if cnt else "待整理"}　进入'
             f'<svg width="14" height="14" viewBox="0 0 16 16" fill="none">'
             f'<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6" '
             f'stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>'
@@ -1326,16 +1506,24 @@ def _parts(pages):
     return "".join(cards)
 
 
-def _recent(pages):
-    """三条线轮流取样，避免首页只出现课程线。"""
+def _recent(pages, mind_pages):
+    """四条线轮流取样，避免首页只出现课程线。"""
     if not pages:
         return '<div class="empty-note">还没有正文。</div>'
     groups = {}
     for p in pages:
         groups.setdefault(p["section"], []).append(p)
+    # Ⅳ 导图线不在 内容/ 里，单独补一组，首页才能看到它
+    if mind_pages:
+        groups[MIND_SECTION] = [
+            {"slug": m["slug"], "title": m["title"], "num": "Ⅳ",
+             "order": m["order"], "unit": "张"} for m in mind_pages
+        ]
     picked, i = [], 0
     while len(picked) < 6 and any(len(v) > i for v in groups.values()):
         for d, num, short, desc, color in SECTIONS:
+            if num == "附":
+                continue          # 附录不是一条线，不进「成篇内容」轮换
             v = groups.get(d, [])
             if len(v) > i:
                 picked.append(v[i])
@@ -1348,23 +1536,24 @@ def _recent(pages):
             f'<a href="{p["slug"]}.html">'
             f'<span class="k">{p["num"]} 线</span>'
             f'<span class="t">{html.escape(p["title"])}</span>'
-            f'<span class="d">第 {p["order"]:02d} 篇</span></a>'
+            f'<span class="d">第 {p["order"]:02d} {p.get("unit", "篇")}</span></a>'
         )
     return "".join(rows)
 
 
 def build_index(pages, mind_pages):
     first_slug = pages[0]["slug"] if pages else "index"
+    slan = shan_slug_map(pages)
     page = fill(tpl("index.html"),
                 nav=build_nav(""),
                 stats=_stats(pages, mind_pages),
-                parts=_parts(pages),
-                compass=_compass(first_slug),
+                parts=_parts(pages, mind_pages),
+                compass=_compass(slan),
                 hero_wheel=_hero_wheel(),
                 map_side=_map_side(),
-                bygua=_by_gua(first_slug),
-                byshan=_by_shan(first_slug),
-                recent=_recent(pages),
+                bygua=_by_gua(slan),
+                byshan=_by_shan(slan),
+                recent=_recent(pages, mind_pages),
                 first_link=f"{first_slug}.html",
                 foot_sections=foot_sections(),
                 page_count=len(pages),
@@ -1376,72 +1565,10 @@ def build_index(pages, mind_pages):
                                     '<li><a href="#read"><span class="n">读</span>'
                                     '<span>两种读法</span></a></li>'
                                     '<li><a href="#lines"><span class="n">体</span>'
-                                    '<span>三条线怎么分</span></a></li></ul>'),
+                                    '<span>四条线怎么分</span></a></li></ul>'),
                 )
     open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8").write(page)
 
-    # 脑图索引
-    if mind_pages:
-        cards = "".join(
-            f'<a class="card mind-card" href="{m["slug"]}.html" '
-            f'title="{html.escape(m["title"])}">'
-            f'<div class="k">{m["no"] or "图"}</div>'
-            f'<h3>{html.escape(m["title"])}</h3>'
-            f'<p>{m["nodes"]} 个节点</p></a>'
-            for m in mind_pages
-        )
-        # 底部说明：纵向三步，窄屏也不挤成竖排单字（原来三列大卡片在手机上就是一列一个字）
-        mind_body = ('<div class="mind-cards">' + cards + '</div>'
-                     '<div class="mind-how">'
-                     '<span class="eyebrow">怎 么 用</span>'
-                     '<h2>图和正文是同一套内容的两种排法</h2>'
-                     '<p>不是另一份材料。正文按讲次铺开，图按层级收拢；看完图，回正文看细目。</p>'
-                     '<ul class="mh-list">'
-                     '<li><span class="mh-k">看</span><div><h3>点圆点逐层展开</h3>'
-                     '<p>默认只展开两级。点节点前的圆点看下一层，双指缩放、拖动平移，手机上同样适用。</p>'
-                     '</div></li>'
-                     '<li><span class="mh-k">对</span><div><h3>每张图对应一座卦</h3>'
-                     '<p>坎、坤、震各一张，与卦山线里的条目一一对应。</p>'
-                     '</div></li>'
-                     '<li><span class="mh-k">据</span><div><h3>坎、坤有老师原图</h3>'
-                     '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与自译混在一起。</p>'
-                     '</div></li>'
-                     '</ul></div>')
-        mind_sub = f"共 {len(mind_pages)} 张　·　一卦一张，按卦梳理"
-        mind_md = "# 思维导图"
-    else:
-        mind_body = '<div class="empty-note">还没有脑图。</div>'
-        mind_sub = "总览与分卦图"
-        mind_md = "# 思维导图"
-
-    page = (tpl("mind.html")
-            .replace("@@TITLE@@", "思维导图")
-            .replace("@@SUBTITLE@@", html.escape(mind_sub))
-            .replace("@@NAV@@", build_nav("__mind__"))
-            .replace("@@SIDE@@", mind_side("", pages))
-            .replace("@@LAYOUT_CLASS@@", " two")
-            .replace("@@MD@@", html.escape(mind_md))
-            .replace("@@FOOT_SECTIONS@@", foot_sections())
-            .replace("@@DRAWER@@", build_drawer("__mind__"))
-            .replace("@@MIND_NOTE@@", ""))
-    # 索引页自己就是导图区，右上角按钮换成回首页，别做成自环
-    page = page.replace('<a class="btn btn-line btn-sm" href="mind-index.html">思维导图</a>',
-                        '<a class="btn btn-line btn-sm" href="index.html">回首页</a>')
-    # 这一页是导图总览，页脚「本图」一栏换成总数与读法
-    page = page.replace("<h6>本图</h6>", "<h6>导图</h6>")
-    page = page.replace("@@NODES@@", f"共 {len(mind_pages)} 张")
-    page = page.replace("读法　默认展开两级，点圆点再看下一层",
-                        "坎、坤、震各一张")
-    # 换成卡片列表，保留工具栏隐藏
-    page = page.replace('<div class="mind-wrap">', '<div style="display:none">')
-    page = page.replace('</article>', mind_body + '</article>')
-    # 这一页本身就叫「思维导图」，标题与面包屑不要再套一层同名
-    page = page.replace("<title>思维导图 · 思维导图 · 金锁玉关</title>",
-                        "<title>思维导图 · 金锁玉关</title>")
-    page = page.replace('<a href="mind-index.html">思维导图</a>'
-                        '<span class="sep">/</span>思维导图',
-                        '<a href="mind-index.html">思维导图</a>')
-    open(os.path.join(OUT_DIR, "mind-index.html"), "w", encoding="utf-8").write(page)
 
 
 if __name__ == "__main__":

@@ -548,8 +548,8 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .sec-head p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.8}
 
-/* 三部分卡片 */
-.parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+/* 四条线卡片：2×2 四宫格（四条线摆一行太挤，3+1 的孤行也不好看） */
+.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .part{
   position:relative;display:flex;flex-direction:column;
   padding:30px 28px 26px;border:1px solid var(--line);border-radius:var(--radius);
@@ -787,6 +787,15 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .src-note.src-long{white-space:normal;line-height:1.6}
 /* 标题里的注记随字号缩放 */
 h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
+
+/* ============================================ 自编经文 */
+/* Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处共用的来源说明 */
+.jw-note{
+  font-size:13.6px;line-height:1.85;color:var(--ink-3);
+  margin:0 0 26px;padding:11px 15px;
+  border-left:3px solid var(--gold-2);
+  background:var(--bg-3);border-radius:0 8px 8px 0;
+}
 
 /* ============================================ 作业与批阅状态 */
 
