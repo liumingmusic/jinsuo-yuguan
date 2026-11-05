@@ -25,11 +25,16 @@ MIND_HIDE_PREFIX = ("00",)
 # Ⅳ 导图线的「线名」：脑图页不是从 内容/ 来的，而是从 脑图/ 来的，
 # 但它和其它三条线一样有自己的编号、索引页、侧栏与页脚位置。
 MIND_SECTION = "Ⅳ-导图线"
-# 自编经文的唯一来源。经文/*.md 投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处，
+# 经文的唯一来源。经文/*.md 投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处，
 # 三处内容必须一致，所以只此一份 md，别处不要另写。
+#
+# 一山一篇（壬山.md、子山.md…），另加三篇卦体（卦体坎.md…）。
+# 每篇里固定两栏：「我的经文」与「老师口播 · 据课堂记录整理」。
+# 我的那栏只放我自己写的；老师那栏只放课堂口播里老师的原话，
+# 老师还没给的地方留占位，不代写。
 JINGWEN_DIR = os.path.join(ROOT, "经文")
-JW_NOTE = ("研习库自撰的一套经文，依课堂所讲的结论重新提炼。"
-           "不抄民国底本原句，也不套老师逐字自译。")
+JW_NOTE = ("经文分两栏：「我的经文」是我的手笔，「老师口播」是课堂上的讲师原话。"
+           "底本与口播本是文献，两边都不混。")
 OUT_DIR = os.path.join(ROOT, "站点")
 IMG_DIR = os.path.join(ROOT, "_数据", "图片")
 VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
@@ -214,8 +219,18 @@ def render_md(md, base_title=""):
                                  for c in cells_j), default=0))
             est = sum(w * 13.5 + 26 for w in colw)
             stack = est > 300
+            # 首列若是短标签（如附录来源表里的「老师经文」「我的经文」），
+            # 让它整行不折——否则三五个字被挤成一字一行，看着像断词。
+            # 判据：首列最长不超过 6 字，且其它列明显更长。
+            first_short = colw[0] <= 6 and len(colw) > 1 and max(colw[1:]) >= 12
+            cls = []
+            if wide:
+                cls.append("wide")
+            if first_short:
+                cls.append("first-nowrap")
+            cls_attr = f' class="{" ".join(cls)}"' if cls else ""
             t = [f'<div class="tbl-wrap{" stack" if stack else ""}">'
-                 f'<table{" class=\"wide\"" if wide else ""}><thead><tr>']
+                 f"<table{cls_attr}><thead><tr>"]
             t += [f"<th>{inline(c)}</th>" for c in head]
             t.append("</tr></thead><tbody>")
             # data-label 给窄屏堆叠用（见 CSS 里的 ≤640px 分支）
@@ -706,17 +721,27 @@ def foot_sections():
     )
 
 
-# ---------- 研习库自编经文（唯一源：经文/*.md） ----------
+# ---------- 经文（唯一源：经文/*.md，一山一篇 + 卦体） ----------
 
 def jingwen_files():
-    """参与构建的自编经文文件。"""
+    """参与构建的经文文件。"""
     if not os.path.isdir(JINGWEN_DIR):
         return []
     return sorted(f for f in os.listdir(JINGWEN_DIR) if f.endswith(".md"))
 
 
-def jingwen_gua(fname):
-    """从文件名取卦字：01 坎卦 壬子癸.md -> 坎。"""
+def jingwen_gua(key):
+    """条目名取所属卦：'壬山' -> 坎；'卦体坤' -> 坤。"""
+    if key.startswith("卦体"):
+        return key[2:]
+    for g in ALL_GUA:
+        if key[0] in g["sz"]:
+            return g["g"]
+    return ""
+
+
+def jingwen_gua_of_file(fname):
+    """从页面文件名取卦字：'01 坎卦 壬子癸.md' -> 坎。"""
     stem = os.path.splitext(fname)[0]
     for g in ALL_GUA:
         if g["g"] in stem:
@@ -725,54 +750,67 @@ def jingwen_gua(fname):
 
 
 def load_jingwen():
-    """读全部自编经文，返回 [(卦字, 文件名, md)]，按文件名排序。"""
+    """读全部经文，返回 [(条目名, 卦字, md)]，按文件名排序。"""
     out = []
     for f in jingwen_files():
+        key = os.path.splitext(f)[0]
         md = open(os.path.join(JINGWEN_DIR, f), encoding="utf-8").read()
-        out.append((jingwen_gua(f), f, md))
+        out.append((key, jingwen_gua(key), md))
     return out
 
 
 _JW_CACHE = None
 
 
-def jingwen_by_stem():
-    """经文按文件名主干索引：'01 坎卦 壬子癸' -> (卦字, 文件名, md)。
-
-    卦山线的页面文件名与经文文件名同主干（01 坎卦 壬子癸），
-    所以按主干一比一配对，不用在 md 里另写标记。
-    """
+def jingwen_by_key():
+    """经文按条目名索引：'壬山' -> (卦字, md)。"""
     global _JW_CACHE
     if _JW_CACHE is None:
-        _JW_CACHE = {os.path.splitext(f)[0]: (g, f, md) for g, f, md in load_jingwen()}
+        _JW_CACHE = {key: (g, md) for key, g, md in load_jingwen()}
     return _JW_CACHE
 
 
-def jingwen_title(md, fallback=""):
-    """取经文篇名（第一行 h1）。"""
-    for l in md.split("\n"):
-        if l.startswith("# "):
-            return l[2:].strip()
-    return fallback
+def jingwen_seq(key):
+    """条目在卦内的序号：卦体 0，三山按先后天次序 1/2/3。"""
+    gua = jingwen_gua(key)
+    if key.startswith("卦体"):
+        return 0
+    for g in ALL_GUA:
+        if g["g"] == gua and g.get("shan"):
+            for i, (s, _, _) in enumerate(g["shan"]):
+                if s == key[0]:
+                    return i + 1
+    return 9
 
 
-def jingwen_fragment(md, prefix):
+def jingwen_gua_keys(gua):
+    """一卦的条目清单：卦体 + 三山，次序固定。"""
+    keys = [f"卦体{gua}"]
+    for g in ALL_GUA:
+        if g["g"] == gua and g.get("shan"):
+            keys += [f"{s}山" for s, _, _ in g["shan"]]
+    return keys
+
+
+def jingwen_fragment(md, prefix, shift=1, with_title=False):
     """把一篇经文渲染成 HTML 片段。
 
-    两处讲究：
-    1. 标题统一下沉一级（h1 去掉、h2→h3、h3→h4），这样同一份片段贴到
-       Ⅱ 卦山线的卦页、Ⅲ 作业线的总表页、Ⅳ 导图线的脑图页时，
-       渲染结果一字不差——三处内容必须一样，是用户的硬要求。
-    2. 锚点加前缀（jw-卦-），三卦同页时（如 Ⅲ 线总表页）不至于串号。
+    三处讲究：
+    1. 标题统一下沉 shift 级。这样同一份片段贴到 Ⅱ 卦山线的卦页、
+       Ⅲ 作业线的总表页、Ⅳ 导图线的脑图页时，栏目标题文字完全一致——
+       三处内容必须一样，是用户的硬要求。
+    2. with_title=False 时丢掉 h1（条目名），因为 Ⅱ 线所在的山标题
+       已经写着「壬山 · 财富能力」，不必重复一遍。
+    3. 锚点加前缀（jw-卦-序号-），同一卦的卦体与三山在一页上时不至于串号。
     """
     shifted = []
     for l in md.split("\n"):
         m = re.match(r"^(#{1,5})(\s+)(.*)$", l)
         if m:
             lv = len(m.group(1))
-            if lv == 1:
-                continue          # 卦名由所在页面的标题承担，不重复
-            shifted.append("#" * (lv + 1) + m.group(2) + m.group(3))
+            if lv == 1 and not with_title:
+                continue
+            shifted.append("#" * (lv + shift) + m.group(2) + m.group(3))
         else:
             shifted.append(l)
     out, _ = render_md("\n".join(shifted))
@@ -780,17 +818,59 @@ def jingwen_fragment(md, prefix):
     return out
 
 
-def jingwen_block(md, gua, heading="研习库自编经文"):
-    """经文整块：小节标题 + 来源说明 + 片段。Ⅱ Ⅲ Ⅳ 三处共用同一段。"""
-    prefix = f"jw-{gua}-"
-    return (f'<h2 class="chap" id="{prefix}sec">{heading}</h2>'
+def jw_entry(key, md, shift=1, with_title=False):
+    """一条经文（一个山或一个卦体）渲染成 HTML 片段。"""
+    gua = jingwen_gua(key)
+    prefix = f"jw-{gua}-{jingwen_seq(key)}-"
+    return jingwen_fragment(md, prefix, shift, with_title)
+
+
+def jw_for_gua(gua, shift=1, with_title=False):
+    """一卦的卦体 + 三山，按卦体、三山次序拼起来。"""
+    JW = jingwen_by_key()
+    out = []
+    for k in jingwen_gua_keys(gua):
+        if k in JW:
+            out.append(jw_entry(k, JW[k][1], shift, with_title))
+    return "".join(out)
+
+
+def jw_section(gua, shift=1, with_title=False, heading="经文"):
+    """一卦经文的整块：小节标题 + 来源说明 + 内容。"""
+    return (f'<h2 class="chap" id="jw-{gua}-sec">{heading}</h2>'
             f'<p class="jw-note">{JW_NOTE}</p>'
-            + jingwen_fragment(md, prefix))
+            + jw_for_gua(gua, shift, with_title))
 
 
-def jingwen_all():
-    """全部经文拼成一大段，给 Ⅲ 作业线的「自编经文总表」页用。"""
-    return "".join(jingwen_block(md, gua) for gua, f, md in load_jingwen())
+def jingwen_gua_order():
+    """经文的卦序：跟 Ⅱ 卦山线的页面顺序走（坎、坤、震），不按八宫排。"""
+    order = []
+    d = os.path.join(ROOT, "内容", "Ⅱ-卦山线")
+    if os.path.isdir(d):
+        for f in sorted(os.listdir(d)):
+            if not f.endswith(".md"):
+                continue
+            g = jingwen_gua_of_file(f)
+            if g and g not in order:
+                order.append(g)
+    return order
+
+
+def jw_all():
+    """全部经文按卦分组，给 Ⅲ 作业线的《经文总表》页用。
+
+    按卦分组是因为一页装三卦十二篇，不分组就分不出谁是谁。
+    """
+    JW = jingwen_by_key()
+    out = []
+    for gua in jingwen_gua_order():
+        rows = []
+        for k in jingwen_gua_keys(gua):
+            if k in JW:
+                rows.append(jw_entry(k, JW[k][1], shift=2, with_title=True))
+        if rows:
+            out.append(f'<h2 class="chap" id="jw-gua-{gua}">{gua}卦</h2>' + "".join(rows))
+    return "".join(out)
 
 
 def extract_lead(md, fallback=""):
@@ -905,14 +985,21 @@ def build():
                 k = pg["order"] - 2
                 body_html = hw_badge(HW_ITEMS[k] if 0 <= k < len(HW_ITEMS) else None) + body_html
 
-        # 自编经文：唯一源是 经文/*.md，投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处。
-        # Ⅲ 线总表页一次挂全；Ⅱ 线每卦页末尾挂本卦那套（文件名与经文同名，一比一配）。
+        # 经文：唯一源是 经文/*.md，投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处。
+        # Ⅲ 线总表页一次挂全；Ⅱ 线卦页在山章节里按 @@JW:条目@@ 就地插入；
+        # Ⅳ 线脑图页挂本卦那套。
         if "@@JINGWEN_ALL@@" in body_html:
-            body_html = body_html.replace("<p>@@JINGWEN_ALL@@</p>", jingwen_all())
-        elif pg["section"] == "Ⅱ-卦山线":
-            jw = jingwen_by_stem().get(os.path.splitext(pg["file"])[0])
-            if jw:
-                body_html += jingwen_block(jw[2], jw[0])
+            body_html = body_html.replace("<p>@@JINGWEN_ALL@@</p>", jw_all())
+        JW = jingwen_by_key()
+
+        def _jw_ph(m):
+            key = m.group(1)
+            if key not in JW:
+                print(f"  ⚠ 经文条目不存在：{key}")
+                return m.group(0)
+            return jw_entry(key, JW[key][1], shift=1, with_title=False)
+
+        body_html = re.sub(r"<p>@@JW:([^@]+)@@</p>", _jw_ph, body_html)
 
         toc_html = "".join(
             f'<a class="lv{lv}" href="#{a}" title="{t}">{t}</a>' for lv, t, a in toc_items
@@ -1016,7 +1103,7 @@ def build():
                      '<p>坎、坤、震各一张，与卦山线里的条目一一对应。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">据</span><div><h3>坎、坤有老师原图</h3>'
-                     '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与自译混在一起。</p>'
+                     '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与经文混在一起。</p>'
                      '</div></li>'
                      '</ul></div>')
         else:
@@ -1097,7 +1184,6 @@ def build_minds(pages):
         return made
     MIND_TMPL = tpl("mind.html")
     files = mind_files()
-    JW = jingwen_by_stem()
 
     # 先扫一遍拿到全部图，页面之间才能互相链接（侧栏「本 节」要用）
     raw = []
@@ -1109,7 +1195,7 @@ def build_minds(pages):
         m = re.match(r"^(\d+)", f)
         no = m.group(1) if m else ""
         stem = os.path.splitext(f)[0]
-        gua = jingwen_gua(f)
+        gua = jingwen_gua_of_file(f)
         # 文件名自带序号「01 坎卦 壬子癸」，序号已用在 Ⅳ-01 里，标题部分不再重复带号
         name = re.sub(r"^\d+[\s.、]*", "", stem)
         slug = "Ⅳ-" + no.zfill(2) + "-" + re.sub(r"\s+", "", name)
@@ -1118,9 +1204,8 @@ def build_minds(pages):
                         gua=gua, slug=slug, lead=lead, file=f))
 
     for it in raw:
-        # 本卦的自编经文：与 Ⅱ 卦山线的卦页、Ⅲ 作业线的总表页同一份源
-        jw = JW.get(it["stem"])
-        note = jingwen_block(jw[2], jw[0]) if jw else ""
+        # 本卦的经文：与 Ⅱ 卦山线的卦页、Ⅲ 作业线的总表页同一份源
+        note = jw_section(it["gua"], shift=1, with_title=True)
         sub = ("<p class=\"side-title\">本 节</p><ul class=\"d-sub\">"
                + "".join(
                    f'<li><a class="{"on" if x["no"] == it["no"] else ""}" href="{x["slug"]}.html">'
@@ -1473,14 +1558,14 @@ def _parts(pages, mind_pages):
                "老师每节课不只讲山，理法、技法、案例、答疑都在这里，按讲课顺序记。",
                ["理法与砂水本质", "技法与做局", "案例复盘与答疑"], "篇"),
         "Ⅱ": ("一山一页，八段讲透",
-               "每山固定八段：论断、见水、见砂、兼卦、形煞、应期、自译经文、速查。",
-               ["每山一句论断", "三版经文对照", "两种自译经文"], "篇"),
+ "每山固定八段：论断、见水、见砂、兼卦、形煞、应期、我的经文与老师口播、速查。",
+ ["每山一句论断", "三版经文对照", "我的经文与老师口播两栏"], "篇"),
         "Ⅲ": ("只引用，不重复",
                "正文里已讲过的只给锚点。这里只写老师批语、未做题目拆解、题目到章节的映射表。",
                ["老师批语汇总", "未做题面拆解", "题目映射表"], "篇"),
         "Ⅳ": ("一卦一张骨架图",
                "把一卦三山的层级收成一张图：先看主干，再逐层展开。与正文同一套内容，不是另一份材料。",
-               ["逐层展开的节点", "与卦山线一一对应", "图下附本卦自编经文"], "张"),
+               ["逐层展开的节点", "与卦山线一一对应", "图下附本卦经文"], "张"),
     }
     cards = []
     for d, num, short, desc, color in SECTIONS:
@@ -1536,6 +1621,8 @@ def _recent(pages, mind_pages):
             f'<a href="{p["slug"]}.html">'
             f'<span class="k">{p["num"]} 线</span>'
             f'<span class="t">{html.escape(p["title"])}</span>'
+            # 标题与「第几篇」之间拉一条引导线，宽屏下才不会在中间空一大段
+            f'<span class="lead" aria-hidden="true"></span>'
             f'<span class="d">第 {p["order"]:02d} {p.get("unit", "篇")}</span></a>'
         )
     return "".join(rows)

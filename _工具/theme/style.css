@@ -51,6 +51,15 @@
   --radius:14px;
   --shadow-1:0 1px 2px rgba(18,24,27,.04),0 4px 14px rgba(18,24,27,.05);
   --shadow-2:0 2px 4px rgba(18,24,27,.04),0 16px 40px rgba(18,24,27,.10);
+
+  /* 全站外壳宽度。原先是 1280（首页/顶栏/页脚）与 1400（正文页），
+     在 27 寸与 4K 上整页像一条窄带。现在统一放到 1800。
+     正文文字不跟着拉满——中文一行超过 50 字就跳行，
+     文字停在 --measure，表格与图框吃满整列。
+     用 rem 不用 em：em 按各元素自己的字号算，
+     h2（25px）和 p（16px）会算出两个不同的宽度，右边对不齐。 */
+  --shell:1800px;
+  --measure:50rem;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -77,7 +86,7 @@ a:hover{text-decoration:underline;text-underline-offset:3px}
   transition:background .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
 .nav-in{
-  max-width:1280px;margin:0 auto;height:var(--nav-h);padding:0 32px;
+  max-width:var(--shell);margin:0 auto;height:var(--nav-h);padding:0 32px;
   display:flex;align-items:center;gap:34px;
 }
 .logo{
@@ -154,14 +163,21 @@ body.home .nav.scrolled .nav-links a.on{background:var(--brand-soft);color:var(-
 body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);background:var(--bg)}
 
 /* ---------------------------------------------------------------- 文档布局 */
+/* 三栏：左侧目录 / 正文 / 右侧页内目录。
+   外壳放到 1800，但正文文字不跟着拉满——中文一行超过 50 字就跳行。
+   正文里的段落、标题、引文限宽在 --measure；表格、图框、代码块、脑图吃满整列。
+   侧栏与右目录用 minmax：宽屏时给到 248/248，窄屏自己缩，
+   中间列永远能拿到剩下的宽度。 */
 .layout{
-  max-width:1400px;margin:0 auto;
-  display:grid;grid-template-columns:236px minmax(0,1fr) 216px;
-  gap:46px;padding:44px 32px 110px;
+  max-width:var(--shell);margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(190px,248px) minmax(0,1fr) minmax(180px,248px);
+  gap:clamp(36px,2.8vw,56px);
+  padding:44px 40px 110px;
   justify-content:center;
 }
 .layout.center{grid-template-columns:minmax(0,880px);justify-content:center}
-.layout.two{grid-template-columns:236px minmax(0,1fr);max-width:1180px}
+.layout.two{grid-template-columns:minmax(190px,248px) minmax(0,1fr)}
 
 .side{
   position:sticky;top:calc(var(--nav-h) + 26px);align-self:start;
@@ -220,6 +236,28 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 
 /* ---------------------------------------------------------------- 正文 */
 .doc{min-width:0}
+
+/* 正文分两档：
+   —— 文字栏（段落/清单/引文/图框）限宽在 --measure。
+      中文一行超过 50 字就跳行，段落拉太长会一行一行地找行尾。
+      引文与图框内部也是正文（dt/dd 一行行读），跟着段落同宽才对。
+   —— 宽内容（表格/代码块/卡片/脑图/状态条/上下页）不吃这个限制，吃满整列。
+      这个站有 150 多个表格容器，六列以上挤在窄栏里最难受。
+   —— h2 的分隔线是章节边界，走宽内容那一档：线通栏，与下面的表格同界，
+      宽窄两档就被这条线分开，不会看着像表格顶破了章节。
+   两档都从同一条左边界起，右侧才会齐。 */
+.doc > *{max-width:var(--measure)}
+.doc > .tbl-wrap,
+.doc > pre,
+.doc > .mind-wrap,
+.doc > .hw-status,
+.doc > .hw-nums,
+.doc > .cards,
+.doc > .mind-cards,
+.doc > .pager,
+.doc > h2{max-width:none}
+/* 两栏页（章节索引、脑图页）整页都是卡片与图框，不按文字行宽收 */
+.layout.two .doc > *{max-width:none}
 .crumb{
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   font-size:13px;color:var(--ink-3);margin-bottom:20px;
@@ -349,6 +387,9 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .doc table.wide{font-size:13.6px}
 .doc table.wide th,.doc table.wide td{padding:9px 11px}
 .doc table.wide th:last-child,.doc table.wide td:last-child{white-space:nowrap;padding-right:14px}
+/* 首列是短标签时整列不折：「老师经文」被挤成「老师经／文」看着像断词 */
+.doc table.first-nowrap th:first-child,
+.doc table.first-nowrap td:first-child{white-space:nowrap}
 
 /* 徽标 */
 .tag{
@@ -378,8 +419,11 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   border-top:1px solid var(--line);background:var(--bg-2);
   margin-top:0;padding:56px 0 44px;font-size:14px;color:var(--ink-3);
 }
-.foot-in{max-width:1280px;margin:0 auto;padding:0 32px;
+.foot-in{max-width:var(--shell);margin:0 auto;padding:0 32px;
   display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:48px}
+/* 外壳放到 1800 后页脚左栏会有 729px，一行 52 字太长，读起来要来回找行首。
+   文字段落限在自己的行长上，栏位留着，整页才不散。 */
+.foot-in>div:first-child p{max-width:34em}
 .foot h6{
   margin:0 0 12px;font-size:11.5px;font-weight:600;letter-spacing:.14em;
   color:var(--ink-4);
@@ -398,7 +442,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .foot .brandline .mark svg{width:13px;height:13px}
 .foot .meta{margin-top:14px;font-size:12.5px;color:var(--ink-4)}
 .foot-bar{
-  max-width:1280px;margin:0 auto;padding:24px 32px 0;
+  max-width:var(--shell);margin:0 auto;padding:24px 32px 0;
   border-top:1px solid var(--line);margin-top:44px;
   display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
   font-size:12.5px;color:var(--ink-4);
@@ -429,9 +473,9 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .hero-in{
   position:relative;z-index:2;
-  max-width:1280px;width:100%;margin:0 auto;padding:0 32px;
-  display:grid;grid-template-columns:minmax(0,1fr) 468px;
-  gap:56px;align-items:center;
+  max-width:var(--shell);width:100%;margin:0 auto;padding:0 32px;
+  display:grid;grid-template-columns:minmax(0,1fr) 560px;
+  gap:64px;align-items:center;
 }
 
 .hero .pill{
@@ -534,7 +578,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 /* 首页区块 */
 .sec{padding:96px 0}
 .sec.tight{padding:0 0 96px}
-.wrap{max-width:1280px;margin:0 auto;padding:0 32px}
+.wrap{max-width:var(--shell);margin:0 auto;padding:0 32px}
 .sec-head{max-width:760px;margin-bottom:44px}
 .eyebrow{
   display:inline-flex;align-items:center;gap:8px;
@@ -548,8 +592,14 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .sec-head p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.8}
 
-/* 四条线卡片：2×2 四宫格（四条线摆一行太挤，3+1 的孤行也不好看） */
+/* 四条线卡片。2×2 四宫格是 1280 宽时的选择——四条线摆一行太挤，
+   3+1 的孤行也不好看。放到 1800 之后一行四张正好，
+   每张约 420px，跟下面 .g8-grid 的单卡同宽，整页栅格对得上。
+   所以：默认仍留 2×2（窄屏与中屏的老样子），只在真正宽的屏上换四张一行。 */
 .parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (min-width:1700px){
+  .parts{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 .part{
   position:relative;display:flex;flex-direction:column;
   padding:30px 28px 26px;border:1px solid var(--line);border-radius:var(--radius);
@@ -628,12 +678,21 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   flex:none;font-size:11.5px;letter-spacing:.1em;color:var(--gold);
   font-weight:600;width:52px;
 }
-.recent .t{font-size:15.5px;font-weight:500;color:var(--ink)}
-.recent .d{margin-left:auto;font-size:13px;color:var(--ink-4)}
+.recent .t{flex:none;font-size:15.5px;font-weight:500;color:var(--ink)}
+/* 引导线：标题与「第几篇」之间的空白太大会散架，用一条虚线接上。
+   用 --ink-4 而不是 --line：后者是 #e6e6df，落在白底上几乎看不见。 */
+.recent .lead{
+  flex:1;min-width:24px;height:2px;
+  background-image:linear-gradient(90deg,var(--ink-4) 0 2px,transparent 2px 7px);
+  background-size:7px 2px;background-repeat:repeat-x;
+  background-position:center;
+  opacity:.5;align-self:center;
+}
+.recent .d{flex:none;font-size:13px;color:var(--ink-4)}
 
 /* 首页 CTA */
 .cta{
-  margin:0 auto 96px;width:calc(100% - 64px);max-width:1280px;
+  margin:0 auto 96px;width:calc(100% - 64px);max-width:var(--shell);
   background:linear-gradient(150deg,#0b1418 0%,#152c34 100%);
   border-radius:20px;padding:56px 60px;color:#fff;
   display:flex;flex-direction:column;align-items:center;text-align:center;gap:26px;
@@ -707,7 +766,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .doc .mh-list p{margin:0;font-size:13.6px;color:var(--ink-2);line-height:1.75}
 
 /* 通用卡片 */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;margin-top:26px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,460px));gap:18px;margin-top:26px}
 .card{
   display:flex;flex-direction:column;padding:22px 22px 20px;
   border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);
@@ -847,7 +906,8 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 
 .hero-wheel{
   position:absolute;left:50%;top:50%;z-index:1;pointer-events:none;
-  width:min(1180px,172vw);aspect-ratio:1;
+  /* 转盘跟着外壳一起放大：1800 的页面上，1180 的盘显得小了一圈 */
+  width:min(1420px,172vw);aspect-ratio:1;
   transform:translate(-50%,-50%) scale(var(--hs,1));
   transform-origin:center center;
   opacity:.92;
@@ -901,10 +961,19 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 }
 
 /* ============================================ 响应式 */
+/* 外壳放到 1800 之后，断点跟着重估：
+   —— 1560px 以下藏掉右侧页内目录（它是最先被挤没的那一栏），
+      留成侧栏 + 正文两栏，中间列拿回全部宽度。
+   —— 1240px 以下侧栏也收窄。 */
+@media (max-width:1560px){
+  .layout{grid-template-columns:minmax(180px,228px) minmax(0,1fr);gap:40px;padding-left:28px;padding-right:28px}
+  .layout.two{grid-template-columns:minmax(180px,228px) minmax(0,1fr)}
+  .toc{display:none}
+}
 @media (max-width:1240px){
   .layout,.layout.two{grid-template-columns:228px minmax(0,1fr);gap:40px;padding-left:26px;padding-right:26px}
-  .toc{display:none}
   .hero-in{grid-template-columns:minmax(0,1fr) 340px;gap:40px}
+  .map{grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:48px}
 }
 @media (max-width:1024px){
   .nav-in{padding:0 22px;gap:20px}
@@ -958,7 +1027,10 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   min-height:min(92vh,900px);text-align:center;
 }
 .hero-in.solo{
-  display:block;max-width:980px;margin:0 auto;padding:0 32px;
+  /* 首屏是全站门面。原先限死 980px，外壳放到 1800 之后它在中间就成了一条窄带，
+     底下的转盘比文字宽出一大圈。这里放宽到 1180px，
+     但正文那一段（manifesto）另有自己的行长，不跟着拉。 */
+  display:block;max-width:1180px;margin:0 auto;padding:0 32px;
   position:relative;z-index:3;
 }
 .hero.hero-quote h1{
@@ -973,7 +1045,8 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   font-family:var(--serif);
   font-size:clamp(17px,1.6vw,21.5px);line-height:2.15;
   color:rgba(255,255,255,.8);letter-spacing:.04em;
-  margin:0 auto 46px;max-width:800px;
+  /* 860px 时末行只剩半句，孤零零一行。收到 780px，行数与断句都匀了。 */
+  margin:0 auto 46px;max-width:780px;
 }
 .hero.hero-quote .hero-cta{justify-content:center}
 .hero.hero-quote .hero-stats{justify-content:center;margin-top:56px}
@@ -1001,8 +1074,8 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 
 /* 罗盘 */
 .map{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,412px);
-  gap:58px;align-items:center;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);
+  gap:72px;align-items:center;
 }
 .compass{position:relative}
 .compass::before{
@@ -1010,7 +1083,9 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   background:radial-gradient(circle,rgba(44,106,124,.10),transparent 66%);
   filter:blur(26px);
 }
-.compass svg{position:relative;display:block;width:100%;height:auto;max-width:668px;margin:0 auto}
+/* 罗盘吃掉整个左栏。原先限死 860px，左栏 1144px 时两侧各空 142px，
+   图跟右边的图例栏就离了。 */
+.compass svg{position:relative;display:block;width:100%;height:auto;max-width:1080px;margin:0 auto}
 .lsp a{cursor:pointer}
 .lsp a text{transition:fill .18s}
 .lsp a:hover text{fill:#b8894a}
@@ -1061,7 +1136,7 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 .tab-panel.on{display:block}
 
 /* 按卦读 */
-.g8-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.g8-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
 .g8{
   border:1px solid var(--line);border-radius:12px;background:var(--bg);
   padding:20px 18px 18px;transition:box-shadow .2s,border-color .2s;
@@ -1098,7 +1173,7 @@ a.row.full:hover{text-decoration:none;filter:brightness(1.1)}
 
 /* 按山读：八列＝八卦，每列三山 */
 .m24{
-  display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px;
+  display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:16px;
 }
 .m24-col{display:grid;gap:6px;align-content:start}
 .m24-h{
@@ -1271,6 +1346,12 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .d-sub li a:hover{text-decoration:none;background:var(--bg-2)}
   .d-sub li a .n{color:var(--ink-4);font-size:12px;flex:none;min-width:15px}
   .d-sub li a.on{background:var(--bg-3);color:var(--ink);font-weight:600}
+
+  /* 首页「已上线」列表：窄屏放不下引导线，收掉。
+     不收的话那根线会把页码挤出屏幕（390px 以下实测溢出 25px）。 */
+  .recent a{gap:10px}
+  .recent .lead{display:none}
+  .recent .t{margin-left:auto;text-align:right}
 
   /* ---------- 骨架：单列，页内目录收成「本页目录」折叠条 ---------- */
   .layout,.layout.two{
