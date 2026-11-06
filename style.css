@@ -255,6 +255,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 .doc > .cards,
 .doc > .mind-cards,
 .doc > .pager,
+.doc > .jw-pair,
 .doc > h2{max-width:none}
 /* 两栏页（章节索引、脑图页）整页都是卡片与图框，不按文字行宽收 */
 .layout.two .doc > *{max-width:none}
@@ -592,13 +593,17 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .sec-head p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.8}
 
-/* 四条线卡片。2×2 四宫格是 1280 宽时的选择——四条线摆一行太挤，
-   3+1 的孤行也不好看。放到 1800 之后一行四张正好，
-   每张约 420px，跟下面 .g8-grid 的单卡同宽，整页栅格对得上。
-   所以：默认仍留 2×2（窄屏与中屏的老样子），只在真正宽的屏上换四张一行。 */
+/* 五条线卡片。默认 2 列 × 3 行，最后一格（Ⅴ 经文线）跨两列占满，
+   免得像四条线时那样出现 2+2+1 的孤行；宽屏换三列一行排开。
+   卡片区是首页「体例」一节的概览，不是正文，跨格不影响阅读。 */
 .parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.parts .part:last-child{grid-column:1/-1}
+@media (min-width:1560px){
+  .parts{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .parts .part:last-child{grid-column:auto}
+}
 @media (min-width:1700px){
-  .parts{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .parts{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
 .part{
   position:relative;display:flex;flex-direction:column;
@@ -877,6 +882,65 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   margin:.3em 0 1.3em;padding:8px 14px;
   border-left:3px solid var(--line);
   background:var(--bg-3);border-radius:0 8px 8px 0;
+}
+
+/* ============================================ Ⅴ 经文线：两栏对照卡 */
+/* Ⅱ Ⅲ Ⅳ 三处的经文是行文里的一段，栏上下接着走；
+   Ⅴ 线要的是并排对读——同一篇，我的在左、老师的在右。
+   宽屏并排，窄屏叠成上下（先我的后老师的），不横向撑破。 */
+
+.jw-pair-h{
+  font-family:var(--serif);font-size:20px;font-weight:600;
+  color:var(--ink);letter-spacing:.03em;
+  margin:38px 0 .2em;padding-top:4px;
+}
+/* 标题与副标题跟卡片同宽，不然左右边界不齐 */
+.doc > .jw-pair-h,
+.doc > .jw-sub{max-width:none}
+.jw-pair{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  margin:14px 0 40px;
+  border:1px solid var(--line);border-radius:14px;
+  background:var(--bg);overflow:hidden;
+}
+/* 中缝：一条细线，把左右两栏分开 */
+.jw-pair-col{
+  min-width:0;padding:18px 22px 20px;
+}
+.jw-pair-col+.jw-pair-col{
+  border-left:1px solid var(--line-2);
+}
+/* 栏名：我的用墨青，老师的用铜金，一眼分清谁写的 */
+.jw-pair-label{
+  margin:0 0 12px;
+  font-size:12.5px;font-weight:600;letter-spacing:.16em;
+  display:flex;align-items:center;gap:8px;
+}
+.jw-pair-label::before{
+  content:"";width:7px;height:7px;border-radius:50%;flex:none;
+}
+.jw-pair-col.mine .jw-pair-label{color:var(--brand-2)}
+.jw-pair-col.mine .jw-pair-label::before{background:var(--brand-2)}
+.jw-pair-col.teacher .jw-pair-label{color:var(--gold)}
+.jw-pair-col.teacher .jw-pair-label::before{background:var(--gold)}
+/* 栏内容：正文级排版，空栏的占位也走这里 */
+.jw-pair-body{
+  font-size:15px;line-height:1.95;color:var(--ink);
+}
+.jw-pair-body p{margin:0 0 .85em}
+.jw-pair-body p:last-child{margin-bottom:0}
+.jw-pair-body .jw-tbd{
+  margin:0;padding:12px 14px;
+  border:1px dashed var(--line);border-left-width:1px;
+  background:var(--bg-2);border-radius:8px;
+  color:var(--ink-4);text-align:center;
+}
+/* 窄屏：两栏叠起来，先我的后老师的 */
+@media (max-width:900px){
+  .jw-pair{grid-template-columns:1fr}
+  .jw-pair-col+.jw-pair-col{
+    border-left:0;border-top:1px solid var(--line-2);
+  }
 }
 
 /* ============================================ 作业与批阅状态 */
