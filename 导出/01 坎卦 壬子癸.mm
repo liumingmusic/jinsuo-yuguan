@@ -23,7 +23,7 @@
       <node TEXT="坎水入巽 → 老大老二绝嗣，老三稍好" />
       <node TEXT="坎兑离都见水 → 先贫后富、妻子贤惠" />
       <node TEXT="坎水＋兑离砂 → 二五八子无后" />
-      <node TEXT="坎水＋兑震水 → 意外得财，拿命换的〔待校〕" />
+      <node TEXT="坎水＋兑震水 → 意外得财，拿命换的" />
       <node TEXT="为什么：坎为藏，水把「藏」变成「泄」" />
     </node>
     <node TEXT="卦见砂">
@@ -31,7 +31,7 @@
       <node TEXT="环抱砂最优：形优美、隔溪隔水、不逼压宫" />
       <node TEXT="砂太近 → 不分房份，皆应" />
       <node TEXT="中间断（寒透风）→ 二房丁损财耗" />
-      <node TEXT="无离水相配 → 孤单贫〔待校〕" />
+      <node TEXT="无离水相配 → 孤单贫" />
       <node TEXT="坎砂＋艮砂 → 老三应凶、绝嗣" />
       <node TEXT="坎砂＋艮乾砂 → 老三无子、求财难" />
       <node TEXT="一句话：坎要「实」，实才藏得住" />
@@ -93,9 +93,9 @@
         <node TEXT="对宫相催：只放大、不矫正" />
         <node TEXT="飘转（布局用飘、论断用挖）" />
       </node>
-      <node TEXT="我的经文与老师口播">
+      <node TEXT="我的经文与老师经文">
         <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师口播：〔待补〕" />
+        <node TEXT="老师经文：〔待补〕" />
       </node>
     </node>
     <node TEXT="子山 · 财库（家运）">
@@ -160,9 +160,9 @@
         <node TEXT="本宫见水再催午水 → 桃花局" />
         <node TEXT="现代判法：冰箱判砂，开盖鱼缸判真水" />
       </node>
-      <node TEXT="我的经文与老师口播">
+      <node TEXT="我的经文与老师经文">
         <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师口播：〔待补〕" />
+        <node TEXT="老师经文：〔待补〕" />
       </node>
     </node>
     <node TEXT="癸山 · 理财能力（主阴）">
@@ -213,9 +213,9 @@
         <node TEXT="兴奋类违禁品：癸山为核心" />
         <node TEXT="致幻剂：亥山、巳山" />
       </node>
-      <node TEXT="我的经文与老师口播">
+      <node TEXT="我的经文与老师经文">
         <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师口播：〔待补〕" />
+        <node TEXT="老师经文：〔待补〕" />
       </node>
     </node>
     <node TEXT="断卦次序">
