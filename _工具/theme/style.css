@@ -855,6 +855,18 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   border-left:3px solid var(--gold-2);
   background:var(--bg-3);border-radius:0 8px 8px 0;
 }
+/* 条目副标题：卦 · 山 · 定位 */
+.jw-sub{
+  font-size:13.4px;line-height:1.7;color:var(--ink-3);
+  margin:.1em 0 .9em;
+}
+/* 空栏占位：我的经文与 AI 自撰的一律清空，只留这一行 */
+.jw-tbd{
+  font-size:13.4px;line-height:1.8;color:var(--ink-3);
+  margin:.3em 0 1.3em;padding:8px 14px;
+  border-left:3px solid var(--line);
+  background:var(--bg-3);border-radius:0 8px 8px 0;
+}
 
 /* ============================================ 作业与批阅状态 */
 

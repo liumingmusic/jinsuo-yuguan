@@ -33,7 +33,11 @@ MIND_SECTION = "Ⅳ-导图线"
 # 我的那栏只放我自己写的；老师那栏只放课堂口播里老师的原话，
 # 老师还没给的地方留占位，不代写。
 JINGWEN_DIR = os.path.join(ROOT, "经文")
+JW_MINE = "我的经文"
+JW_TEACHER = "老师口播 · 据课堂记录整理"
+JW_TBD = "〔待补〕"
 JW_NOTE = ("经文分两栏：「我的经文」是我的手笔，「老师口播」是课堂上的讲师原话。"
+           "目前只收了老师的口播；我的那一栏各山各卦都留着空位，等统一整理过一版再补上。"
            "底本与口播本是文献，两边都不混。")
 OUT_DIR = os.path.join(ROOT, "站点")
 IMG_DIR = os.path.join(ROOT, "_数据", "图片")
@@ -792,37 +796,93 @@ def jingwen_gua_keys(gua):
     return keys
 
 
-def jingwen_fragment(md, prefix, shift=1, with_title=False):
-    """把一篇经文渲染成 HTML 片段。
+def jw_slug(text):
+    """标题转锚点用的短名，规则与 render_md 里的 make_anchor 一致（这里不做去重，
+    因为每篇经文各自渲染、各自有 jw-卦-序号- 前缀，不会撞）。"""
+    return re.sub(r"[^\w一-龥]+", "-", text).strip("-") or "sec"
 
-    三处讲究：
-    1. 标题统一下沉 shift 级。这样同一份片段贴到 Ⅱ 卦山线的卦页、
-       Ⅲ 作业线的总表页、Ⅳ 导图线的脑图页时，栏目标题文字完全一致——
-       三处内容必须一样，是用户的硬要求。
-    2. with_title=False 时丢掉 h1（条目名），因为 Ⅱ 线所在的山标题
-       已经写着「壬山 · 财富能力」，不必重复一遍。
-    3. 锚点加前缀（jw-卦-序号-），同一卦的卦体与三山在一页上时不至于串号。
+
+def jw_parse(md):
+    """把一篇经文 md 拆开：(标题, 副标题, [(栏名, 栏内容行)])。
+
+    md 的体例固定：h1 是条目名，h1 后面一段是「卦 · 山 · 定位」的副标题，
+    再往后每个 h2 是一栏（我的经文 / 老师口播）。
     """
-    shifted = []
+    title = ""
+    sub = ""
+    secs = []
+    name = None
+    body = []
+    started = False
     for l in md.split("\n"):
-        m = re.match(r"^(#{1,5})(\s+)(.*)$", l)
-        if m:
-            lv = len(m.group(1))
-            if lv == 1 and not with_title:
-                continue
-            shifted.append("#" * (lv + shift) + m.group(2) + m.group(3))
-        else:
-            shifted.append(l)
-    out, _ = render_md("\n".join(shifted))
-    out = re.sub(r'id="(?!' + re.escape(prefix) + ')', 'id="' + prefix, out)
-    return out
+        if l.startswith("# "):
+            title = l[2:].strip()
+            started = True
+            continue
+        if l.startswith("## "):
+            if name is not None:
+                secs.append((name, body))
+            name = l[3:].strip()
+            body = []
+            continue
+        if not started:
+            continue
+        if name is None:
+            if l.strip() and not sub:
+                sub = l.strip()
+            continue
+        body.append(l)
+    if name is not None:
+        secs.append((name, body))
+    return title, sub, secs
+
+
+def jw_is_empty(body):
+    """一栏里除了〔待补〕这类占位标记以外没有实质内容，就算空栏。"""
+    txt = "\n".join(body).strip()
+    if not txt:
+        return True
+    return not re.sub(r"〔[^〕]*〕", "", txt).strip()
+
+
+def jw_render(key, md, shift=1, with_title=False):
+    """一条经文（一个山或一个卦体）渲染成 HTML 片段。
+
+    现在的口径：我的经文与 AI 自撰的一律清空，老师口播保留。
+    所以空栏不撑标题——只留一行浅灰的占位；有内容的栏照常出标题与正文。
+    这样一页上不会因为清空而留下十几个空标题。
+    """
+    gua = jingwen_gua(key)
+    prefix = f"jw-{gua}-{jingwen_seq(key)}-"
+    title, sub, secs = jw_parse(md)
+    out = []
+    if with_title and title:
+        out.append(f'<h{1 + shift} id="{prefix}{jw_slug(title)}">{inline(title)}</h{1 + shift}>')
+    if sub and with_title:
+        # 副标题只在带条目名的场合出现（Ⅲ 总表、Ⅳ 脑图页）。
+        # Ⅱ 线那一页上文已经写着「壬山 · 财富能力」，不必再重复一遍。
+        out.append(f'<p class="jw-sub">{inline(sub)}</p>')
+    empty_all = bool(secs) and all(jw_is_empty(b) for _, b in secs)
+    for name, body in secs:
+        anchor = prefix + jw_slug(name)
+        if empty_all:
+            # 两栏都空：合成一行占位，锚点仍各自保留，链接不会断
+            if name == secs[0][0]:
+                ids = "".join(f'<span id="{prefix}{jw_slug(n)}"></span>' for n, _ in secs)
+                out.append(f'<p class="jw-tbd">{ids}〔待补〕</p>')
+            continue
+        if jw_is_empty(body):
+            out.append(f'<p class="jw-tbd" id="{anchor}">{inline(name)}〔待补〕</p>')
+            continue
+        out.append(f'<h{2 + shift} id="{anchor}">{inline(name)}</h{2 + shift}>')
+        html, _ = render_md("\n".join(body))
+        out.append(html)
+    return "".join(out)
 
 
 def jw_entry(key, md, shift=1, with_title=False):
     """一条经文（一个山或一个卦体）渲染成 HTML 片段。"""
-    gua = jingwen_gua(key)
-    prefix = f"jw-{gua}-{jingwen_seq(key)}-"
-    return jingwen_fragment(md, prefix, shift, with_title)
+    return jw_render(key, md, shift, with_title)
 
 
 def jw_for_gua(gua, shift=1, with_title=False):
@@ -835,7 +895,7 @@ def jw_for_gua(gua, shift=1, with_title=False):
     return "".join(out)
 
 
-def jw_section(gua, shift=1, with_title=False, heading="经文"):
+def jw_section(gua, shift=2, with_title=False, heading="经文"):
     """一卦经文的整块：小节标题 + 来源说明 + 内容。"""
     return (f'<h2 class="chap" id="jw-{gua}-sec">{heading}</h2>'
             f'<p class="jw-note">{JW_NOTE}</p>'

@@ -94,7 +94,7 @@
         <node TEXT="飘转（布局用飘、论断用挖）" />
       </node>
       <node TEXT="我的经文与老师口播">
-        <node TEXT="我的经文：壬水汪汪阳气亏，二子身弱少作为" />
+        <node TEXT="我的经文：〔待补〕" />
         <node TEXT="老师口播：〔待补〕" />
       </node>
     </node>
@@ -161,7 +161,7 @@
         <node TEXT="现代判法：冰箱判砂，开盖鱼缸判真水" />
       </node>
       <node TEXT="我的经文与老师口播">
-        <node TEXT="我的经文：子水一沟不回头，财库穿底万事休" />
+        <node TEXT="我的经文：〔待补〕" />
         <node TEXT="老师口播：〔待补〕" />
       </node>
     </node>
@@ -214,7 +214,7 @@
         <node TEXT="致幻剂：亥山、巳山" />
       </node>
       <node TEXT="我的经文与老师口播">
-        <node TEXT="我的经文：癸水潺潺妇难孕，夫妻缘浅灶头凉" />
+        <node TEXT="我的经文：〔待补〕" />
         <node TEXT="老师口播：〔待补〕" />
       </node>
     </node>
