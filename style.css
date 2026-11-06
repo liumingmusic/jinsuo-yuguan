@@ -831,7 +831,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 
 /* ============================================ 来源标记（中性注记） */
-/* 〔口播〕/〔待校〕/〔待核〕/〔待考〕/〔原文如此〕/〔?〕 统一呈中性注记，不上色。 */
+/* 〔待校〕/〔待核〕/〔待考〕/〔原文如此〕/〔?〕 统一呈中性注记，不上色。 */
 .src-note{
   display:inline-block;
   font-size:.76em;line-height:1.5;
