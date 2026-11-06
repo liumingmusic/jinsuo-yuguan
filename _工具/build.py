@@ -605,7 +605,7 @@ def fill(tmpl, **kw):
 
 
 # 八宫二十四山。顺序按顺时针，起于坎（正北）。
-# status: full=已成篇 / taught=课已讲、页待补 / none=本阶段未及
+# status: full=已成篇（正文页已写全） / taught=已开讲（课上讲过，正文页未建） / none=未开讲（本课未讲）
 ALL_GUA = [
     dict(g="坎", sz="壬子癸", fang="北", no="一白", el="水", color="#1f4f5e", studied=True,
          note="主财与肾。三山中子居中，主精气神。",
@@ -619,8 +619,11 @@ ALL_GUA = [
          shan=[("甲", "行动力 · 长房", "full"),
                ("卯", "人脉 · 桃花", "full"),
                ("乙", "文昌 · 自处", "full")]),
-    dict(g="巽", sz="辰巽巳", fang="东南", no="四绿", el="木", color="#3b6b66", studied=False,
-         note="长女、风与入。", shan=None),
+    dict(g="巽", sz="辰巽巳", fang="东南", no="四绿", el="木", color="#3b6b66", studied=True,
+         note="长女、风与入。第 13 讲讲辰山，巽山、巳山未讲。",
+         shan=[("辰", "水库与抢夺", "taught"),
+               ("巽", "", "none"),
+               ("巳", "", "none")]),
     dict(g="离", sz="丙午丁", fang="南", no="九紫", el="火", color="#8a4436", studied=False,
          note="中女、火与明。", shan=None),
     dict(g="坤", sz="未坤申", fang="西南", no="二黑", el="土", color="#8a6a3a", studied=True,
@@ -646,7 +649,7 @@ def mountains():
     return out
 
 
-STAT_LABEL = {"full": "已成篇", "taught": "待补", "none": "未及"}
+STAT_LABEL = {"full": "已成篇", "taught": "已开讲", "none": "未开讲"}
 
 
 def build_nav(current=""):
@@ -1413,7 +1416,7 @@ def _compass(slan):
     o.append('<line x1="330" y1="424" x2="430" y2="424" stroke="#e4ddca" stroke-width="1"/>')
     o.append('<text x="380" y="446" text-anchor="middle" font-size="12.5" '
              'letter-spacing="3" fill="#a67c3d" font-family="PingFang SC,sans-serif">'
-             '坎 · 坤 · 震 已开讲</text>')
+             '坎 · 坤 · 震 · 巽 已开讲</text>')
     o.append("</svg>")
     return "".join(o)
 
@@ -1525,10 +1528,10 @@ def _map_side():
         '<ul class="lg">'
         '<li><span class="sw full"></span><div><b>已成篇</b>'
         f'<em>{full_names}</em><p>七段写满，图上可点，进正文。</p></div></li>'
-        f'<li><span class="sw taught"></span><div><b>已讲、页待补</b>'
-        f'<em>{"　".join(taught)}</em><p>课上讲到了，正文还空着。</p></div></li>'
-        '<li><span class="sw none"></span><div><b>本阶段未及</b>'
-        f'<em>其余 {n_none} 山</em><p>不在这次课的范围内，图上留位。</p></div></li>'
+        f'<li><span class="sw taught"></span><div><b>已开讲</b>'
+        f'<em>{"　".join(taught)}</em><p>课上讲到了，卦山线的正文页还没建。</p></div></li>'
+        '<li><span class="sw none"></span><div><b>未开讲</b>'
+        f'<em>其余 {n_none} 山</em><p>这一轮课没讲到，图上留位。</p></div></li>'
         '</ul>'
         '<div class="map-note">'
         '<p><b>卦和山不是两套东西。</b>卦管一段四十五度的格局，山是这段格局里十五度的落点。'
@@ -1560,7 +1563,7 @@ def _by_gua(slan):
                             f'<span>{label}</span>'
                             f'<i>{STAT_LABEL[st]}</i></span>')
         tag = ('<span class="g8-tag on">已开讲</span>' if g["studied"]
-               else '<span class="g8-tag">待续</span>')
+               else '<span class="g8-tag">未开讲</span>')
         cards.append(
             f'<div class="g8{" studied" if g["studied"] else ""}" '
             f'style="--gc:{g["color"]}">'
@@ -1581,7 +1584,7 @@ def _by_shan(slan):
             name = g["sz"][i]
             label, st = (g["shan"][i][1], g["shan"][i][2]) if g["shan"] else ("", "none")
             tip = name + "山" + ("　" + label if label else "")
-            inner = f'<b>{name}</b><i>{STAT_LABEL[st] if st != "none" else "未及"}</i>'
+            inner = f'<b>{name}</b><i>{STAT_LABEL[st]}</i>'
             if st == "full" and slan.get(name):
                 rows.append(f'<a class="mc full" href="{slan[name]}.html" title="{tip}">{inner}</a>')
             else:
@@ -1596,8 +1599,8 @@ def _by_shan(slan):
     n_none = sum(1 for m in ms if m["st"] == "none")
     legend = ('<div class="m24-foot">'
               f'<span><i class="sw full"></i>已成篇 {n_full} 山</span>'
-              f'<span><i class="sw taught"></i>已讲待补 {n_taught} 山</span>'
-              f'<span><i class="sw none"></i>本阶段未及 {n_none} 山</span>'
+              f'<span><i class="sw taught"></i>已开讲 {n_taught} 山</span>'
+              f'<span><i class="sw none"></i>未开讲 {n_none} 山</span>'
               '<span class="m24-tip">一列一卦，自上而下为前山、中山、后山；'
               '卦名与山名同字的（艮、巽、坤、乾）指的是那一山，不是整卦；'
               '列序从坎起按课程排，不是盘面方位。</span>'
@@ -1618,7 +1621,7 @@ def _parts(pages, mind_pages):
                "老师每节课不只讲山，理法、技法、案例、答疑都在这里，按讲课顺序记。",
                ["理法与砂水本质", "技法与做局", "案例复盘与答疑"], "篇"),
         "Ⅱ": ("一山一页，七段讲透",
- "每山固定七段：山性、见水、见砂、形煞叠加、技法布局、经文、自查。",
+ "每山固定七段：山性、见水、见砂、形煞叠加、技法布局、经文、自查与理解。",
  ["每山一句论断", "三版经文对照", "我的经文与老师经文两栏"], "篇"),
         "Ⅲ": ("只引用，不重复",
                "正文里已讲过的只给锚点。这里只写老师批语、未做题目拆解、题目到章节的映射表。",
