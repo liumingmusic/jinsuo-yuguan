@@ -784,8 +784,9 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 
 /* ============================================ 配图占位（文字版图解） */
-/* 图还没画出来时，画面/读法/记一句 三段就是图本身，所以按正式图卡来排，
-   不做成"这里缺了一张图"的补丁感。 */
+/* 图还没画出来时，五段提示词就是图本身，所以按正式图卡来排，
+   不做成"这里缺了一张图"的补丁感。
+   五段分两组：画面/标注/风格 = 生图提示词（墨青）；读法/记一句 = 读图教学（铜金）。 */
 
 .fig-ph{margin:32px 0 36px}
 .fig-ph .ph-frame{
@@ -813,12 +814,22 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .fig-ph .ph-row:last-child{border-bottom:0}
 .fig-ph .ph-row dt{
-  flex:none;width:46px;padding-top:3px;
-  font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.14em;text-align:justify;
+  flex:none;width:52px;padding-top:3px;
+  font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.1em;text-align:justify;
   text-align-last:justify;
 }
+/* 生图提示词三行：墨青，标出这是"给画师看的规格" */
+.fig-ph .ph-row.ph-prompt dt{color:var(--brand-2)}
+.fig-ph .ph-row.ph-prompt dd{color:var(--ink-2)}
+/* 提示词组与读图组之间断一道实线 */
+.fig-ph .ph-row.ph-read{border-top:1px solid var(--line)}
 .fig-ph .ph-row dd{
   margin:0;min-width:0;font-size:13.8px;line-height:1.9;color:var(--ink-2);
+  /* 提示词里有大量相邻直引号（"甲""乙"）。按 Unicode 断行规则 LB19，
+     引号前后都不断行，整串引号标签会变成一个不可断的长串，
+     在窄屏上把图卡撑出横向滚动条。anywhere 只在真放不下时才断，
+     正常宽度下不影响原有断行位置。 */
+  overflow-wrap:anywhere;
 }
 .fig-ph .ph-row.ph-key{
   margin:6px -10px 0;padding:11px 10px;border-bottom:0;border-radius:10px;
