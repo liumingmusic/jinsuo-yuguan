@@ -69,7 +69,7 @@
     </node>
     <node TEXT="经文体例">
       <node TEXT="一山一篇，篇内两栏：我的经文 / 老师经文" />
-      <node TEXT="两栏目前都待补，等稿子到了再填" />
+      <node TEXT="两栏目前都待补，位置留着" />
       <node TEXT="没有的一律留占位〔待补〕，不代写" />
     </node>
     <node TEXT="读的顺序">
