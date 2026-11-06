@@ -252,9 +252,13 @@ def render_md(md, base_title=""):
         # 配图占位（图未画出时，文字版就是图的内容）：
         #   ![图 3-1｜子山方位示意](fig:3-1)
         #   > 画面：正北十五度扇区，两条箭头一指出龙、一指凹风，凹处注"必须补宫"
+        #   > 标注：扇区内标"壬山""子山""癸山"，缺口处标"必须补宫"
+        #   > 风格：宣纸底墨线手绘，平面俯视，无阴影无立体
         #   > 读法：先定扇区，再跟两条箭头一进一出，缺口那侧就是要补宫的地方
         #   > 记一句：凹风从缺口进、气从缺口散，补宫补的是这个缺口
-        # ｜后是图题；「> 画面/读法/记一句」三行紧随图行、不留空行。
+        # ｜后是图题；「> 画面/标注/风格/读法/记一句」五行紧随图行、不留空行。
+        # 五段是完整的生图提示词：画面给构图，标注给图上文字，风格给画法，
+        # 读法与记一句给这张图要教会人的东西。缺哪段就少写哪段，别空着占位。
         # 有图了把整组换成 ![说明](图片/xxx.png) 即可。
         fm = re.fullmatch(r"!\[([^\]]+)\]\(fig:([^)]*)\)", s)
         if fm:
@@ -270,10 +274,10 @@ def render_md(md, base_title=""):
                     lead = m2[1].strip()
             num = num.strip()
             rows = [("画面", lead)] if lead else []
-            # 紧随其后的「> 画面：… / > 读法：… / > 记一句：…」并入本图
+            # 紧随其后的「> 画面：… / > 标注：… / > 风格：… / > 读法：… / > 记一句：…」并入本图
             j = i + 1
             while j < n:
-                m3 = re.match(r"^>\s*(画面|读法|怎么看|记一句)[:：]\s*(.*)$",
+                m3 = re.match(r"^>\s*(画面|标注|风格|读法|怎么看|记一句)[:：]\s*(.*)$",
                               lines[j].strip())
                 if not m3:
                     break
@@ -287,6 +291,9 @@ def render_md(md, base_title=""):
                     merged[-1] = (k, merged[-1][1] + "；" + v)
                 else:
                     merged.append((k, v))
+            # 固定渲染顺序：作者若写乱，按提示词的自然次序摆回去
+            FIG_ORDER = ("画面", "标注", "风格", "读法", "记一句")
+            merged.sort(key=lambda kv: FIG_ORDER.index(kv[0]) if kv[0] in FIG_ORDER else 99)
             head_txt = f"{num} · {title}" if title else num
             out.append(
                 f'<figure class="fig-ph" id="fig-{html.escape(fig_id)}">'
@@ -295,7 +302,9 @@ def render_md(md, base_title=""):
                 f'<p class="ph-t">{inline(head_txt)}</p></div>'
                 + ('<dl class="ph-rows">'
                    + "".join(
-                       f'<div class="ph-row{" ph-key" if k == "记一句" else ""}">'
+                       f'<div class="ph-row{" ph-key" if k == "记一句" else ""}'
+                       f'{" ph-prompt" if k in ("画面", "标注", "风格") else ""}'
+                       f'{" ph-read" if k == "读法" else ""}">'
                        f'<dt>{k}</dt><dd>{inline(v)}</dd></div>'
                        for k, v in merged if v)
                    + "</dl>" if merged else "")
