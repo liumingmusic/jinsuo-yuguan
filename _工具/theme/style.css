@@ -841,6 +841,16 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   background:var(--gold-soft);
 }
 .fig-ph .ph-row.ph-key dd{color:var(--ink);font-weight:500}
+/* 单段体例（2026-11-07）：整段不分行，框选即用。
+   【画布】等五个标记只着色、不加底，免得把一段话又切回五块；
+   末尾「建议尺寸」退成灰字，它只是附带说明，不是正文。 */
+.fig-ph .ph-one{
+  margin:0;padding:15px 0 11px;
+  font-size:14px;line-height:2.05;color:var(--ink-2);
+  text-align:justify;overflow-wrap:anywhere;
+}
+.fig-ph .ph-one .ph-k{color:var(--brand-2);font-weight:600}
+.fig-ph .ph-one .ph-size{color:var(--ink-4)}
 .fig-ph figcaption{
   margin-top:8px;padding-top:10px;border-top:1px solid var(--line-2);
   font-size:12.2px;color:var(--ink-4);text-align:center;letter-spacing:.05em;

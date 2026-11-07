@@ -277,6 +277,26 @@ def render_md(md, base_title=""):
                 if len(m2) > 1:
                     lead = m2[1].strip()
             num = num.strip()
+            head_txt = f"{num} · {title}" if title else num
+            # 新体例（2026-11-07）：图行下一行是整段「绘制要点：…建议尺寸：…」。
+            # 这一整段就是要直接喂给画师或生图工具的那段话，所以源里不拆行、不换段，
+            # 卡片里也原样显示成一段——【画布】【方位】【构图】【标注】【看点】只着色不切块，
+            # 读的人框选那一整段就能拿去用。
+            if i + 1 < n and lines[i + 1].strip().startswith("绘制要点"):
+                one = lines[i + 1].strip()
+                i += 2
+                body = re.sub(r"【(画布|方位|构图|标注|看点)】",
+                              r'<span class="ph-k">【\1】</span>', inline(one))
+                body = re.sub(r"(建议尺寸：[^。]*)", r'<span class="ph-size">\1</span>', body)
+                out.append(
+                    f'<figure class="fig-ph" id="fig-{html.escape(fig_id)}">'
+                    f'<div class="ph-frame">'
+                    f'<div class="ph-head"><span class="ph-ico">{FIG_ICO}</span>'
+                    f'<p class="ph-t">{inline(head_txt)}</p></div>'
+                    f'<p class="ph-one">{body}</p>'
+                    f'</div><figcaption>图待补 · 先读文字版</figcaption></figure>'
+                )
+                continue
             rows = [("画面", lead)] if lead else []
             # 紧随其后的「> 画面：… / > 标注：… / > 风格：… / > 读法：… / > 记一句：…」并入本图
             j = i + 1
@@ -298,7 +318,6 @@ def render_md(md, base_title=""):
             # 固定渲染顺序：作者若写乱，按提示词的自然次序摆回去
             FIG_ORDER = ("画面", "标注", "风格", "读法", "记一句")
             merged.sort(key=lambda kv: FIG_ORDER.index(kv[0]) if kv[0] in FIG_ORDER else 99)
-            head_txt = f"{num} · {title}" if title else num
             out.append(
                 f'<figure class="fig-ph" id="fig-{html.escape(fig_id)}">'
                 f'<div class="ph-frame">'
