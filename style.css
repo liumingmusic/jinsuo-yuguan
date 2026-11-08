@@ -464,7 +464,7 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 
 .hero .pill{
   display:inline-flex;align-items:center;gap:9px;
-  padding:5px 14px 5px 6px;border-radius:99px;margin-bottom:30px;
+  padding:5px 14px 5px 6px;border-radius:99px;margin-bottom:20px;
   border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);
   font-size:12.5px;color:rgba(255,255,255,.72);letter-spacing:.04em;
 }
@@ -503,7 +503,9 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   display:flex;gap:0;margin-top:62px;
   border-top:1px solid rgba(255,255,255,.12);padding-top:26px;
 }
-.hero-stats .st{padding-right:44px;margin-right:44px;border-right:1px solid rgba(255,255,255,.1)}
+/* 圆盘下半部收得很窄（y 越低圆的横截面越短），读数带必须跟着收，
+   否则四个数字会横着穿出圆环。间隔 88px → 28px，整行约 336px。 */
+.hero-stats .st{padding-right:14px;margin-right:14px;border-right:1px solid rgba(255,255,255,.1)}
 .hero-stats .st:last-child{border-right:none;margin-right:0;padding-right:0}
 .hero-stats b{
   display:block;font-family:var(--serif);font-weight:600;
@@ -991,9 +993,9 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 .hero-wheel{
   position:absolute;left:50%;top:50%;z-index:1;pointer-events:none;
   /* 只作底图，不铺满整屏。1420px 时盘比首屏高出一截，上下二十四山会被裁掉；
-     收到 760px 后整圈刚好落在首屏内，四边留白，标题也不被大盘压住。
-     窄屏仍由 172vw 决定（手机上是 671px），不变。 */
-  width:min(760px,172vw);aspect-ratio:1;
+     收到 800px 后整圈刚好落在首屏内，四边留白，山名圈（半径约 344px）
+     还能给 600px 宽的正文留出两侧余量。窄屏仍由 172vw 决定，不变。 */
+  width:min(800px,172vw);aspect-ratio:1;
   transform:translate(-50%,-50%) scale(var(--hs,1));
   transform-origin:center center;
   opacity:.92;
@@ -1012,9 +1014,9 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 .hero-wheel svg{
   position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible;
 }
-/* 盘收小后，山名与八卦会落进标题/正文所在的区域。这两层退成底纹，
-   光环、彗尾、光晕仍保持原亮度——底图该在内容后面，不该跟正文抢。 */
-.hero-wheel .w-outer,.hero-wheel .w-gua{opacity:.55}
+/* 内容收进圆盘后不再和方位字抢位置，文字层可以亮回来，
+   保持「二十四山看得清」；光环、彗尾、光晕亮度不变。 */
+.hero-wheel .w-outer,.hero-wheel .w-gua{opacity:.68}
 /* 光晕、柔光环、中心光核：只呼吸，不位移，更不整体缩放 svg——
    原来那个 .92→1.08 的整体呼吸会让山名跟着忽大忽小，既晃眼也显得廉价。 */
 .hero-wheel .w-halo{
@@ -1173,22 +1175,26 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   position:relative;z-index:3;
 }
 .hero.hero-quote h1{
-  font-size:clamp(40px,7vw,84px);letter-spacing:.14em;text-indent:.14em;
+  /* 跟着底图一起收一档，四个大字稳稳落在圆盘上半部，不顶到山名圈 */
+  font-size:clamp(38px,5.6vw,72px);letter-spacing:.14em;text-indent:.14em;
   margin:0 0 8px;line-height:1.16;
 }
 .hero-sub{
-  margin:0 0 40px;font-size:12.5px;letter-spacing:.4em;text-indent:.4em;
+  margin:0 0 26px;font-size:12.5px;letter-spacing:.4em;text-indent:.4em;
   color:rgba(255,255,255,.4);
 }
 .manifesto{
   font-family:var(--serif);
-  font-size:clamp(17px,1.6vw,21.5px);line-height:2.15;
+  /* 收成窄柱落进圆盘。全文 98 字，逐字量过断行：
+     600px/17.5px → 4 行且末行只剩「此。」；620px → 三行 34/34/30，
+     与原 780px 版的断句一致，匀称且不撑高首屏。别再凭感觉改这个宽度。 */
+  font-size:clamp(16.5px,1.2vw,17.5px);line-height:2.15;
   color:rgba(255,255,255,.8);letter-spacing:.04em;
-  /* 860px 时末行只剩半句，孤零零一行。收到 780px，行数与断句都匀了。 */
-  margin:0 auto 46px;max-width:780px;
+  margin:0 auto 28px;max-width:620px;
 }
 .hero.hero-quote .hero-cta{justify-content:center}
-.hero.hero-quote .hero-stats{justify-content:center;margin-top:56px}
+/* 整块内容收紧后上移，读数带离开圆盘正下方的「子 / 壬 / 癸」 */
+.hero.hero-quote .hero-stats{justify-content:center;margin-top:28px}
 
 /* 首屏底纹：极淡的二十四分格 */
 .hero-orbit{
