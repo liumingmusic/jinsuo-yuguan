@@ -14,7 +14,7 @@ build.py — 把 `内容/` 下的 Markdown 渲染成静态站点（本地双击�
   python3 _工具/build.py --serve     # 构建后起本地服务（默认不用，双击也能看）
 """
 
-import os, re, sys, json, math, shutil, html, glob, time
+import os, re, sys, json, math, shutil, html, glob, time, hashlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, "内容")
@@ -1947,6 +1947,23 @@ def build_index(pages, mind_pages, jw_pages):
                                     '<span>四条线怎么分</span></a></li></ul>'),
                 )
     open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8").write(page)
+
+    # ---- 给 style.css 的引用打内容哈希 ----
+    # GitHub Pages 的 CDN 会把 style.css 缓存十几分钟，改了样式用户刷新还是旧版，
+    # 看上去像"没生效"。用 css 内容的 md5 做查询串：样式一变地址就变，
+    # 浏览器当新文件拿，一次构建即可生效，不用等缓存过期。
+    # 正则允许已有 ?v=xxx，所以重复构建是幂等的。
+    css_file = os.path.join(OUT_DIR, "style.css")
+    if os.path.exists(css_file):
+        ver = hashlib.md5(open(css_file, "rb").read()).hexdigest()[:8]
+        pat = re.compile(r'href="style\.css(?:\?v=[0-9a-f]+)?"')
+        for fn in glob.glob(os.path.join(OUT_DIR, "*.html")):
+            with open(fn, encoding="utf-8") as fh:
+                src = fh.read()
+            out = pat.sub(f'href="style.css?v={ver}"', src)
+            if out != src:
+                with open(fn, "w", encoding="utf-8") as fh:
+                    fh.write(out)
 
 
 
