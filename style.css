@@ -984,6 +984,10 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 
 /* ============================================ 首页：二十四山转盘 */
 
+/* ⚠️ 方位有含义：二十四山（w-outer）与八卦（w-gua）两层永远静止，
+   子在下、午在上、乾在右下，跟着转就把方位读错了。
+   「在转」的观感全部交给装饰层。各层周期刻意错开（18/24/90/140/6/7/9/11 秒），
+   才有「仪器在运转」的层次；几层同步转会像一张循环 gif。 */
 .hero-wheel{
   position:absolute;left:50%;top:50%;z-index:1;pointer-events:none;
   /* 转盘跟着外壳一起放大：1800 的页面上，1180 的盘显得小了一圈 */
@@ -992,52 +996,102 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   transform-origin:center center;
   opacity:.92;
 }
+/* 盘外的大范围柔光：墨青冷光打底，右上压一层铜金暖光。
+   用 radial-gradient 自身的柔边，不套 filter blur——只对 opacity / scale 做动画，
+   浏览器能整层缓存，滚动时才不卡。 */
+.hero-wheel::before{
+  content:"";position:absolute;inset:-12%;border-radius:50%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 62% 32%,rgba(201,168,106,.13),transparent 46%),
+    radial-gradient(circle at 44% 54%,rgba(74,162,182,.20),transparent 52%),
+    radial-gradient(circle,rgba(44,106,124,.20) 0 34%,transparent 72%);
+  animation:wheel-aura 11s ease-in-out -3s infinite;
+}
 .hero-wheel svg{
-  display:block;width:100%;height:100%;overflow:visible;
-  transform-origin:50% 50%;animation:wheel-breathe 15s ease-in-out infinite;
+  position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible;
 }
-/* 山层与卦层固定：二十四山的位置本身有含义（子在下、午在上、乾在右下），
-   跟着转就错了。动感交给刻度环、光扫与整体呼吸。 */
-.hero-wheel .w-ring{
-  transform-box:view-box;transform-origin:400px 400px;
-  animation:spin 60s linear infinite reverse;
-}
+/* 光晕、柔光环、中心光核：只呼吸，不位移，更不整体缩放 svg——
+   原来那个 .92→1.08 的整体呼吸会让山名跟着忽大忽小，既晃眼也显得廉价。 */
 .hero-wheel .w-halo{
   transform-box:view-box;transform-origin:400px 400px;
-  animation:halo 9s ease-in-out infinite;
+  animation:halo 9s ease-in-out -2.4s infinite;
 }
-/* 绕盘一周的光扫：只有一圈很淡的暖光，转得慢，不和文字抢 */
+.hero-wheel .w-glow,
+.hero-wheel .w-edge{animation:wheel-glow 7s ease-in-out -1.8s infinite}
+.hero-wheel .w-core{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:wheel-core 6s ease-in-out -1.5s infinite;
+}
+/* 四层反向自转：刻度环 90s 逆行、星点环 140s 顺行、内层青弧 34s 逆行、
+   外层金弧 18s 顺行。金弧最快，是肉眼判断「盘在转」的主要线索；
+   青弧反向且错开相位，保证任一时刻盘上都有光在走。 */
+.hero-wheel .w-ring{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:spin 90s linear infinite reverse;
+}
+.hero-wheel .w-orbit{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:spin 140s linear infinite;
+}
+.hero-wheel .w-comet-2{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:spin 34s linear infinite reverse;
+}
+.hero-wheel .w-comet{
+  transform-box:view-box;transform-origin:400px 400px;
+  animation:spin 18s linear infinite;
+}
+/* 环带光扫：铜金与墨青两道亮弧错开 180°，mask 只留环带，正中文字区不透。
+   screen 混合让光落在环线上像被照亮，而不是盖一层半透明色片。 */
 .hero-wheel::after{
-  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  content:"";position:absolute;inset:0;border-radius:50%;z-index:2;pointer-events:none;
   background:conic-gradient(from 0deg,
     rgba(216,189,130,0) 0deg,
-    rgba(216,189,130,.16) 26deg,
-    rgba(216,189,130,.05) 62deg,
-    rgba(216,189,130,0) 110deg,
+    rgba(216,189,130,.055) 14deg,
+    rgba(232,205,148,.22) 34deg,
+    rgba(216,189,130,.06) 62deg,
+    rgba(216,189,130,0) 96deg,
+    rgba(216,189,130,0) 180deg,
+    rgba(120,196,214,.045) 194deg,
+    rgba(120,196,214,.15) 214deg,
+    rgba(120,196,214,.04) 242deg,
+    rgba(120,196,214,0) 276deg,
     rgba(216,189,130,0) 360deg);
-  -webkit-mask:radial-gradient(circle,transparent 0 30%,#000 46% 78%,transparent 96%);
-  mask:radial-gradient(circle,transparent 0 30%,#000 46% 78%,transparent 96%);
-  animation:wheel-sweep 26s linear infinite;
+  -webkit-mask:radial-gradient(circle,transparent 0 35%,#000 54% 92%,transparent 99%);
+  mask:radial-gradient(circle,transparent 0 35%,#000 54% 92%,transparent 99%);
+  mix-blend-mode:screen;
+  animation:wheel-sweep 24s linear -2s infinite;
 }
 @keyframes halo{
-  0%,100%{opacity:.5;transform:scale(1)}
-  50%{opacity:.95;transform:scale(1.07)}
+  0%,100%{opacity:.55;transform:scale(.98)}
+  50%{opacity:1;transform:scale(1.04)}
 }
-/* 整体呼吸：慢进慢出的放大缩小，和刻度环的反向自转叠在一起才有"活"的感觉 */
-@keyframes wheel-breathe{
-  0%,100%{transform:scale(.92)}
-  50%{transform:scale(1.08)}
+@keyframes wheel-aura{
+  0%,100%{opacity:.62;transform:scale(.97)}
+  50%{opacity:1;transform:scale(1.04)}
+}
+@keyframes wheel-glow{
+  0%,100%{opacity:.55}
+  50%{opacity:1}
+}
+@keyframes wheel-core{
+  0%,100%{opacity:.42;transform:scale(.94)}
+  50%{opacity:.9;transform:scale(1.06)}
 }
 @keyframes wheel-sweep{
   from{transform:rotate(0deg)}
   to{transform:rotate(360deg)}
 }
 @media (prefers-reduced-motion:reduce){
-  .hero-wheel svg,
-  .hero-wheel::after,
-  .hero-wheel .w-outer,.hero-wheel .w-gua,.hero-wheel .w-ring,.hero-wheel .w-halo{
+  .hero-wheel::before,.hero-wheel::after,
+  .hero-wheel .w-outer,.hero-wheel .w-gua,.hero-wheel .w-ring,.hero-wheel .w-halo,
+  .hero-wheel .w-glow,.hero-wheel .w-edge,.hero-wheel .w-orbit,
+  .hero-wheel .w-comet,.hero-wheel .w-comet-2,.hero-wheel .w-core{
     animation:none!important;
   }
+  /* 关掉动画仍保留一层静态柔光，不要变成一张死图 */
+  .hero-wheel::before,.hero-wheel .w-glow,.hero-wheel .w-edge{opacity:.8}
+  .hero-wheel .w-halo,.hero-wheel .w-core{opacity:.7}
 }
 
 /* ============================================ 响应式 */
@@ -1577,11 +1631,16 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .hero-stats em{font-size:11px;letter-spacing:.08em}
   .hero-orbit{width:min(720px,150vw);opacity:.38}
   /* 手机上轮盘比视口宽，二十四山环只有上下两段露在可见区里，
-     亮度要提一档才读得出来；动画也要再快一档，小屏上才看得出在动 */
+     亮度要提一档才读得出来；各层动画再快一档，小屏上才看得出在动 */
   .hero-wheel{opacity:.9}
-  .hero-wheel svg{animation-duration:17s}
-  .hero-wheel .w-ring{animation-duration:64s}
+  .hero-wheel .w-ring{animation-duration:104s}
+  .hero-wheel .w-orbit{animation-duration:160s}
+  .hero-wheel .w-comet{animation-duration:14s}
+  .hero-wheel .w-comet-2{animation-duration:28s}
   .hero-wheel .w-halo{animation-duration:7s}
+  .hero-wheel .w-glow,.hero-wheel .w-edge{animation-duration:6s}
+  .hero-wheel .w-core{animation-duration:5s}
+  .hero-wheel::before{animation-duration:9s}
   .hero-wheel::after{animation-duration:20s}
   .nav-right .btn-line{display:none}
 
