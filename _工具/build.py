@@ -1533,6 +1533,15 @@ def _polar(cx, cy, r, deg):
     return cx + r * math.sin(a), cy - r * math.cos(a)
 
 
+def _arc(cx, cy, r, a0, a1):
+    """顺时针一段圆弧（角度沿用 _polar：0° 在正上方）。给彗尾光弧用。"""
+    x0, y0 = _polar(cx, cy, r, a0)
+    x1, y1 = _polar(cx, cy, r, a1)
+    large = 1 if a1 - a0 > 180 else 0
+    return (f"M{x0:.2f},{y0:.2f} A{r:.2f},{r:.2f} 0 {large} 1 "
+            f"{x1:.2f},{y1:.2f}")
+
+
 def _sector(cx, cy, r1, r2, a1, a2):
     x1, y1 = _polar(cx, cy, r2, a1)
     x2, y2 = _polar(cx, cy, r2, a2)
@@ -1657,27 +1666,40 @@ def _compass(slan):
 def _hero_wheel():
     """首屏背景：二十四山转盘。纯装饰，不可交互，不抢标题。
 
-    三环各走各的速：外环（二十四山）240s 顺行，内环（八卦）360s 逆行，
-    最外刻度 520s 逆行；光晕 11s 呼吸一次。缩放由 script.js 按滚动位置调 --hs。
+    ⚠️ 方位有含义：二十四山（w-outer）与八卦（w-gua）两层**永远静止**，
+    子在下、午在上、乾在右下，跟着转就把方位读错了。
+    「在转」的观感全部交给装饰层：刻度环、星点环、彗尾游标、
+    环带光扫、柔光环与光晕，各走各的周期，错开才像仪器在运转。
+    缩放由 script.js 按滚动位置调 --hs，动画不碰 svg 本身的 transform。
     """
     cx = cy = 400.0
     R_LAB, R_OUT, R_MID, R_IN = 334.0, 374.0, 300.0, 262.0
     o = ['<svg viewBox="0 0 800 800" role="presentation">']
 
-    # 光晕
+    # 光晕与柔光滤镜。滤镜只挂在静态层上，动画一律只动 transform / opacity，
+    # 否则每帧都要重算整张大圆的 blur，滚动时必掉帧。
     o.append('<defs>'
              '<radialGradient id="hw-halo" cx="50%" cy="50%" r="50%">'
-             '<stop offset="0%" stop-color="#2c6a7c" stop-opacity=".55"/>'
-             '<stop offset="46%" stop-color="#2c6a7c" stop-opacity=".16"/>'
-             '<stop offset="100%" stop-color="#2c6a7c" stop-opacity="0"/>'
+             '<stop offset="0%" stop-color="#4aa2b6" stop-opacity=".30"/>'
+             '<stop offset="34%" stop-color="#2c6a7c" stop-opacity=".26"/>'
+             '<stop offset="70%" stop-color="#1c4453" stop-opacity=".13"/>'
+             '<stop offset="100%" stop-color="#1c4453" stop-opacity="0"/>'
              '</radialGradient>'
              '<radialGradient id="hw-core" cx="50%" cy="50%" r="50%">'
-             '<stop offset="0%" stop-color="#c9a86a" stop-opacity=".30"/>'
+             '<stop offset="0%" stop-color="#f0d9a6" stop-opacity=".44"/>'
+             '<stop offset="42%" stop-color="#c9a86a" stop-opacity=".18"/>'
              '<stop offset="100%" stop-color="#c9a86a" stop-opacity="0"/>'
              '</radialGradient>'
+             '<filter id="hw-soft" x="-60%" y="-60%" width="220%" height="220%">'
+             '<feGaussianBlur stdDeviation="5"/>'
+             '</filter>'
+             '<filter id="hw-soft-lg" x="-60%" y="-60%" width="220%" height="220%">'
+             '<feGaussianBlur stdDeviation="14"/>'
+             '</filter>'
              '</defs>')
-    o.append(f'<g class="w-halo"><circle cx="{cx}" cy="{cy}" r="392" fill="url(#hw-halo)"/>'
-             f'<circle cx="{cx}" cy="{cy}" r="150" fill="url(#hw-core)"/></g>')
+    # 中心暖光只收到 132：铺到 190 会在标题下方散成一团雾，反而显脏
+    o.append(f'<g class="w-halo"><circle cx="{cx}" cy="{cy}" r="396" fill="url(#hw-halo)"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="132" fill="url(#hw-core)" opacity=".5"/></g>')
 
     # 最外刻度环
     ticks = ['<g class="w-ring">']
@@ -1695,6 +1717,38 @@ def _hero_wheel():
                      f'stroke="rgba(255,255,255,{op})" stroke-width="{w}"/>')
     ticks.append('</g>')
     o.append("".join(ticks))
+
+    # 柔光环：把三道主环线模糊复制一份，给盘一层"被照亮"的厚度。
+    # 这层不做位移动画，只呼吸 opacity；滤镜套在静态层上才不会掉帧。
+    o.append(f'<g class="w-glow" filter="url(#hw-soft)">'
+             f'<circle cx="{cx}" cy="{cy}" r="{R_OUT}" fill="none" '
+             'stroke="rgba(216,189,130,.62)" stroke-width="3.4"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="{R_MID}" fill="none" '
+             'stroke="rgba(90,178,198,.50)" stroke-width="2.8"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="{R_IN}" fill="none" '
+             'stroke="rgba(90,178,198,.34)" stroke-width="2.2"/>'
+             '</g>')
+    # 清晰的铜金细边压在柔光之上，金属质感来自这一层
+    o.append(f'<g class="w-edge">'
+             f'<circle cx="{cx}" cy="{cy}" r="{R_OUT}" fill="none" '
+             'stroke="rgba(216,189,130,.26)" stroke-width="1"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="{R_OUT + 7}" fill="none" '
+             'stroke="rgba(216,189,130,.10)" stroke-width=".8"/>'
+             '</g>')
+
+    # 星点环：一圈极淡虚线 + 八个方位亮点，反向慢转。
+    # 只放装饰点、不放文字——山与卦的方位有含义，转了就读错。
+    orb = ['<g class="w-orbit">',
+           f'<circle cx="{cx}" cy="{cy}" r="390" fill="none" '
+           'stroke="rgba(216,189,130,.20)" stroke-width="1" stroke-dasharray="1.5 11"/>']
+    for k in range(8):
+        x, y = _polar(cx, cy, 390, k * 45 + 22.5)
+        orb.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.6" '
+                   'fill="rgba(232,205,148,.55)" filter="url(#hw-soft)"/>')
+        orb.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.7" '
+                   'fill="rgba(255,240,206,.92)"/>')
+    orb.append('</g>')
+    o.append("".join(orb))
 
     # 外环：二十四山
     out = ['<g class="w-outer">']
@@ -1719,7 +1773,7 @@ def _hero_wheel():
     out.append('</g>')
     o.append("".join(out))
 
-    # 内环：八卦，反向转
+    # 内环：八卦（静止，方位不可转）
     gua = ['<g class="w-gua">']
     gua.append(f'<circle cx="{cx}" cy="{cy}" r="{R_MID - 4}" fill="none" '
                f'stroke="rgba(255,255,255,.07)" stroke-width=".8"/>')
@@ -1747,6 +1801,68 @@ def _hero_wheel():
                            (cx, cy - 240, cx, cy - 96), (cx, cy + 96, cx, cy + 240)):
         o.append(f'<line x1="{x1:.0f}" y1="{y1:.0f}" x2="{x2:.0f}" y2="{y2:.0f}" '
                  f'stroke="rgba(255,255,255,.055)" stroke-width=".7"/>')
+
+    # 中心光核：铜金脉冲。不透明度压得很低，别把正中那段宣言盖住。
+    o.append(f'<g class="w-core">'
+             f'<circle cx="{cx}" cy="{cy}" r="72" fill="url(#hw-core)"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="30" fill="none" '
+             'stroke="rgba(216,189,130,.22)" stroke-width="1"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="48" fill="none" '
+             'stroke="rgba(216,189,130,.13)" stroke-width=".8" stroke-dasharray="2 8"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="7" fill="none" '
+             'stroke="rgba(240,217,166,.55)" stroke-width="1.2"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="3" fill="#f0d9a6" filter="url(#hw-soft)"/>'
+             f'<circle cx="{cx}" cy="{cy}" r="1.6" fill="#fff4d8"/>'
+             '</g>')
+
+    # 内层青色光弧：与外层金色游标反向、慢一档。作用是让任一时刻盘上
+    # 都有一道光在走（外层转到上下会被首屏裁掉），也把内外两层的反向
+    # 转动显出来。亮度只取外层一半，不做第二主角。
+    r2, c2 = R_MID - 4, 250.0
+    inner = ['<g class="w-comet-2">']
+    inner.append(f'<path d="{_arc(cx, cy, r2, c2 - 52, c2 + 1)}" fill="none" '
+                 'stroke="rgba(90,178,198,.20)" stroke-width="8" '
+                 'stroke-linecap="round" filter="url(#hw-soft-lg)"/>')
+    for i in range(8):
+        a0 = c2 - 48 + i * 6
+        a1 = a0 + 6.3
+        t = (i + 1) / 8
+        op = 0.03 + 0.46 * t ** 2
+        w = 0.8 + 1.6 * t ** 2
+        inner.append(f'<path d="{_arc(cx, cy, r2, a0, a1)}" fill="none" '
+                     f'stroke="rgba(140,208,224,{op:.3f})" stroke-width="{w:.2f}" '
+                     'stroke-linecap="round"/>')
+    ix, iy = _polar(cx, cy, r2, c2 + 1)
+    inner.append(f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="5" '
+                 'fill="rgba(140,208,224,.45)" filter="url(#hw-soft)"/>')
+    inner.append(f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="1.8" fill="#cdeef5"/>')
+    inner.append('</g>')
+    o.append("".join(inner))
+
+    # 彗尾游标：绕最外环跑的一道渐隐光弧，是"盘在转"最直观的线索。
+    # 18s 一圈，比刻度环快得多，但只是一段细光，不抢文字。
+    # ⚠️ 亮头起点必须在右侧（100°）：盘比首屏高，正上方那段被 hero 的
+    # overflow:hidden 裁掉，若从 0° 起转，刚打开页面根本看不见游标。
+    c0 = 100.0
+    comet = ['<g class="w-comet">']
+    comet.append(f'<path d="{_arc(cx, cy, R_OUT + 7, c0 - 45, c0 + 1)}" fill="none" '
+                 'stroke="rgba(216,189,130,.34)" stroke-width="10" '
+                 'stroke-linecap="round" filter="url(#hw-soft-lg)"/>')
+    for i in range(8):
+        a0 = c0 - 41 + i * 5
+        a1 = a0 + 5.3
+        t = (i + 1) / 8
+        op = 0.05 + 0.85 * t ** 2.1
+        w = 1.0 + 2.6 * t ** 2
+        comet.append(f'<path d="{_arc(cx, cy, R_OUT + 7, a0, a1)}" fill="none" '
+                     f'stroke="rgba(240,217,166,{op:.3f})" stroke-width="{w:.2f}" '
+                     'stroke-linecap="round"/>')
+    hx, hy = _polar(cx, cy, R_OUT + 7, c0 + 1)
+    comet.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="7" '
+                 'fill="rgba(240,217,166,.62)" filter="url(#hw-soft)"/>')
+    comet.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="2.6" fill="#fff4d8"/>')
+    comet.append('</g>')
+    o.append("".join(comet))
     o.append("</svg>")
     return "".join(o)
 
