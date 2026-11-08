@@ -1181,6 +1181,21 @@ def build():
 
     # 样式与脚本
     open(os.path.join(OUT_DIR, "style.css"), "w", encoding="utf-8").write(tpl("style.css"))
+
+    # 站点图标：`_工具/theme/图标/` 由 make_icons.py 生成，这里复制到站点根目录。
+    # favicon.ico 必须落在根上——浏览器会直接请求 /favicon.ico，找不到就显示空白页图标。
+    # 只放页面真正引用到的几个，别把 9 张中间尺寸 PNG 全倒进根目录。
+    ICON_FILES = ("favicon.ico", "favicon.svg", "favicon-32.png",
+                  "apple-touch-icon.png", "favicon-192.png", "favicon-512.png")
+    icon_dir = os.path.join(THEME, "图标")
+    if os.path.isdir(icon_dir):
+        for f in ICON_FILES:
+            src = os.path.join(icon_dir, f)
+            if os.path.exists(src):
+                shutil.copy2(src, os.path.join(OUT_DIR, f))
+    else:
+        print("  ⚠ 缺少 theme/图标/，页面将没有站点图标"
+              "（跑 python3 _工具/make_icons.py 生成）")
     open(os.path.join(OUT_DIR, "script.js"), "w", encoding="utf-8").write(JS)
     for f in ("d3.js", "markmap-view.js", "markmap-lib.js"):
         s = os.path.join(VENDOR_SRC, f)
