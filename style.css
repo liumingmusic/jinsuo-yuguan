@@ -990,12 +990,10 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
    才有「仪器在运转」的层次；几层同步转会像一张循环 gif。 */
 .hero-wheel{
   position:absolute;left:50%;top:50%;z-index:1;pointer-events:none;
-  /* ⚠️ 直径必须跟着首屏高度走，不能写死 1420px：此前 1920×1080 下
-     hero 只有 900px，上下各 260px 被 overflow:hidden 切掉，
-     正南「午丙丁」、正北「子壬癸」和「离坎」整排看不见。
-     --wheel-d 由 .hero.hero-quote 定义（宽度上限 ∩ 视口高），
-     hero 的 min-height 再跟着它走，保证整圈二十四山完整落在深色区里。 */
-  width:var(--wheel-d,min(1420px,172vw));aspect-ratio:1;
+  /* 只作底图，不铺满整屏。1420px 时盘比首屏高出一截，上下二十四山会被裁掉；
+     收到 760px 后整圈刚好落在首屏内，四边留白，标题也不被大盘压住。
+     窄屏仍由 172vw 决定（手机上是 671px），不变。 */
+  width:min(760px,172vw);aspect-ratio:1;
   transform:translate(-50%,-50%) scale(var(--hs,1));
   transform-origin:center center;
   opacity:.92;
@@ -1004,19 +1002,19 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
    用 radial-gradient 自身的柔边，不套 filter blur——只对 opacity / scale 做动画，
    浏览器能整层缓存，滚动时才不卡。 */
 .hero-wheel::before{
-  content:"";position:absolute;inset:-22%;border-radius:50%;z-index:0;pointer-events:none;
+  content:"";position:absolute;inset:-12%;border-radius:50%;z-index:0;pointer-events:none;
   background:
     radial-gradient(circle at 62% 32%,rgba(201,168,106,.13),transparent 46%),
     radial-gradient(circle at 44% 54%,rgba(74,162,182,.20),transparent 52%),
     radial-gradient(circle,rgba(44,106,124,.20) 0 34%,transparent 72%);
-  /* 盘受高度约束后，宽屏左右会空出一截：柔光横向拉开成椭圆铺满画面。
-     关键帧里也要带同一个 scaleX，否则动画一跑就弹回正圆。 */
-  transform:scaleX(1.32);
   animation:wheel-aura 11s ease-in-out -3s infinite;
 }
 .hero-wheel svg{
   position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible;
 }
+/* 盘收小后，山名与八卦会落进标题/正文所在的区域。这两层退成底纹，
+   光环、彗尾、光晕仍保持原亮度——底图该在内容后面，不该跟正文抢。 */
+.hero-wheel .w-outer,.hero-wheel .w-gua{opacity:.55}
 /* 光晕、柔光环、中心光核：只呼吸，不位移，更不整体缩放 svg——
    原来那个 .92→1.08 的整体呼吸会让山名跟着忽大忽小，既晃眼也显得廉价。 */
 .hero-wheel .w-halo{
@@ -1074,8 +1072,8 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   50%{opacity:1;transform:scale(1.04)}
 }
 @keyframes wheel-aura{
-  0%,100%{opacity:.62;transform:scaleX(1.32) scale(.97)}
-  50%{opacity:1;transform:scaleX(1.32) scale(1.04)}
+  0%,100%{opacity:.62;transform:scale(.97)}
+  50%{opacity:1;transform:scale(1.04)}
 }
 @keyframes wheel-glow{
   0%,100%{opacity:.55}
@@ -1164,14 +1162,8 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 /* ============================================ 首页 v2：二十四山 */
 
 .hero.hero-quote{
-  /* 转盘直径 = 宽度上限 ∩ 视口高（可略高出视口，让外圈刻度与光晕自然溢出屏幕）；
-     约束的是「文字圈」而不是外框：山名在半径 0.43D 处，D 取 100vh+10px 时
-     文字上下缘仍完整落在视口内，外环最多溢出几十像素、看不出断口。
-     若把 D 压到 92vh，盘是小了一圈，可山名正好压到底部数字上，反而更乱。
-     hero 至少比盘高 64px，圆不会被首屏底边硬切。两者共用一个变量，改一处即可。 */
-  --wheel-d:min(1420px,172vw,calc(100vh + 10px));
   padding:calc(var(--nav-h) + 72px) 0 78px;
-  min-height:max(760px,calc(var(--wheel-d) + 64px));text-align:center;
+  min-height:min(92vh,900px);text-align:center;
 }
 .hero-in.solo{
   /* 首屏是全站门面。原先限死 980px，外壳放到 1800 之后它在中间就成了一条窄带，
@@ -1196,26 +1188,7 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   margin:0 auto 46px;max-width:780px;
 }
 .hero.hero-quote .hero-cta{justify-content:center}
-/* 盘收进首屏后，斜向四卦（艮巽坤乾）会挪到数字行附近。给读数带一层极淡的
-   径向暗底 + 文字阴影，让数字浮在方位纹样之前，而不是和它糊成一片。 */
-.hero.hero-quote .hero-stats{justify-content:center;margin-top:56px;position:relative}
-.hero.hero-quote .hero-stats::before{
-  content:"";position:absolute;left:50%;top:-8px;transform:translateX(-50%);
-  width:min(900px,100%);height:132px;pointer-events:none;z-index:-1;
-  background:radial-gradient(ellipse at 50% 52%,rgba(8,17,21,.46) 0%,rgba(8,17,21,.26) 52%,transparent 78%);
-}
-.hero.hero-quote .hero-stats b{text-shadow:0 2px 14px rgba(4,12,16,.85)}
-.hero.hero-quote .hero-stats em{text-shadow:0 1px 9px rgba(4,12,16,.9)}
-
-/* 矮而宽的窗口（如 1080×672）：内容比盘还高，圆心被顶下去，底部「子」字
-   会被视口切掉。收紧排版并把盘再收一档，保证 32 个方位字完整可见。 */
-@media (min-width:901px) and (max-height:760px){
-  .hero.hero-quote{--wheel-d:min(1420px,172vw,92vh)}
-  .hero.hero-quote h1{font-size:clamp(38px,5.4vw,58px)}
-  .hero-sub{margin-bottom:24px}
-  .manifesto{max-width:620px;font-size:16.5px;line-height:1.9;margin-bottom:28px}
-  .hero.hero-quote .hero-stats{margin-top:30px}
-}
+.hero.hero-quote .hero-stats{justify-content:center;margin-top:56px}
 
 /* 首屏底纹：极淡的二十四分格 */
 .hero-orbit{
