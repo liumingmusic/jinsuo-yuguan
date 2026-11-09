@@ -505,7 +505,7 @@ JS = """
     onScroll();
     window.addEventListener('scroll', onScroll, {passive:true});
   }
-  // 按卦 / 按山 切换
+  // 四种读法切换（按卦 / 按山 / 按导图 / 按经文）
   var tbs = [].slice.call(document.querySelectorAll('.tab-btn'));
   if(tbs.length){
     tbs.forEach(function(b){
@@ -1885,13 +1885,13 @@ def _map_side():
         '<div class="map-note">'
         '<p><b>卦和山不是两套东西。</b>卦管一段四十五度的格局，山是这段格局里十五度的落点。'
         '说「坎卦」，讲的是水与肾的总体倾向；落到「壬山」，才说得上财商、说得出应期。</p>'
-        '<p>所以下面两种读法指向同一份内容：按卦读，是把三山放在一起看关系与分工；'
-        '按山读，是带着一座山的问题直接找答案。</p>'
+        '<p>下面四种读法指向同一份内容：按卦读，是把三山放在一起看关系与分工；'
+        '按山读，是带着一座山的问题直接找答案；按导图读先看骨架，按经文读回到原句两栏对读。</p>'
         '</div>'
     )
 
 
-# ---------- 两种读法 ----------
+# ---------- 四种读法 ----------
 
 def _by_gua(slan):
     cards = []
@@ -1957,6 +1957,65 @@ def _by_shan(slan):
     return '<div class="m24">' + "".join(cols) + "</div>" + legend
 
 
+# 四种读法 · 后两种（Ⅳ 导图 / Ⅴ 经文）共用一套入口卡。
+# 条目从 build_minds() / build_jingwen() 的返回值来，日后加一卦自动多一张，
+# 不在模板里写死页名。
+
+def _gua_color(gua, fallback):
+    return next((g["color"] for g in ALL_GUA if g["g"] == gua), fallback)
+
+
+def _way_card(no, title, desc, href, go, color):
+    return (
+        f'<a class="way" style="--wc:{color}" href="{href}">'
+        f'<span class="n">{no}</span>'
+        f'<b>{html.escape(title)}</b>'
+        f'<span class="d">{desc}</span>'
+        f'<span class="go">{go}'
+        '<svg width="13" height="13" viewBox="0 0 16 16" fill="none">'
+        '<path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6" '
+        'stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>'
+    )
+
+
+def _by_mind(mind_pages):
+    cards = [
+        _way_card(f'Ⅳ-{m["order"]:02d}', m["title"],
+                  f'{m["nodes"]} 个节点　·　先看这一卦的骨架与层级',
+                  m["slug"] + ".html", "看这张导图",
+                  _gua_color(m.get("gua", ""), "#3f6b7a"))
+        for m in mind_pages
+    ]
+    cards.append(_way_card(
+        "Ⅳ 线", "导图线 · 全部",
+        "一卦一图，逐层展开；图下附本卦经文，与正文同一份源",
+        "section-Ⅳ.html", "进入导图线", "#3f6b7a"))
+    return ('<div class="ways-grid">' + "".join(cards) + '</div>'
+            + '<p class="ways-foot">导图只给骨架与层级，细目仍回 Ⅱ 卦山线。'
+              '先立住一卦三山的分工，再带着问题回到正文。</p>')
+
+
+def _by_jw(jw_pages, pages):
+    cards = [
+        _way_card(f'Ⅴ-{j["order"]:02d}', j["title"],
+                  f'{html.escape(j["lead"])}<br>卦体加三山，左右两栏并排对读',
+                  j["slug"] + ".html", "对读这一卦",
+                  _gua_color(j.get("gua", ""), "#5c4a72"))
+        for j in jw_pages
+    ]
+    cards.append(_way_card(
+        "Ⅴ 线", "经文线 · 全部",
+        "全站经文集中在这里：一卦一页，四篇并排；没有的留 〔待补〕",
+        "section-Ⅴ.html", "进入经文线", "#5c4a72"))
+    total = next((p["slug"] for p in pages
+                  if p["section"] == "Ⅲ-作业线" and "经文总表" in p["title"]), None)
+    more = (f'另见 <a href="{total}.html">Ⅲ 作业线《经文总表》</a>，按卦通读一整份。'
+            if total else "")
+    return ('<div class="ways-grid">' + "".join(cards) + '</div>'
+            + '<p class="ways-foot">左栏「我的经文」，右栏「老师口播 · 据课堂记录整理」；'
+              '空栏一律留占位，不代写。' + more + '</p>')
+
+
 def _stats(pages, mind_pages):
     n_full = sum(1 for m in mountains() if m["st"] == "full")
     items = [(24, "山 · 全图"), (8, "宫 · 分卦"),
@@ -2009,7 +2068,7 @@ def _parts(pages, mind_pages, jw_pages):
 
 
 def _recent(pages, mind_pages, jw_pages):
-    """四条线轮流取样，避免首页只出现课程线。"""
+    """五条线轮流取样，避免首页只出现课程线。"""
     if not pages:
         return '<div class="empty-note">还没有正文。</div>'
     groups = {}
@@ -2063,6 +2122,8 @@ def build_index(pages, mind_pages, jw_pages):
                 map_side=_map_side(),
                 bygua=_by_gua(slan),
                 byshan=_by_shan(slan),
+                bymind=_by_mind(mind_pages),
+                byjw=_by_jw(jw_pages, pages),
                 recent=_recent(pages, mind_pages, jw_pages),
                 first_link=f"{first_slug}.html",
                 foot_sections=foot_sections(),
@@ -2073,9 +2134,9 @@ def build_index(pages, mind_pages, jw_pages):
                                     '<li><a href="#shan"><span class="n">图</span>'
                                     '<span>二十四山全图</span></a></li>'
                                     '<li><a href="#read"><span class="n">读</span>'
-                                    '<span>两种读法</span></a></li>'
+                                    '<span>四种读法</span></a></li>'
                                     '<li><a href="#lines"><span class="n">体</span>'
-                                    '<span>四条线怎么分</span></a></li></ul>'),
+                                    '<span>五条线怎么分</span></a></li></ul>'),
                 )
     open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8").write(page)
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>金锁玉关 · 二十四山</title>
-<meta name="description" content="金锁玉关二十四山研读：八宫二十四山全图，一山十五度。当前精读坎、坤、震三卦九山，可先按卦读三山，也可按山查一座。">
+<meta name="description" content="金锁玉关二十四山研读：八宫二十四山全图，一山十五度。四种读法——按卦读三山、按山查一座、按导图看骨架、按经文对读原句。">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -28,7 +28,7 @@
     </a>
     <nav class="nav-links">@@NAV@@</nav>
     <div class="nav-right">
-      <a class="btn btn-line btn-sm" href="#read">两种读法</a>
+      <a class="btn btn-line btn-sm" href="#read">四种读法</a>
       <a class="btn btn-dark btn-sm" href="@@FIRST_LINK@@">开始阅读</a>
       <button class="nav-toggle" id="navToggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="drawer">
         <span class="nt-bars" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -72,18 +72,23 @@
     <div class="wrap">
       <div class="sec-head">
         <span class="eyebrow">读 法</span>
-        <h2>可以按卦读，也可以按山读</h2>
-        <p>同一份内容，两种进入方式。按卦读，把一卦三山放在一起看关系与分工；按山读，带着一座山的具体问题直接找答案。</p>
+        <h2>四种读法，各有一条进入的路</h2>
+        <p>同一份内容，四种进入方式。按卦读把一卦三山摆在一起看关系与分工；按山读带着一座山的具体问题直接找答案；按导图读先看骨架脉络；按经文读回到原句，两栏对读。</p>
       </div>
       <div class="tabs">
         <div class="tab-bar" role="tablist">
           <button class="tab-btn on" data-tab="gua" role="tab">按卦读　八宫</button>
           <button class="tab-btn" data-tab="shan" role="tab">按山读　二十四</button>
+          <button class="tab-btn" data-tab="mind" role="tab">按导图读　Ⅳ 线</button>
+          <button class="tab-btn" data-tab="jw" role="tab">按经文读　Ⅴ 线</button>
           <span class="tab-hint">坎 · 坤 · 震 · 巽 已开讲，其余四卦未开讲</span>
         </div>
         <div class="tab-panel on" id="tab-gua">@@BYGUA@@</div>
         <div class="tab-panel" id="tab-shan">@@BYSHAN@@</div>
+        <div class="tab-panel" id="tab-mind">@@BYMIND@@</div>
+        <div class="tab-panel" id="tab-jw">@@BYJW@@</div>
       </div>
+      <p class="read-note">四种读法之外，还有两条不作读法：Ⅰ 课程线顺着讲次通读（<a href="section-Ⅰ.html">进入课程线</a>），Ⅲ 作业线只作对照（<a href="section-Ⅲ.html">进入作业线</a>）。四条读法与五条线的分工见下节。</p>
     </div>
   </section>
 
@@ -148,7 +153,7 @@
   </div>
   <div class="foot-bar">
     <span>共 @@PAGE_COUNT@@ 篇正文　·　@@MIND_COUNT@@ 张导图</span>
-    <span>先读 Ⅰ 理法技法，再读 Ⅱ 分山落点，Ⅲ 只作对照，Ⅳ 看骨架</span>
+    <span>Ⅰ 顺课次　Ⅱ 按卦按山　Ⅲ 只作对照　Ⅳ 看骨架　Ⅴ 对读经文</span>
   </div>
 </footer>
 
