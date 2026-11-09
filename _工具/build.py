@@ -39,9 +39,10 @@ JINGWEN_DIR = os.path.join(ROOT, "经文")
 JW_MINE = "我的经文"
 JW_TEACHER = "老师经文"
 JW_TBD = "〔待补〕"
-JW_NOTE = ("经文分两栏：「我的经文」是我的手笔，「老师经文」是老师提供的版本。"
-           "两栏目前都留着空位。"
-           "课程上用的经文一、经文二、经文三不动，那是底本原文与读法。")
+JW_NOTE = ("经文分两栏：「我的经文」＝个人自编经文，据《个人自编经文.docx》收录；"
+           "「老师经文」＝老师口播 · 据课堂记录整理。"
+           "老师没有给的一律留 〔待补〕，不代写。"
+           "各山正文里的经文一、二、三是底本文献，不算谁的经文。")
 OUT_DIR = os.path.join(ROOT, "站点")
 IMG_DIR = os.path.join(ROOT, "_数据", "图片")
 VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
@@ -883,9 +884,9 @@ def jw_is_empty(body):
 def jw_render(key, md, shift=1, with_title=False):
     """一条经文（一个山或一个卦体）渲染成 HTML 片段。
 
-    现在的口径：我的与老师的经文都清空，位置留着。
-    所以空栏不撑标题——只留一行浅灰的占位；有内容的栏照常出标题与正文。
-    这样一页上不会因为清空而留下十几个空标题。
+    两栏口径：我的经文按《个人自编经文.docx》收录，老师经文没给的留 〔待补〕。
+    空栏不撑标题——只留一行浅灰占位；有内容的栏照常出标题与正文，
+    这样一页上不会因为空栏而留下十几个空标题。
     """
     gua = jingwen_gua(key)
     prefix = f"jw-{gua}-{jingwen_seq(key)}-"
@@ -1002,10 +1003,10 @@ def build_jingwen(pages):
     """Ⅴ 经文线：一卦一页，两栏对照。
 
     这条线不是从 内容/ 来的，是从 经文/ 来的——经文/*.md 是全站经文的
-    唯一源，这里只是把它按卦铺开、把两栏并排放，供对读与填稿。
+    唯一源，这里只是把它按卦铺开、把两栏并排放，供对读。
 
     每页四篇：卦体在前，三山按先后天次序跟上。每篇一张两栏对照卡，
-    我的在左、老师的在右。空栏留框，不代写。
+    我的在左、老师的在右。老师没给的留占位，不代写。
     """
     made = []
     if not os.path.isdir(JINGWEN_DIR):
@@ -2012,8 +2013,8 @@ def _by_jw(jw_pages, pages):
     more = (f'另见 <a href="{total}.html">Ⅲ 作业线《经文总表》</a>，按卦通读一整份。'
             if total else "")
     return ('<div class="ways-grid">' + "".join(cards) + '</div>'
-            + '<p class="ways-foot">左栏「我的经文」，右栏「老师口播 · 据课堂记录整理」；'
-              '空栏一律留占位，不代写。' + more + '</p>')
+            + '<p class="ways-foot">左栏「我的经文」＝个人自编，右栏「老师经文」＝老师口播 · 据课堂记录整理；'
+              '老师没有给的一律留 〔待补〕，不代写。' + more + '</p>')
 
 
 def _stats(pages, mind_pages):
