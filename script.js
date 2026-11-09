@@ -7,7 +7,7 @@
     onScroll();
     window.addEventListener('scroll', onScroll, {passive:true});
   }
-  // 按卦 / 按山 切换
+  // 四种读法切换（按卦 / 按山 / 按导图 / 按经文）
   var tbs = [].slice.call(document.querySelectorAll('.tab-btn'));
   if(tbs.length){
     tbs.forEach(function(b){
