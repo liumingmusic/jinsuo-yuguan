@@ -21,6 +21,21 @@
       <node TEXT="成长上限：不给起跑线，给后劲" />
       <node TEXT="四官卦之「实权」：政令能不能传下去" />
       <node TEXT="一句话：震不是天赋，是「肯不肯一直干」" />
+      <node TEXT="我的经文">
+        <node TEXT="卦体见砂">
+          <node TEXT="三碧震宫全体砂，文武双全共兴家。" />
+          <node TEXT="奋起突破干劲足，后天上限制英华。" />
+          <node TEXT="若配乾兑吉水照，上中运势一鲜花。" />
+          <node TEXT="形若贪狼执官权，威名远播众人夸。" />
+        </node>
+        <node TEXT="卦体见水">
+          <node TEXT="三碧正东沟塘破，家道败落定遭祸。" />
+          <node TEXT="行动失控乱破财，盲目盲投灾难多。" />
+          <node TEXT="水若流通经巽地，家庭纷争婚姻过。" />
+          <node TEXT="若与东北艮水会，兄弟反目受折磨。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="卦取象 · 震为动 147">
       <node TEXT="震为动：行动力、官、突破、纠纷、肝胆、面部神经、关节、臂腰侧" />
@@ -121,11 +136,22 @@
         <node TEXT="布局：甲山博古架/泰山石；对宫大鱼缸动水" />
         <node TEXT="忌：把甲山做成形煞" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
-      </node>
       <node TEXT="一句话：见砂一马当先，见水佛系躺平" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="东宫甲山砂高昂，奋发图强一马当。" />
+          <node TEXT="开拓创新锐气长，敢为人先有担当。" />
+          <node TEXT="若得庚酉水相照，源源后劲大名扬。" />
+          <node TEXT="文武双全家运旺，功成名就万代昌。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="甲山见水主贫寒，缺乏动力性懒散。" />
+          <node TEXT="虚度光阴意志残，沉迷低欲难自挽。" />
+          <node TEXT="面部抽搐阴阳脸，肝郁体弱身受难。" />
+          <node TEXT="若兼寅水招风瘫，长房不兴叹连连。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="卯山 · 人脉（琼林与桃花）">
       <node TEXT="身体层">
@@ -168,11 +194,22 @@
         <node TEXT="应期：卯亥午戌四字并列，非三合" />
         <node TEXT="只按属相断：卯应兔、酉应鸡" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
-      </node>
       <node TEXT="一句话：见砂人脉变钱，见水钱都花在别人身上" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="正东卯山起砂台，广聚人脉血财来。" />
+          <node TEXT="处事圆融能人显，门路通达事业开。" />
+          <node TEXT="形若己案官威显，名震三通栋梁材。" />
+          <node TEXT="若照对宫单酉水，多生闺秀展英才。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="卯山见水一条沟，先富小财替人谋。" />
+          <node TEXT="劳碌奔波作牛马，财物归人空自愁。" />
+          <node TEXT="伯道无儿家业散，负债累累难回头。" />
+          <node TEXT="关节风湿手疾苦，酉水再照破婚休。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="乙山 · 文气（如何自处）">
       <node TEXT="身体层">
@@ -215,11 +252,22 @@
         <node TEXT="想靠文化做企业：乙＋庚两砂相合" />
         <node TEXT="前提：整个震卦不能烂，单点补无用" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
-      </node>
       <node TEXT="一句话：见砂读书教化内秀，见水浪漫过头活在幻想" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="乙山见砂发文章，家出高才读书郎。" />
+          <node TEXT="形似朝笏官名显，笔峰耸立翰墨香。" />
+          <node TEXT="文昌内发涵养深，儒雅内秀美名扬。" />
+          <node TEXT="若得辛水相照射，锦上添花内贤良。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="乙山见水曲曲钩，虚无浪漫暗相偷。" />
+          <node TEXT="脱离现实空沉溺，意淫胡想惹烦忧。" />
+          <node TEXT="形若破军肝疯疾，财富人丁不到头。" />
+          <node TEXT="乙辰明水成形煞，闺秀婚阻乳疾愁。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="六爻论断（老师版）">
       <node TEXT="卯木出现（震木龙）">

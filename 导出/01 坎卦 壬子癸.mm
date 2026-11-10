@@ -10,6 +10,21 @@
       <node TEXT="生活层：家运、财库、精气神" />
       <node TEXT="能力层：抗压、逆商、工作能力、性能力、桃花" />
       <node TEXT="一句话：坎是一家的「藏」，藏得住才谈得上发" />
+      <node TEXT="我的经文">
+        <node TEXT="卦体见砂">
+          <node TEXT="一白坎宫砂高昂，水地比卦阳气强。" />
+          <node TEXT="曲抱有情形势秀，财库充盈积储仓。" />
+          <node TEXT="对宫丙离水相照，儿孙文武大名扬。" />
+          <node TEXT="莫教寒透风中断，福寿双全万代昌。" />
+        </node>
+        <node TEXT="卦体见水">
+          <node TEXT="一白坎宫水汪洋，阴盛阳虚气不长。" />
+          <node TEXT="直流乾宫老父固，汇聚艮位俊郎伤。" />
+          <node TEXT="若通巽位家运衰，泄尽家底破财仓。" />
+          <node TEXT="阴邪干扰神虚弱，莫使深沟引祸殃。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="卦见水">
       <node TEXT="总断：精气神差 → 财运不佳、妇科问题" />
@@ -93,10 +108,21 @@
         <node TEXT="对宫相催：只放大、不矫正" />
         <node TEXT="飘转（布局用飘、论断用挖）" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="壬山见砂发武贵，男儿阳刚气豪爽。" />
+          <node TEXT="秀峰高耸添威势，出入有迎大名扬。" />
+          <node TEXT="对宫丙水来相照，儿孙文武双全强。" />
+          <node TEXT="贵人簇拥事业旺，家基稳固万代昌。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="壬山见水损儿郎，凶煞临门绝二房。" />
+          <node TEXT="水流如箭飞快去，小口夭折命难长。" />
+          <node TEXT="形如葫芦腰肾病，澄清蓄水多淋囊。" />
+          <node TEXT="阳虚气弱体拖沓，家道贫寒没钱粮。" />
+        </node>
       </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="子山 · 财库（家运）">
       <node TEXT="身体层">
@@ -160,10 +186,21 @@
         <node TEXT="本宫见水再催午水 → 桃花局" />
         <node TEXT="现代判法：冰箱判砂，开盖鱼缸判真水" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="正北子山起高埠，子砂定发金钱库。" />
+          <node TEXT="财库充盈家底厚，积蓄日增代代富。" />
+          <node TEXT="根基扎实神气足，兴家立业有天助。" />
+          <node TEXT="莫教火尖成凶煞，端整方保家运固。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="子山见水一条沟，直流飞去不回头。" />
+          <node TEXT="无子主人逃在外，他乡凶死一笔勾。" />
+          <node TEXT="形如项囊口袋样，妇女遭灾把命休。" />
+          <node TEXT="财库破漏家运败，子午相连惹烦愁。" />
+        </node>
       </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="癸山 · 理财能力（主阴）">
       <node TEXT="身体层">
@@ -213,10 +250,21 @@
         <node TEXT="兴奋类违禁品：癸山为核心" />
         <node TEXT="致幻剂：亥山、巳山" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="癸山见砂女当家，财源广进上元花。" />
+          <node TEXT="不问男儿何等汉，惧内顺从定数他。" />
+          <node TEXT="对宫丁水来相照，旺财旺丁众人夸。" />
+          <node TEXT="形如葫芦妻子贤，持家理财展宏华。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="癸山见水夫不遇，妇受欺凌常被辱。" />
+          <node TEXT="形若歪斜不齐整，婆媳相逼残浇竹。" />
+          <node TEXT="形若枪直穿堂过，丧夫落泪伤心哭。" />
+          <node TEXT="妇科疾患难生育，吵闹休婚受困苦。" />
+        </node>
       </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="断卦次序">
       <node TEXT="一 看子：还有没有神" />

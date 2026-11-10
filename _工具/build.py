@@ -1090,6 +1090,106 @@ def jw_section(gua, shift=2, with_title=False, heading="经文"):
             + jw_for_gua(gua, shift, with_title))
 
 
+# ---------- 脑图节点里的「我的经文」：从经文唯一源自动同步 ----------
+# 老脑图里每座山挂着「我的经文：〔待补〕」，那是经文还没入库时留下的占位；
+# 新建的巽卦脑图干脆连节点都没有。网页导图与 导出/*.xmind 都读 脑图/*.md，
+# 所以构建时把节点块同步写回 md（幂等），一次 build 两边一起变，不会各写一份。
+
+MIND_JW_HEAD = "- 我的经文"
+MIND_JW_TEACHER = "- 老师经文：〔待补〕"
+
+
+def mind_jw_block(key, md):
+    """一篇经文 → markmap 的缩进节点块，只收「我的经文」栏的诗句。"""
+    _, _, secs = jw_parse(md)
+    mine = next((b for n, b in secs if n == JW_MINE), [])
+    groups, cur = [], None
+    for l in mine:
+        s = l.strip()
+        if not s:
+            continue
+        m = re.match(r"^\*\*(.+?)\*\*$", s)
+        if m:
+            cur = (m.group(1), [])
+            groups.append(cur)
+        elif s.startswith("> ") and cur is not None:
+            cur[1].append(s[2:].strip())
+    if not groups:
+        return [MIND_JW_HEAD + "：〔待补〕", MIND_JW_TEACHER]
+    out = [MIND_JW_HEAD]
+    for name, lines in groups:
+        out.append("  - " + name)
+        out += ["    - " + x for x in lines]
+    out.append(MIND_JW_TEACHER)
+    return out
+
+
+def sync_mind_jingwen():
+    """把 脑图/*.md 里的经文节点同步成经文唯一源的内容，写回 md。幂等。"""
+    JW = jingwen_by_key()
+    changed = []
+    for f in mind_files():
+        path = os.path.join(MIND_DIR, f)
+        src = open(path, encoding="utf-8").read()
+        gua = jingwen_gua_of_file(f)
+        keys = jingwen_gua_keys(gua)
+
+        # 按 ## 分支切块（第一段是文件标题与导语）
+        segs, cur = [], []
+        for l in src.split("\n"):
+            if l.startswith("## ") and cur:
+                segs.append(cur)
+                cur = []
+            cur.append(l)
+        if cur:
+            segs.append(cur)
+
+        out_segs = []
+        for seg in segs:
+            head = seg[0]
+            key = ""
+            if head.startswith("## "):
+                h = head[3:]
+                if "卦论断" in h:
+                    key = "卦体" + gua
+                else:
+                    for k in keys:
+                        if k.endswith("山") and h.startswith(k[0] + "山"):
+                            key = k
+                            break
+            body, i = [], 1
+            while i < len(seg):
+                l = seg[i]
+                # 旧占位块（父节点 + 两行子节点）与已生成块（父节点 + 全部缩进行）都清掉
+                if (l.startswith("- 我的经文与老师经文")
+                        or l == MIND_JW_HEAD
+                        or l.startswith(MIND_JW_HEAD + "：")):
+                    i += 1
+                    while i < len(seg) and seg[i].startswith("  "):
+                        i += 1
+                    continue
+                if l.strip() == MIND_JW_TEACHER:
+                    i += 1
+                    continue
+                body.append(l)
+                i += 1
+            while body and not body[-1].strip():
+                body.pop()
+            block = mind_jw_block(key, JW[key][1]) if key in JW else []
+            new_seg = [head] + body
+            if block:
+                new_seg += [""] + block
+            out_segs.append("\n".join(new_seg))
+
+        text = "\n\n".join(out_segs).rstrip() + "\n"
+        if text != src:
+            open(path, "w", encoding="utf-8").write(text)
+            changed.append(f)
+    if changed:
+        print("  脑图经文节点已同步：" + "、".join(changed))
+    return changed
+
+
 def jingwen_gua_order():
     """经文的卦序：跟 Ⅱ 卦山线的页面顺序走（坎、坤、震），不按八宫排。"""
     order = []
@@ -1337,6 +1437,8 @@ def build():
         open(os.path.join(OUT_DIR, pg["slug"] + ".html"), "w", encoding="utf-8").write(html_out)
 
     # 脑图（Ⅳ 导图线）先建：章节索引页要用它出卡片
+    # 建之前先把图内的「我的经文」节点同步成经文唯一源，网页与导出读的是同一份 md
+    sync_mind_jingwen()
     mind_pages = build_minds(pages)
 
     # 经文（Ⅴ 经文线）同理：页子从 经文/ 来，章节索引页也要用

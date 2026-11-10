@@ -10,6 +10,21 @@
       <node TEXT="一句话：坤看的是「这个家养不养得住人」" />
       <node TEXT="坤是财卦，但管利润，不管财库" />
       <node TEXT="财库在坎（子）、利润在坤、人头在艮" />
+      <node TEXT="我的经文">
+        <node TEXT="卦体见砂">
+          <node TEXT="坤宫金城砂相连，家运通玄如有仙。" />
+          <node TEXT="祖宗蒙荫福泽厚，积财聚宝富无边。" />
+          <node TEXT="若得艮水环抱照，福寿双全世代贤。" />
+          <node TEXT="格局大正贤妻助，名利双收福绵延。" />
+        </node>
+        <node TEXT="卦体见水">
+          <node TEXT="西南坤宫水当先，阴性干扰运难全。" />
+          <node TEXT="愚昧妄信迷神仙，盲从舆论受祸牵。" />
+          <node TEXT="水流兑宫多瞎话，叨叨咕咕语篇篇。" />
+          <node TEXT="老母体弱阴气重，亟需调理保福田。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="卦见水">
       <node TEXT="总断：灵性能量过强、阴性因素干扰、家运起不来" />
@@ -87,11 +102,22 @@
         <node TEXT="三分区做局：天心位空、路径化解、边缘布局" />
         <node TEXT="阻隔论：凶位到中心点的路径上放鱼缸" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
-      </node>
       <node TEXT="一句话：见砂是敢挣且挣着了，见水是敢想挣不着" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="未山起砂发大财，人脉通达路子开。" />
+          <node TEXT="干练果断求高利，独占资源财源来。" />
+          <node TEXT="即便名声招非议，事业依然放光彩。" />
+          <node TEXT="若得丑水来相照，家业殷实乐悠哉。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="未山见水出盗贼，贪图高利想赚钱。" />
+          <node TEXT="灰色副业心不正，违规违法招灾牵。" />
+          <node TEXT="资产没收多亏损，官非缠身叹连连。" />
+          <node TEXT="好面充胖瞎折腾，到头辛苦化云烟。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="坤山 · 家运（利润与幸福感）">
       <node TEXT="身体层">
@@ -133,11 +159,22 @@
         <node TEXT="三点定位优化：用神 → 用神先天位 → 关联诉求卦" />
         <node TEXT="催血财：靠团队催坤艮；靠大佬催乾离" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
-      </node>
       <node TEXT="一句话：砂是贤妻良母、家和万事兴；水是女主人不幸福、家运起不来" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="坤山起砂叠叠高，女主持家有绝招。" />
+          <node TEXT="贤惠能干家和顺，欢声笑语乐陶陶。" />
+          <node TEXT="女儿端庄又俊俏，持家理财志气豪。" />
+          <node TEXT="若得艮水来相照，血财大发步步高。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="坤山见水伤妻房，贤妇难留体不康。" />
+          <node TEXT="肠胃虚弱湿气重，精神低落叹凄凉。" />
+          <node TEXT="家庭氛围难和顺，药罐频频不离汤。" />
+          <node TEXT="若遇水形如破军，腹疾缠身受损伤。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="申山 · 链接（探索与艺术）">
       <node TEXT="身体层">
@@ -174,11 +211,22 @@
         <node TEXT="激发灵感：水杯放西南，看着水发呆" />
         <node TEXT="坤卦健身：先练力量再练有氧" />
       </node>
-      <node TEXT="我的经文与老师经文">
-        <node TEXT="我的经文：〔待补〕" />
-        <node TEXT="老师经文：〔待补〕" />
-      </node>
       <node TEXT="一句话：见砂看见世间的美，见水看见世间的苦" />
+      <node TEXT="我的经文">
+        <node TEXT="见砂">
+          <node TEXT="申山见砂蕙质兰，女儿秀美知书欢。" />
+          <node TEXT="感知美好灵性足，艺术通达天地宽。" />
+          <node TEXT="勤劳致富懂道理，心灵纯洁众人赞。" />
+          <node TEXT="若得寅水相对照，才艺超群美名传。" />
+        </node>
+        <node TEXT="见水">
+          <node TEXT="申山见水小女伤，认知偏离走异方。" />
+          <node TEXT="思想怪异易早恋，沉迷网路世观荒。" />
+          <node TEXT="负能外倾言毒辣，叛逆离道招祸殃。" />
+          <node TEXT="早做调理正心智，免教青春受折伤。" />
+        </node>
+      </node>
+      <node TEXT="老师经文：〔待补〕" />
     </node>
     <node TEXT="断卦次序">
       <node TEXT="一看坤（中）：家还暖不暖、女主人身体" />
