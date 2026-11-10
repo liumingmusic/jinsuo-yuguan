@@ -39,8 +39,7 @@ JINGWEN_DIR = os.path.join(ROOT, "经文")
 JW_MINE = "我的经文"
 JW_TEACHER = "老师经文"
 JW_TBD = "〔待补〕"
-JW_NOTE = ("经文分两栏：「我的经文」＝个人自编经文，据《个人自编经文.docx》收录；"
-           "「老师经文」＝老师口播 · 据课堂记录整理。"
+JW_NOTE = ("经文分两栏：「我的经文」＝个人自编，「老师经文」＝老师的版本。"
            "老师没有给的一律留 〔待补〕，不代写。"
            "各山正文里的经文一、二、三是底本文献，不算谁的经文。")
 OUT_DIR = os.path.join(ROOT, "站点")
@@ -51,8 +50,8 @@ VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
 # 顺序即导航顺序：Ⅰ 课程线 → Ⅱ 卦山线 → Ⅲ 作业线 → Ⅳ 导图线 → Ⅴ 经文线 → 附录
 SECTIONS = [
     ("Ⅰ-课程线", "Ⅰ", "课程线", "理法 · 技法 · 案例", "#2c6a7c"),
-    ("Ⅱ-卦山线", "Ⅱ", "卦山线", "坎 · 坤 · 震 九山", "#8a6a3a"),
-    ("Ⅲ-作业线", "Ⅲ", "作业线", "题面 · 批语 · 拆解", "#7a4a52"),
+    ("Ⅱ-卦山线", "Ⅱ", "卦山线", "坎 · 坤 · 震 · 巽 十二山", "#8a6a3a"),
+    ("Ⅲ-作业线", "Ⅲ", "作业线", "回答原文 · 老师解答", "#7a4a52"),
     (MIND_SECTION, "Ⅳ", "导图线", "骨架 · 脉络 · 一卦一图", "#3f6b7a"),
     (JINGWEN_SECTION, "Ⅴ", "经文线", "我的经文 · 老师经文", "#5c4a72"),
     ("附录", "附", "附录", "技法 · 术语 · 速查", "#5a6068"),
@@ -653,10 +652,10 @@ ALL_GUA = [
                ("卯", "人脉 · 桃花", "full"),
                ("乙", "文昌 · 自处", "full")]),
     dict(g="巽", sz="辰巽巳", fang="东南", no="四绿", el="木", color="#3b6b66", studied=True,
-         note="长女、风与入。第 13 讲讲辰山，巽山、巳山未讲。",
-         shan=[("辰", "水库与抢夺", "taught"),
-               ("巽", "", "none"),
-               ("巳", "", "none")]),
+         note="长女、风与入。三山中巽居中，主风评与相互作用。",
+         shan=[("辰", "水库与抢夺", "full"),
+               ("巽", "风评 · 慕强与自强", "full"),
+               ("巳", "起 · 人间第一流", "full")]),
     dict(g="离", sz="丙午丁", fang="南", no="九紫", el="火", color="#8a4436", studied=False,
          note="中女、火与明。", shan=None),
     dict(g="坤", sz="未坤申", fang="西南", no="二黑", el="土", color="#8a6a3a", studied=True,
@@ -884,7 +883,7 @@ def jw_is_empty(body):
 def jw_render(key, md, shift=1, with_title=False):
     """一条经文（一个山或一个卦体）渲染成 HTML 片段。
 
-    两栏口径：我的经文按《个人自编经文.docx》收录，老师经文没给的留 〔待补〕。
+    两栏口径：我的经文收个人自编，老师经文没给的留 〔待补〕。
     空栏不撑标题——只留一行浅灰占位；有内容的栏照常出标题与正文，
     这样一页上不会因为空栏而留下十几个空标题。
     """
@@ -1049,7 +1048,7 @@ def build_jingwen(pages):
                 cross = ('<div class="side-group"><p class="side-title">对照正文</p><ul>'
                          f'<li><a href="{pg["slug"]}.html"><span class="n">Ⅱ</span>'
                          f'<span>{html.escape(pg["title"])}</span></a></li>'
-                         '</ul><p class="side-tip">经文出自各山正文，这里只作对读与填稿。</p></div>')
+                         '</ul><p class="side-tip">经文出自各山正文，这里只作对读。</p></div>')
                 break
 
         page = (PAGE_TMPL
@@ -1108,7 +1107,7 @@ def jingwen_gua_order():
 def jw_all():
     """全部经文按卦分组，给 Ⅲ 作业线的《经文总表》页用。
 
-    按卦分组是因为一页装三卦十二篇，不分组就分不出谁是谁。
+    按卦分组是因为一页装四卦十六篇，不分组就分不出谁是谁。
     """
     JW = jingwen_by_key()
     out = []
@@ -1571,7 +1570,7 @@ def shan_slug_map(pages):
             continue
         stem = os.path.splitext(pg["file"])[0]
         for ch in stem:
-            if ch in "壬子癸甲卯乙未坤申":
+            if ch in "壬子癸甲卯乙未坤申辰巽巳":
                 m.setdefault(ch, pg["slug"])
     return m
 
@@ -1659,7 +1658,7 @@ def _compass(slan):
     o.append('<line x1="330" y1="424" x2="430" y2="424" stroke="#e4ddca" stroke-width="1"/>')
     o.append('<text x="380" y="446" text-anchor="middle" font-size="12.5" '
              'letter-spacing="3" fill="#a67c3d" font-family="PingFang SC,sans-serif">'
-             '坎 · 坤 · 震 · 巽 已开讲</text>')
+             '坎 · 坤 · 震 · 巽 已成篇</text>')
     o.append("</svg>")
     return "".join(o)
 
@@ -1873,16 +1872,19 @@ def _map_side():
     taught = [m["name"] for m in ms if m["st"] == "taught"]
     full_names = "　".join(m["name"] for m in ms if m["st"] == "full")
     n_none = sum(1 for m in ms if m["st"] == "none")
+    items = ['<li><span class="sw full"></span><div><b>已成篇</b>'
+             f'<em>{full_names}</em><p>正文写全，图上可点，进正文。</p></div></li>']
+    # taught 为空时不要摆一个空图例（曾经出现「已开讲」后面空一片的尴尬）
+    if taught:
+        items.append(
+            '<li><span class="sw taught"></span><div><b>已开讲</b>'
+            f'<em>{"　".join(taught)}</em><p>课上讲到了，正文页还在补。</p></div></li>')
+    items.append(
+        '<li><span class="sw none"></span><div><b>未开讲</b>'
+        f'<em>其余 {n_none} 山</em><p>这一轮课没讲到，图上留位。</p></div></li>')
     return (
         '<h3>这张图怎么看</h3>'
-        '<ul class="lg">'
-        '<li><span class="sw full"></span><div><b>已成篇</b>'
-        f'<em>{full_names}</em><p>七段写满，图上可点，进正文。</p></div></li>'
-        f'<li><span class="sw taught"></span><div><b>已开讲</b>'
-        f'<em>{"　".join(taught)}</em><p>课上讲到了，卦山线的正文页还没建。</p></div></li>'
-        '<li><span class="sw none"></span><div><b>未开讲</b>'
-        f'<em>其余 {n_none} 山</em><p>这一轮课没讲到，图上留位。</p></div></li>'
-        '</ul>'
+        '<ul class="lg">' + "".join(items) + '</ul>'
         '<div class="map-note">'
         '<p><b>卦和山不是两套东西。</b>卦管一段四十五度的格局，山是这段格局里十五度的落点。'
         '说「坎卦」，讲的是水与肾的总体倾向；落到「壬山」，才说得上财商、说得出应期。</p>'
@@ -1912,8 +1914,12 @@ def _by_gua(slan):
                 rows.append(f'<span class="row {st}"><b>{name}</b>'
                             f'<span>{label}</span>'
                             f'<i>{STAT_LABEL[st]}</i></span>')
-        tag = ('<span class="g8-tag on">已开讲</span>' if g["studied"]
-               else '<span class="g8-tag">未开讲</span>')
+        if g["studied"]:
+            done = bool(g["shan"]) and all(s[2] == "full" for s in g["shan"])
+            tag = ('<span class="g8-tag on">已成篇</span>' if done
+                   else '<span class="g8-tag on">已开讲</span>')
+        else:
+            tag = '<span class="g8-tag">未开讲</span>'
         cards.append(
             f'<div class="g8{" studied" if g["studied"] else ""}" '
             f'style="--gc:{g["color"]}">'
@@ -1947,10 +1953,11 @@ def _by_shan(slan):
     n_full = sum(1 for m in ms if m["st"] == "full")
     n_taught = sum(1 for m in ms if m["st"] == "taught")
     n_none = sum(1 for m in ms if m["st"] == "none")
-    legend = ('<div class="m24-foot">'
-              f'<span><i class="sw full"></i>已成篇 {n_full} 山</span>'
-              f'<span><i class="sw taught"></i>已开讲 {n_taught} 山</span>'
-              f'<span><i class="sw none"></i>未开讲 {n_none} 山</span>'
+    stat = [f'<span><i class="sw full"></i>已成篇 {n_full} 山</span>']
+    if n_taught:
+        stat.append(f'<span><i class="sw taught"></i>已开讲 {n_taught} 山</span>')
+    stat.append(f'<span><i class="sw none"></i>未开讲 {n_none} 山</span>')
+    legend = ('<div class="m24-foot">' + "".join(stat) +
               '<span class="m24-tip">一列一卦，自上而下为前山、中山、后山；'
               '卦名与山名同字的（艮、巽、坤、乾）指的是那一山，不是整卦；'
               '列序从坎起按课程排，不是盘面方位。</span>'
@@ -2013,7 +2020,7 @@ def _by_jw(jw_pages, pages):
     more = (f'另见 <a href="{total}.html">Ⅲ 作业线《经文总表》</a>，按卦通读一整份。'
             if total else "")
     return ('<div class="ways-grid">' + "".join(cards) + '</div>'
-            + '<p class="ways-foot">左栏「我的经文」＝个人自编，右栏「老师经文」＝老师口播 · 据课堂记录整理；'
+            + '<p class="ways-foot">左栏「我的经文」＝个人自编，右栏「老师经文」＝老师的版本；'
               '老师没有给的一律留 〔待补〕，不代写。' + more + '</p>')
 
 
