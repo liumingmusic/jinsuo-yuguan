@@ -1914,3 +1914,223 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .home .hero-stats em{font-size:10.5px;letter-spacing:.06em}
   .leaf-verse p{font-size:17px}
 }
+
+/* ==================================================================
+   Ⅴ 经文线 · 卷轴（2026-11-11）
+   .jw-scroll 挂在 .layout 上，只影响 4 个卦页。
+   ⚠️ .jw-note / .jw-sub / .jw-tbd 是 Ⅱ Ⅲ Ⅳ 三处共用的类名，
+      这里一律写 .jw-scroll 前缀，绝不裸改，免得把另外三处投影带歪。
+   版式不变：两栏并排对读、经文仍横排、jw-卦-序号- 锚点全保留。
+   篇名做成「骑缝题签」外溢到正文右侧的空白列，不占卡片宽度——
+   Ⅴ 线正文列约 657px，两栏各 328px，经文一句 16 字要留够一行。
+   ================================================================== */
+
+/* --- 卷首题识：卦爻 + 竖排卷题 + 朱印 --- */
+.jw-scroll .jw-front{
+  display:flex;align-items:center;gap:18px;
+  margin:0 0 26px;padding:0 0 14px;
+  border-bottom:0;
+}
+.jw-scroll .jw-front-tri{width:34px;height:41px;color:var(--brand);flex:none;opacity:.82}
+.jw-scroll .jw-front-tri svg{display:block;width:100%;height:100%}
+.jw-scroll .jw-front-word{
+  writing-mode:vertical-rl;
+  font-family:var(--serif);font-size:18px;font-weight:600;
+  letter-spacing:.24em;color:var(--brand);line-height:1;padding:3px 0;
+}
+/* 铜线贴卷题底端拉出，别从竖排字中间横穿过去 */
+.jw-scroll .jw-front-rule{
+  flex:1;height:1px;align-self:flex-end;margin-bottom:0;
+  background:linear-gradient(90deg,rgba(166,124,61,.55),rgba(166,124,61,.06));
+}
+.jw-scroll .jw-front .seal{width:42px;height:42px;opacity:.88}
+
+/* --- 来源说明：去掉现代左边框，改成卷端小字题识 --- */
+.jw-scroll .doc > .jw-note{
+  border-left:0;border-radius:0;
+  border-top:1px solid #e6ddc6;border-bottom:1px solid #e6ddc6;
+  background:rgba(250,246,236,.5);
+  padding:12px 16px;color:var(--ink-2);font-size:13.4px;
+}
+
+/* --- 每篇 = 一轴：题签外溢，卡片吃满正文列 --- */
+.jw-scroll .jw-entry{position:relative;margin:0 0 4px}
+.jw-scroll .jw-entry > .jw-pair-h{
+  position:absolute;right:-52px;top:40px;z-index:3;
+  writing-mode:vertical-rl;display:flex;align-items:center;gap:10px;
+  margin:0;padding:12px 7px;
+  font-family:var(--serif);font-size:18px;font-weight:600;
+  letter-spacing:.2em;color:#7a5a2c;
+  background:#faf4e6;border:1px solid #d8c49a;border-radius:2px;
+  box-shadow:2px 2px 0 rgba(166,124,61,.12);
+}
+.jw-scroll .jw-entry > .jw-pair-h .jw-tri{
+  width:22px;height:27px;color:var(--gold);flex:none;opacity:.85;
+}
+.jw-scroll .jw-entry > .jw-pair-h .jw-tri svg{display:block;width:100%;height:100%}
+.jw-scroll .jw-entry > .jw-sub{
+  max-width:none;margin:.1em 0 1em;padding-left:12px;
+  border-left:2px solid var(--gold-2);color:var(--ink-3);
+}
+
+/* --- 绢面：米色宣纸 + 纤维 + 卷边内阴影，圆角收敛成裁切边 --- */
+.jw-scroll .doc > .jw-entry > .jw-pair{
+  position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;
+  margin:14px 0 56px;border:0;border-radius:2px;
+  background:#f7f4ec;overflow:visible;
+  box-shadow:
+    inset 14px 0 22px -18px rgba(90,66,32,.5),
+    inset -14px 0 22px -18px rgba(90,66,32,.5),
+    0 3px 16px rgba(28,38,42,.07);
+}
+.jw-scroll .doc > .jw-entry > .jw-pair::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  border-radius:2px;opacity:.42;mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(166,124,61,.022) 0 1px,transparent 1px 7px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  background-size:auto,160px 160px;
+}
+
+/* --- 上下木轴与轴头。绝对定位，不参与两栏 grid --- */
+.jw-scroll .jw-rod{
+  display:block;position:absolute;left:-10px;right:-10px;height:11px;
+  border-radius:6px;z-index:2;
+  background:linear-gradient(180deg,#e0c48a 0%,#a67c3d 42%,#7a5a2c 62%,#c9a86a 100%);
+  box-shadow:0 2px 6px rgba(60,44,20,.22),inset 0 1px 0 rgba(255,240,205,.5);
+}
+.jw-scroll .jw-rod.top{top:-6px}
+.jw-scroll .jw-rod.bot{bottom:-6px}
+.jw-scroll .jw-rod i{
+  position:absolute;top:-4px;width:11px;height:19px;border-radius:3px;
+  background:linear-gradient(90deg,#8a6a3a,#e0c48a 45%,#8a6a3a);
+  box-shadow:0 1px 4px rgba(60,44,20,.28);
+}
+.jw-scroll .jw-rod i:first-child{left:-6px}
+.jw-scroll .jw-rod i:last-child{right:-6px}
+
+/* --- 两栏：中缝改成朱丝栏折痕，栏名改成竖排题签 --- */
+.jw-scroll .jw-pair-col{
+  position:relative;z-index:1;min-width:0;
+  padding:20px 20px 22px 42px;
+}
+.jw-scroll .jw-pair-col.teacher{padding:20px 42px 22px 20px}
+.jw-scroll .jw-pair-col + .jw-pair-col{border-left:0}
+.jw-scroll .jw-pair-col + .jw-pair-col::before{
+  content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;
+  background:linear-gradient(180deg,transparent,rgba(166,124,61,.42) 12%,
+              rgba(166,124,61,.42) 88%,transparent);
+  box-shadow:1px 0 0 rgba(255,255,255,.6);
+}
+.jw-scroll .jw-pair-label{
+  position:absolute;left:11px;top:20px;display:block;
+  writing-mode:vertical-rl;letter-spacing:.2em;
+  margin:0;padding:6px 3px;font-size:12px;font-weight:600;
+  color:var(--brand-2);border-right:1px solid rgba(44,106,124,.28);
+}
+.jw-scroll .jw-pair-label::before{display:none}
+.jw-scroll .jw-pair-col.teacher .jw-pair-label{
+  left:auto;right:11px;color:var(--gold);
+  border-right:0;border-left:1px solid rgba(166,124,61,.38);
+}
+
+/* --- 经文：小标题改墨框签，每句一行落在朱丝栏界行里 --- */
+.jw-scroll .jw-pair-body{font-size:15px;line-height:1.95;color:var(--ink)}
+.jw-scroll .jw-pair-body > p{margin:0 0 12px}
+.jw-scroll .jw-pair-body > p > strong{
+  display:inline-block;font-weight:500;
+  font-family:var(--serif);font-size:14px;letter-spacing:.18em;
+  padding:3px 11px;border:1px solid rgba(166,124,61,.55);
+  background:rgba(250,246,236,.75);color:#7a5a2c;border-radius:2px;
+}
+.jw-scroll .doc blockquote{
+  margin:0 0 20px;padding:0;border-left:0;border-radius:0;
+  background:none;color:var(--ink);
+}
+.jw-scroll .doc blockquote p{
+  margin:0;padding:8px 4px;font-family:var(--serif);
+  font-size:15px;letter-spacing:.01em;color:#243238;
+  border-bottom:1px solid rgba(166,124,61,.17);
+}
+.jw-scroll .doc blockquote p:last-child{border-bottom:0}
+.jw-scroll .doc blockquote p.warn-line{color:var(--sand)}
+
+/* --- 空栏：虚线框改成「留白待书」的淡墨界格，文本仍是〔待补〕 --- */
+.jw-scroll .jw-pair-body .jw-tbd{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  margin:0;min-height:168px;padding:14px;
+  border:1px solid rgba(166,124,61,.32);border-radius:2px;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 31px,rgba(166,124,61,.09) 31px 32px),
+    rgba(255,253,247,.5);
+  color:var(--ink-4);text-align:center;
+}
+.jw-scroll .jw-pair-body .jw-tbd::after{
+  content:"留白待书";position:absolute;right:9px;top:12px;
+  writing-mode:vertical-rl;font-size:11px;letter-spacing:.24em;
+  color:rgba(166,124,61,.55);
+}
+
+/* --- 中宽（901–1560）：右目录列已收掉，正文右侧只剩 40px padding，
+      骑缝签再外溢会撑出页面级横滚。改成卷端横签贴在副标题右端，零溢出。 --- */
+@media (min-width:901px) and (max-width:1560px){
+  .jw-scroll .jw-entry > .jw-pair-h{
+    right:0;top:0;
+    writing-mode:horizontal-tb;flex-direction:row;gap:8px;
+    padding:5px 12px;font-size:14px;letter-spacing:.12em;
+    border:1px solid #d8c49a;border-bottom:0;border-radius:2px 2px 0 0;
+    box-shadow:none;
+  }
+  .jw-scroll .jw-entry > .jw-pair-h .jw-tri{width:18px;height:22px}
+}
+
+/* --- 窄屏：题签回横排、两栏叠、轴杆收短，别把经文挤折行 --- */
+@media (max-width:900px){
+  .jw-scroll .jw-entry > .jw-pair-h{
+    position:static;writing-mode:horizontal-tb;display:block;
+    margin:30px 0 .2em;padding:0;font-size:20px;letter-spacing:.03em;
+    color:var(--ink);background:none;border:0;box-shadow:none;
+  }
+  .jw-scroll .jw-entry > .jw-pair-h .jw-tri{display:none}
+  .jw-scroll .jw-entry > .jw-sub{padding-left:0;border-left:0}
+  .jw-scroll .doc > .jw-entry > .jw-pair{grid-template-columns:1fr;margin-bottom:52px}
+  .jw-scroll .jw-pair-col,
+  .jw-scroll .jw-pair-col.teacher{padding:18px 18px 20px}
+  .jw-scroll .jw-pair-col + .jw-pair-col::before{display:none}
+  .jw-scroll .jw-pair-col + .jw-pair-col{border-top:1px solid rgba(166,124,61,.3)}
+  .jw-scroll .jw-pair-label,
+  .jw-scroll .jw-pair-col.teacher .jw-pair-label{
+    position:static;writing-mode:horizontal-tb;display:flex;
+    margin:0 0 12px;padding:0;border:0;letter-spacing:.16em;
+  }
+  .jw-scroll .jw-pair-label::before{display:block;width:6px;height:6px}
+  .jw-scroll .jw-pair-body .jw-tbd{min-height:96px}
+  .jw-scroll .jw-front-word{font-size:16px;letter-spacing:.3em}
+  .jw-scroll .jw-front .seal{width:36px;height:36px}
+}
+@media (max-width:640px){
+  .jw-scroll .jw-rod{left:-4px;right:-4px;height:9px}
+  .jw-scroll .jw-rod i{width:8px;height:15px;top:-3px}
+  .jw-scroll .jw-rod i:first-child{left:-3px}
+  .jw-scroll .jw-rod i:last-child{right:-3px}
+  .jw-scroll .jw-front{gap:12px}
+  .jw-scroll .jw-front-tri{width:26px;height:31px}
+  .jw-scroll .jw-front-word{font-size:14px}
+  .jw-scroll .doc blockquote p{font-size:14.5px;letter-spacing:0}
+  .jw-scroll .jw-pair-body > p > strong{font-size:13px;padding:2px 8px}
+}
+
+/* --- 打印：轴杆、纸纹、朱印都不进纸面 --- */
+@media print{
+  .jw-scroll .jw-rod,
+  .jw-scroll .doc > .jw-entry > .jw-pair::before,
+  .jw-scroll .jw-front .seal,
+  .jw-scroll .jw-entry > .jw-pair-h .jw-tri{display:none!important}
+  .jw-scroll .doc > .jw-entry > .jw-pair{
+    background:#fff;box-shadow:none;border:1px solid #ddd;
+  }
+  .jw-scroll .doc blockquote p{border-bottom-color:#eee}
+}
+@media (prefers-reduced-motion:reduce){
+  .jw-scroll *{animation:none!important;transition:none!important}
+}
