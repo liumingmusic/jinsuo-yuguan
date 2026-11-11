@@ -505,6 +505,16 @@ JS = """
     onScroll();
     window.addEventListener('scroll', onScroll, {passive:true});
   }
+  // 首屏「大道之术五十」题句：CSS 动画在每次新载入时自动播一遍；
+  // 从别的页面按返回键回来时浏览器走 bfcache，不会重跑，这里手动重启一次。
+  window.addEventListener('pageshow', function(e){
+    if(!e.persisted) return;
+    var mf = document.querySelector('.home .manifesto');
+    if(!mf) return;
+    mf.style.animation = 'none';
+    void mf.offsetWidth;
+    mf.style.animation = '';
+  });
   // 四种读法切换（按卦 / 按山 / 按导图 / 按经文）
   var tbs = [].slice.call(document.querySelectorAll('.tab-btn'));
   if(tbs.length){
@@ -941,10 +951,14 @@ def _trigram(gua, cls="jw-tri"):
 
 
 def _jw_front(gua):
-    """Ⅴ 线卷首题识：卦爻、竖排卷题、朱印。纯装饰，不复述卦名与经文正文。"""
+    """Ⅴ 线卷首题识：卦牌、竖排卷题、界行、朱印。
+
+    纯装饰，不复述卦名与经文正文。卷题别写「一」字——竖排时那一横
+    会变成一枚悬空短划，看起来像掉了一个字（2026-11-11 用户反馈）。
+    """
     return ('<div class="jw-front">'
             + _trigram(gua, "jw-front-tri")
-            + '<span class="jw-front-word">經文一卷</span>'
+            + '<span class="jw-front-word">經文卷</span>'
             + '<span class="jw-front-rule"></span>'
             + f'<span class="seal">{_seal()}</span>'
             + '</div>')
