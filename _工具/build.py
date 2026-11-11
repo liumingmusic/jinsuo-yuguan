@@ -1852,6 +1852,34 @@ def _hero_wheel():
     orb.append('</g>')
     o.append("".join(orb))
 
+    # 铜盘刻线：给发光环补上罗盘该有的「形制」。
+    # 原先只有刻度环 + 光晕，观感像星盘；这一层是静止的铜色同心圈、
+    # 二十四道分格线与一圈密刻度，让盘读起来是一面铜罗盘。
+    # ⚠️ 纯静态、不参与任何动画，也不写字——方位文字仍在下面两层，永不旋转。
+    plate = ['<g class="w-plate">']
+    for r, op in ((R_MID + 8, ".13"), (R_MID + 20, ".09"),
+                  (R_LAB + 20, ".12"), (R_LAB + 34, ".16"),
+                  (R_LAB + 48, ".10"), (R_OUT - 12, ".08")):
+        plate.append(f'<circle cx="{cx}" cy="{cy}" r="{r:.0f}" fill="none" '
+                     f'stroke="rgba(216,189,130,{op})" stroke-width=".8"/>')
+    for k in range(24):
+        a = k * 15 - 7.5 + ROT
+        x1, y1 = _polar(cx, cy, R_MID + 8, a)
+        x2, y2 = _polar(cx, cy, R_LAB + 48, a)
+        plate.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                     f'stroke="rgba(216,189,130,.14)" stroke-width=".8"/>')
+    for deg in range(0, 360, 2):
+        if deg % 10 == 0:
+            r1, r2, op = R_LAB + 44, R_LAB + 52, ".24"
+        else:
+            r1, r2, op = R_LAB + 47, R_LAB + 52, ".10"
+        x1, y1 = _polar(cx, cy, r1, deg)
+        x2, y2 = _polar(cx, cy, r2, deg)
+        plate.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                     f'stroke="rgba(216,189,130,{op})" stroke-width=".6"/>')
+    plate.append('</g>')
+    o.append("".join(plate))
+
     # 外环：二十四山
     out = ['<g class="w-outer">']
     out.append(f'<circle cx="{cx}" cy="{cy}" r="{R_LAB + 36}" fill="none" '
@@ -1865,7 +1893,7 @@ def _hero_wheel():
         out.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
                    f'stroke="rgba(255,255,255,.055)" stroke-width=".7"/>')
         hit = m["st"] != "none"
-        col = "rgba(216,189,130,.92)" if hit else "rgba(255,255,255,.34)"
+        col = "rgba(216,189,130,.96)" if hit else "rgba(255,255,255,.52)"
         wgt = ' font-weight="600"' if hit else ""
         fs = 15 if hit else 14
         out.append(f'<g transform="rotate({a:.2f} {cx} {cy})">'
@@ -1888,7 +1916,7 @@ def _hero_wheel():
                    f'stroke-width=".7"/>')
         ga = a + 22.5
         gx, gy = _polar(cx, cy, (R_IN + R_MID) / 2 + 6, ga)
-        col = "rgba(216,189,130,.82)" if g["studied"] else "rgba(255,255,255,.30)"
+        col = "rgba(216,189,130,.94)" if g["studied"] else "rgba(255,255,255,.48)"
         gua.append(f'<g transform="rotate({ga:.2f} {cx} {cy})">'
                    f'<text x="{cx}" y="{cy - ((R_IN + R_MID) / 2 + 6):.1f}" '
                    f'text-anchor="middle" font-family="Songti SC,serif" '
@@ -2149,7 +2177,7 @@ def _parts(pages, mind_pages, jw_pages):
                ["逐层展开的节点", "与卦山线一一对应", "图下附本卦经文"], "张"),
         "Ⅴ": ("一卦一页，两栏对读",
                "全站经文集中在这里：一卦一页，每篇左边我的、右边老师的，并排比。空着的框先留着。",
-               ["卦体加三山逐页排开", "我的与老师并排对照", "唯一源在 经文/ 目录"], "页"),
+               ["卦体加三山逐页排开", "我的与老师并排对照", "全站只此一份，不另抄一遍"], "页"),
     }
     cards = []
     for d, num, short, desc, color in SECTIONS:
@@ -2220,6 +2248,56 @@ def _recent(pages, mind_pages, jw_pages):
     return "".join(rows)
 
 
+def _seal():
+    """朱砂方印。纯 SVG 画方框与印文，不依赖字体图标，不会出现豆腐块。"""
+    return ('<svg viewBox="0 0 64 64" aria-hidden="true">'
+            '<rect x="1.5" y="1.5" width="61" height="61" rx="5" '
+            'fill="#a3543a" stroke="#8d452e" stroke-width="1.5"/>'
+            '<rect x="6.5" y="6.5" width="51" height="51" rx="3" fill="none" '
+            'stroke="rgba(255,246,238,.62)" stroke-width="1.2"/>'
+            '<text x="32" y="28" text-anchor="middle" fill="#fff6ee" '
+            'font-family="Songti SC,serif" font-size="20" font-weight="600">金鎖</text>'
+            '<text x="32" y="50" text-anchor="middle" fill="#fff6ee" '
+            'font-family="Songti SC,serif" font-size="20" font-weight="600">玉關</text>'
+            '</svg>')
+
+
+def _verse_leaf(jw_pages):
+    """首页「经文一叶」：从经文唯一源取壬山见砂第一联，一字不改。
+
+    原句不写死在模板里——经文只有一个源，改了 source 首页自动跟随。
+    这里是首页内的一屏展示带，不是新页面，也不复述整篇经文。
+    """
+    with open(os.path.join(ROOT, "经文", "壬山.md"), encoding="utf-8") as f:
+        lines = [l.strip() for l in f]
+    mine, in_mine = [], False
+    for l in lines:
+        if l.startswith("## "):
+            in_mine = (l[3:].strip() == "我的经文")
+            continue
+        if in_mine and l.startswith("> "):
+            mine.append(l[2:].strip())
+    if len(mine) < 2:
+        raise RuntimeError("经文一叶：壬山.md 里取不到两句经文")
+    a, b = html.escape(mine[0]), html.escape(mine[1])
+    first = f'{jw_pages[0]["slug"]}.html' if jw_pages else "section-Ⅴ.html"
+    return (
+        '<div class="leaf-in">'
+        '<div class="leaf-side">'
+        '<span class="leaf-kicker">经文一叶</span>'
+        '<span class="leaf-side-sub">一山十五度　·　原句不改</span>'
+        '</div>'
+        f'<div class="leaf-verse"><p>{a}</p><p>{b}</p></div>'
+        '<div class="leaf-note">'
+        '<span class="leaf-tag">Ⅴ 经文线　·　壬山　·　见砂</span>'
+        '<p>我的经文与老师经文两栏并排，一卦一页逐篇对读。</p>'
+        f'<a href="{first}">读全篇　→</a>'
+        f'<span class="seal">{_seal()}</span>'
+        '</div>'
+        '</div>'
+    )
+
+
 def build_index(pages, mind_pages, jw_pages):
     first_slug = pages[0]["slug"] if pages else "index"
     slan = shan_slug_map(pages)
@@ -2235,6 +2313,8 @@ def build_index(pages, mind_pages, jw_pages):
                 bymind=_by_mind(mind_pages),
                 byjw=_by_jw(jw_pages, pages),
                 recent=_recent(pages, mind_pages, jw_pages),
+                verse_leaf=_verse_leaf(jw_pages),
+                seal=_seal(),
                 first_link=f"{first_slug}.html",
                 foot_sections=foot_sections(),
                 page_count=len(pages),
