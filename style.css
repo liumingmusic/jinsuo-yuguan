@@ -578,17 +578,18 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
 }
 .sec-head p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.8}
 
-/* 五条线卡片。默认 2 列 × 3 行，最后一格（Ⅴ 经文线）跨两列占满，
-   免得像四条线时那样出现 2+2+1 的孤行；宽屏换三列一行排开。
-   卡片区是首页「体例」一节的概览，不是正文，跨格不影响阅读。 */
+/* 五条线卡片。宽屏用 6 等分网格：前 3 张各占 2 格（1/3 宽），
+   后 2 张各占 3 格（1/2 宽），两行都铺满，不再有 3+2 的孤行与右侧空洞。
+   span 规则全部关在 min-width 媒体查询里，窄屏自然退回 2 列 / 1 列。
+   ⚠️ 不要给 .parts 写内联 grid-template-columns（内联优先级会压掉媒体查询）。 */
 .parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .parts .part:last-child{grid-column:1/-1}
-@media (min-width:1560px){
-  .parts{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .parts .part:last-child{grid-column:auto}
-}
-@media (min-width:1700px){
-  .parts{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (min-width:1200px){
+  .parts{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .parts .part{grid-column:span 2}
+  .parts .part:nth-child(4),
+  .parts .part:nth-child(5){grid-column:span 3}
+  .parts .part:last-child{grid-column:span 3}
 }
 .part{
   position:relative;display:flex;flex-direction:column;
@@ -1014,9 +1015,10 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 .hero-wheel svg{
   position:relative;z-index:1;display:block;width:100%;height:100%;overflow:visible;
 }
-/* 内容收进圆盘后不再和方位字抢位置，文字层可以亮回来，
-   保持「二十四山看得清」；光环、彗尾、光晕亮度不变。 */
-.hero-wheel .w-outer,.hero-wheel .w-gua{opacity:.68}
+/* 内容收进圆盘后不再和方位字抢位置，文字层亮回来。
+   2026-11-11 提到 .9：二十四山与八卦是这门学问的主角，压到 .68 时
+   几乎看不清，盘就只剩一圈发光的环，像星盘不像罗盘。光晕动效不变。 */
+.hero-wheel .w-outer,.hero-wheel .w-gua{opacity:.9}
 /* 光晕、柔光环、中心光核：只呼吸，不位移，更不整体缩放 svg——
    原来那个 .92→1.08 的整体呼吸会让山名跟着忽大忽小，既晃眼也显得廉价。 */
 .hero-wheel .w-halo{
@@ -1777,4 +1779,138 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
 @media print{
   .nav,.side,.toc,.pager,.foot{display:none!important}
   .layout{display:block;padding:0}
+}
+
+/* ==================================================================
+   首页风格补强（2026-11-11）
+   原则：不动已量过的版式比例（620px 正文 / 800px 圆盘），只做加法，
+   外加一处减法（去掉横切圆盘的通栏线）。所有规则用 .home 限定，不影响正文页。
+   ================================================================== */
+
+/* --- P0：数字条改成自带底的铜牌，那条从圆盘正中横过去的通栏线取消 --- */
+.home .hero.hero-quote .hero-stats{
+  width:fit-content;margin:28px auto 0;padding:13px 26px 14px;
+  flex-wrap:nowrap;gap:0;
+  border:1px solid rgba(216,189,130,.28);border-radius:12px;
+  background:linear-gradient(180deg,rgba(8,18,23,.68),rgba(8,18,23,.46));
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  box-shadow:0 10px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(216,189,130,.14);
+}
+.home .hero-stats .st{border-right-color:rgba(216,189,130,.24)}
+.home .hero-stats b{color:#f7ecd6}
+.home .hero-stats em{color:rgba(240,225,195,.74)}
+
+/* --- P0：深色首屏不再硬切成纯白，底部化开一小段 --- */
+.home .hero::after{
+  left:0;right:0;bottom:0;transform:none;width:auto;height:84px;z-index:2;
+  pointer-events:none;
+  background:linear-gradient(to bottom,
+    rgba(255,255,255,0) 0%,rgba(255,255,255,.02) 40%,
+    rgba(255,255,255,.55) 84%,#fff 100%);
+}
+/* 承接纹样：一枚卦爻（坎，站点从壬山起读）配两段细金线 */
+.hero-seam{
+  position:absolute;left:50%;bottom:42px;transform:translateX(-50%);
+  z-index:5;display:flex;align-items:center;gap:14px;pointer-events:none;opacity:.92;
+}
+.hero-seam::before,.hero-seam::after{
+  content:"";width:72px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,106,.82));
+}
+.hero-seam::after{transform:scaleX(-1)}
+.tri{display:inline-flex;flex-direction:column;gap:3.5px;flex:none}
+.tri i{display:block;width:24px;height:2px;background:var(--gold)}
+.tri i.brk{
+  background:linear-gradient(90deg,var(--gold) 0 42%,transparent 42% 58%,var(--gold) 58% 100%);
+}
+
+/* --- P1：首屏右侧竖排题字 + 朱砂方印，填掉圆盘两侧的空，立住中式形制 --- */
+.hero-col{
+  position:absolute;right:clamp(26px,6vw,108px);top:50%;transform:translateY(-50%);
+  z-index:4;display:flex;flex-direction:column;align-items:center;gap:20px;pointer-events:none;
+}
+.hero-col .vtext{
+  writing-mode:vertical-rl;font-family:var(--serif);font-size:13px;
+  letter-spacing:.36em;line-height:1;color:rgba(240,225,195,.68);margin:0;
+}
+.seal{display:inline-block;width:44px;height:44px;line-height:0;flex:none}
+.seal svg{display:block;width:100%;height:100%}
+
+/* --- P1：白底段铺一层极淡的宣纸纤维 + 绢丝纹，去掉网页塑料感 --- */
+.home .sec,.home .leaf{position:relative}
+.home .sec::before,.home .leaf::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(166,124,61,.022) 0 1px,transparent 1px 7px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  background-size:auto,160px 160px;
+  opacity:.45;mix-blend-mode:multiply;
+}
+.home .sec > *,.home .leaf > *{position:relative;z-index:1}
+/* 眉题末尾补一枚小菱形，像线装书的鱼尾 */
+.home .eyebrow::after{
+  content:"";width:5px;height:5px;transform:rotate(45deg);
+  background:var(--gold-2);opacity:.85;margin-left:2px;
+}
+
+/* --- P2：经文一叶。米色宣纸底、竖排原句、钤印落款，撑住中段节奏 --- */
+.home .leaf{
+  padding:82px 0;margin:0 0 96px;background:#f7f4ec;
+  border-top:1px solid #e6ddc6;border-bottom:1px solid #e6ddc6;
+}
+.leaf-in{
+  max-width:1180px;margin:0 auto;padding:0 32px;
+  display:grid;grid-template-columns:132px minmax(0,1fr) 224px;gap:40px;align-items:center;
+}
+.leaf-side{writing-mode:vertical-rl;justify-self:end;text-align:left}
+.leaf-kicker{
+  display:block;font-family:var(--serif);font-size:23px;font-weight:600;
+  letter-spacing:.44em;color:var(--brand);white-space:nowrap;
+}
+.leaf-side-sub{display:block;font-size:11.5px;letter-spacing:.2em;color:var(--ink-3);white-space:nowrap}
+.leaf-verse{
+  display:flex;flex-direction:row-reverse;justify-content:center;align-items:center;
+  gap:26px;min-height:440px;margin:0;
+}
+.leaf-verse p{
+  writing-mode:vertical-rl;margin:0;white-space:nowrap;
+  font-family:var(--serif);font-size:clamp(21px,1.85vw,26px);
+  line-height:2;letter-spacing:.12em;color:#1b2c33;
+}
+.leaf-note{border-left:1px solid #ded3b8;padding-left:24px}
+.leaf-tag{display:block;font-size:11.5px;letter-spacing:.16em;color:var(--gold);margin-bottom:14px}
+.leaf-note p{margin:0 0 18px;font-size:14px;line-height:1.85;color:var(--ink-2)}
+.leaf-note a{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13.5px;font-weight:600;color:var(--brand);
+}
+.leaf-note a:hover{color:var(--gold)}
+.leaf-note .seal{width:38px;height:38px;margin-top:28px;opacity:.9}
+
+/* --- 响应式：竖排题字、卦爻在窄屏收掉，一叶改单列 --- */
+@media (max-width:1200px){
+  .hero-col{display:none}
+}
+@media (max-width:900px){
+  .home .hero::after{height:52px}
+  .hero-seam{display:none}
+  .home .leaf{padding:56px 0;margin-bottom:64px}
+  .leaf-in{grid-template-columns:1fr;gap:28px;justify-items:center;text-align:center}
+  .leaf-side{display:none}
+  .leaf-verse{min-height:0;gap:16px}
+  .leaf-verse p{font-size:19px;line-height:1.9}
+  .leaf-note{border-left:0;border-top:1px solid #ded3b8;padding:20px 0 0}
+  .leaf-note .seal{margin:22px auto 0}
+}
+@media (max-width:640px){
+  /* 既有的 560px 规则把数字条改成 3 列 grid，四个数字必然排成 3+1 的孤行。
+     这里接管成 2×2，四格齐整；铜牌自身仍居中，圆盘下半部不再被压歪。 */
+  .home .hero.hero-quote .hero-stats{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px 24px;padding:12px 20px;text-align:center;
+  }
+  .home .hero-stats .st{padding-right:0;margin-right:0;border-right:0}
+  .home .hero-stats b{font-size:24px}
+  .home .hero-stats em{font-size:10.5px;letter-spacing:.06em}
+  .leaf-verse p{font-size:17px}
 }
