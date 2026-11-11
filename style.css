@@ -1194,6 +1194,32 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   color:rgba(255,255,255,.8);letter-spacing:.04em;
   margin:0 auto 28px;max-width:620px;
 }
+
+/* 首屏题句入场（2026-11-11）：每次载入都从上方渐显、轻坠归位。
+   只动 opacity / transform / clip-path / 滤镜，绝不碰字号、字距和 620px 行长——
+   那三行 34/34/30 是逐字量过的，动画里改字距会中途重排成四行。
+   clip-path 自上而下揭开，三句话依次显出来，不必把段落拆成 span。 */
+.home .manifesto{
+  animation:manifesto-fall 1.25s cubic-bezier(.22,.82,.3,1) .18s both;
+  will-change:opacity,transform,clip-path;
+}
+@keyframes manifesto-fall{
+  0%{
+    opacity:0;transform:translate3d(0,-32px,0);
+    clip-path:inset(0 0 100% 0);filter:blur(5px);
+    text-shadow:0 0 26px rgba(232,205,148,.55);
+  }
+  55%{opacity:.92;filter:blur(1px)}
+  78%{transform:translate3d(0,3px,0)}
+  100%{
+    opacity:1;transform:translate3d(0,0,0);
+    clip-path:inset(0 0 0 0);filter:blur(0);
+    text-shadow:0 0 0 rgba(232,205,148,0);
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .home .manifesto{animation:none!important;opacity:1;transform:none;clip-path:none;filter:none;will-change:auto}
+}
 .hero.hero-quote .hero-cta{justify-content:center}
 /* 整块内容收紧后上移，读数带离开圆盘正下方的「子 / 壬 / 癸」 */
 .hero.hero-quote .hero-stats{justify-content:center;margin-top:28px}
@@ -1925,32 +1951,41 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
    Ⅴ 线正文列约 657px，两栏各 328px，经文一句 16 字要留够一行。
    ================================================================== */
 
-/* --- 卷首题识：卦爻 + 竖排卷题 + 朱印 --- */
+/* --- 卷首包首：卦牌 + 竖排卷题 + 界行 + 朱印，整块落在同一张纸上 ---
+   旧版四件东西散在纯白底上：卦爻像菜单按钮，竖题里的「一」像掉了个字，
+   朱印孤零零悬在右上角，铜线又从半空里起笔，所以整块看着「奇葩」。
+   现在把包首与下面的来源说明收成一条宣纸带：上下同一张纸、左右同一道框，
+   铜线与朱印都压在卷题底端这一条基线上。版式与两栏对读一律不动。 */
 .jw-scroll .jw-front{
-  display:flex;align-items:center;gap:18px;
-  margin:0 0 26px;padding:0 0 14px;
-  border-bottom:0;
+  display:flex;align-items:flex-end;gap:16px;
+  margin:0;padding:18px 20px 16px;
+  border:1px solid #e2d6ba;border-bottom:0;border-radius:3px 3px 0 0;
+  background:linear-gradient(180deg,#fbf8f0,#f7f4ec);
 }
-.jw-scroll .jw-front-tri{width:34px;height:41px;color:var(--brand);flex:none;opacity:.82}
+/* 卦爻装进小卦牌，别再被看成三条横线的汉堡菜单 */
+.jw-scroll .jw-front-tri{
+  box-sizing:border-box;width:42px;height:54px;padding:7px 6px;
+  border:1px solid rgba(166,124,61,.4);border-radius:2px;
+  background:#fdfaf2;color:var(--brand);flex:none;
+}
 .jw-scroll .jw-front-tri svg{display:block;width:100%;height:100%}
 .jw-scroll .jw-front-word{
   writing-mode:vertical-rl;
-  font-family:var(--serif);font-size:18px;font-weight:600;
-  letter-spacing:.24em;color:var(--brand);line-height:1;padding:3px 0;
+  font-family:var(--serif);font-size:19px;font-weight:600;
+  letter-spacing:.18em;color:var(--brand);line-height:1;padding:0;
 }
 /* 铜线贴卷题底端拉出，别从竖排字中间横穿过去 */
 .jw-scroll .jw-front-rule{
   flex:1;height:1px;align-self:flex-end;margin-bottom:0;
-  background:linear-gradient(90deg,rgba(166,124,61,.55),rgba(166,124,61,.06));
+  background:linear-gradient(90deg,rgba(166,124,61,.55),rgba(166,124,61,.12));
 }
-.jw-scroll .jw-front .seal{width:42px;height:42px;opacity:.88}
+.jw-scroll .jw-front .seal{width:40px;height:40px;opacity:.9;flex:none}
 
-/* --- 来源说明：去掉现代左边框，改成卷端小字题识 --- */
+/* --- 来源说明：与包首连成一整条纸，不再是一块孤立的现代提示条 --- */
 .jw-scroll .doc > .jw-note{
-  border-left:0;border-radius:0;
-  border-top:1px solid #e6ddc6;border-bottom:1px solid #e6ddc6;
-  background:rgba(250,246,236,.5);
-  padding:12px 16px;color:var(--ink-2);font-size:13.4px;
+  margin:0 0 22px;padding:12px 20px;
+  border:1px solid #e2d6ba;border-top:0;border-radius:0 0 3px 3px;
+  background:#faf7ef;color:var(--ink-2);font-size:13.4px;
 }
 
 /* --- 每篇 = 一轴：题签外溢，卡片吃满正文列 --- */
@@ -2113,8 +2148,8 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .jw-scroll .jw-rod i{width:8px;height:15px;top:-3px}
   .jw-scroll .jw-rod i:first-child{left:-3px}
   .jw-scroll .jw-rod i:last-child{right:-3px}
-  .jw-scroll .jw-front{gap:12px}
-  .jw-scroll .jw-front-tri{width:26px;height:31px}
+  .jw-scroll .jw-front{gap:10px;padding:14px 14px 12px}
+  .jw-scroll .jw-front-tri{width:32px;height:40px;padding:5px 4px}
   .jw-scroll .jw-front-word{font-size:14px}
   .jw-scroll .doc blockquote p{font-size:14.5px;letter-spacing:0}
   .jw-scroll .jw-pair-body > p > strong{font-size:13px;padding:2px 8px}

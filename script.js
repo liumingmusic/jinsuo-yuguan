@@ -7,6 +7,16 @@
     onScroll();
     window.addEventListener('scroll', onScroll, {passive:true});
   }
+  // 首屏「大道之术五十」题句：CSS 动画在每次新载入时自动播一遍；
+  // 从别的页面按返回键回来时浏览器走 bfcache，不会重跑，这里手动重启一次。
+  window.addEventListener('pageshow', function(e){
+    if(!e.persisted) return;
+    var mf = document.querySelector('.home .manifesto');
+    if(!mf) return;
+    mf.style.animation = 'none';
+    void mf.offsetWidth;
+    mf.style.animation = '';
+  });
   // 四种读法切换（按卦 / 按山 / 按导图 / 按经文）
   var tbs = [].slice.call(document.querySelectorAll('.tab-btn'));
   if(tbs.length){
