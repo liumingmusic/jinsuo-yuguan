@@ -920,23 +920,61 @@ def jw_entry(key, md, shift=1, with_title=False):
     return jw_render(key, md, shift, with_title)
 
 
+# 卦画：自上而下三爻，1 为阳（连），0 为阴（断）。纯 SVG，不依赖字体图标。
+TRIGRAM_ROWS = {"坎": (0, 1, 0), "坤": (0, 0, 0),
+                "震": (0, 0, 1), "巽": (1, 1, 0)}
+
+
+def _trigram(gua, cls="jw-tri"):
+    """一枚卦爻角标。用 rect 画，避免八卦符号在某些字体下变豆腐块。"""
+    rows = TRIGRAM_ROWS.get(gua, (0, 1, 0))
+    parts = []
+    for i, yang in enumerate(rows):
+        y = 4 + i * 10
+        if yang:
+            parts.append(f'<rect x="2" y="{y}" width="26" height="3.4" rx="1.4"/>')
+        else:
+            parts.append(f'<rect x="2" y="{y}" width="11" height="3.4" rx="1.4"/>')
+            parts.append(f'<rect x="17" y="{y}" width="11" height="3.4" rx="1.4"/>')
+    return (f'<span class="{cls}" aria-hidden="true">'
+            f'<svg viewBox="0 0 30 36" fill="currentColor">{"".join(parts)}</svg></span>')
+
+
+def _jw_front(gua):
+    """Ⅴ 线卷首题识：卦爻、竖排卷题、朱印。纯装饰，不复述卦名与经文正文。"""
+    return ('<div class="jw-front">'
+            + _trigram(gua, "jw-front-tri")
+            + '<span class="jw-front-word">經文一卷</span>'
+            + '<span class="jw-front-rule"></span>'
+            + f'<span class="seal">{_seal()}</span>'
+            + '</div>')
+
+
 def jw_pair(key, md, shift=1):
-    """一条经文渲染成左右两栏对照卡（Ⅴ 经文线用）。
+    """一条经文渲染成一轴绢纸（Ⅴ 经文线用）。
 
     Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处是行文里的一段，栏是上下接着走的；
     Ⅴ 线要的是并排对读——同一篇，我的在左、老师的在右，一眼比出高下。
     所以这里两栏永远都在，空栏也留框。
+
+    卷轴化只加结构骨架（.jw-entry / 卦爻 / 上下木轴），经文正文、
+    栏名、锚点前缀 jw-卦-序号- 一个字不动，样式全交给 .jw-scroll 作用域。
     """
     gua = jingwen_gua(key)
     prefix = f"jw-{gua}-{jingwen_seq(key)}-"
     title, sub, secs = jw_parse(md)
-    out = []
+    out = ['<div class="jw-entry">']
     if title:
         out.append(f'<h{1 + shift} class="jw-pair-h" id="{prefix}{jw_slug(title)}">'
-                   f'{inline(title)}</h{1 + shift}>')
+                   + _trigram(gua)
+                   + f'<span class="jw-slip-name">{inline(title)}</span>'
+                   + f'</h{1 + shift}>')
     if sub:
         out.append(f'<p class="jw-sub">{inline(sub)}</p>')
     out.append('<div class="jw-pair">')
+    # 上下木轴：绝对定位，不参与 grid 的两栏布局
+    out.append('<span class="jw-rod top" aria-hidden="true"><i></i><i></i></span>'
+               '<span class="jw-rod bot" aria-hidden="true"><i></i><i></i></span>')
     for name, body in secs:
         anchor = prefix + jw_slug(name)
         if jw_is_empty(body):
@@ -949,7 +987,7 @@ def jw_pair(key, md, shift=1):
                    f'<p class="jw-pair-label">{inline(name)}</p>'
                    f'<div class="jw-pair-body">{inner}</div>'
                    f'</div>')
-    out.append('</div>')
+    out.append('</div></div>')
     return "".join(out)
 
 
@@ -1026,7 +1064,8 @@ def build_jingwen(pages):
     for it in raw:
         gua = it["gua"]
         body = (
-            f'<p class="jw-note">{JW_NOTE}</p>'
+            _jw_front(gua)
+            + f'<p class="jw-note">{JW_NOTE}</p>'
             + jw_pair_gua(gua, shift=2)
         )
         sub = ('<p class="side-title">本 节</p><ul class="d-sub">'
@@ -1059,7 +1098,7 @@ def build_jingwen(pages):
                 .replace("@@CRUMB@@",
                          '<a href="index.html">总览</a><span class="sep">/</span>'
                          '<a href="section-Ⅴ.html">Ⅴ 经文线</a>')
-                .replace("@@LAYOUT_CLASS@@", "")
+                .replace("@@LAYOUT_CLASS@@", " jw-scroll")
                 .replace("@@BODY@@", body)
                 .replace("@@TOC_BLOCK@@", "")
                 .replace("@@PAGER@@", jw_pager(raw, it["no"]))
