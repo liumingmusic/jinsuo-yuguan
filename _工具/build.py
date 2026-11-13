@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-build.py — 把 `内容/` 下的 Markdown 渲染成静态站点（本地双击可看，也能直接推 GitHub Pages）。
+build.py — 把根目录六条线下的 Markdown 渲染成静态站点（本地双击可看，也能直接推 GitHub Pages）。
 
 设计原则：
   1. 内容只有一份，就是 Markdown；本脚本只做渲染，绝不反向写回内容。
@@ -17,25 +17,25 @@ build.py — 把 `内容/` 下的 Markdown 渲染成静态站点（本地双击�
 import os, re, sys, json, math, shutil, html, glob, time, hashlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(ROOT, "内容")
-MIND_DIR = os.path.join(ROOT, "脑图")
+SRC_DIR = ROOT  # 六条线平铺在根目录；目录名见 SECTIONS，collect_pages 按名取子目录
+MIND_DIR = os.path.join(ROOT, "Ⅳ-导图线")
 # 思维导图只按卦梳理：编号 00 的「九山总览」不生成页面、不进任何索引
 # （md 文件保留不删；以后想放回来，把这个元组清空即可）。
 MIND_HIDE_PREFIX = ("00",)
-# Ⅳ 导图线的「线名」：脑图页不是从 内容/ 来的，而是从 脑图/ 来的，
-# 但它和其它三条线一样有自己的编号、索引页、侧栏与页脚位置。
+# Ⅳ 导图线的「线名」：导图页从 Ⅳ-导图线/ 来，和 Ⅰ～Ⅲ 一样是根目录里独立的线文件夹，
+# 但它有自己专门的页面生成逻辑，不参与 collect_pages()。
 MIND_SECTION = "Ⅳ-导图线"
-# Ⅴ 经文线的「线名」：经文页不是从 内容/ 来的，而是从 经文/ 来的。
+# Ⅴ 经文线的「线名」：经文页从 Ⅴ-经文线/ 来，同样是根目录里独立的线文件夹。
 # 它是全站经文的专页——一卦一页，每篇两栏并排对读。
 JINGWEN_SECTION = "Ⅴ-经文线"
-# 经文的唯一来源。经文/*.md 投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处，
+# 经文的唯一来源。Ⅴ-经文线/*.md 投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处，
 # 三处内容必须一致，所以只此一份 md，别处不要另写。
 #
 # 一山一篇（壬山.md、子山.md…），另加三篇卦体（卦体坎.md…）。
 # 每篇里固定两栏：「我的经文」与「老师经文」。
 # 我的那栏只放我自己写的；老师那栏只放老师提供的版本。
 # 还没给稿的地方留占位，不代写。
-JINGWEN_DIR = os.path.join(ROOT, "经文")
+JINGWEN_DIR = os.path.join(ROOT, "Ⅴ-经文线")
 JW_MINE = "我的经文"
 JW_TEACHER = "老师经文"
 JW_TBD = "〔待补〕"
@@ -770,7 +770,7 @@ def foot_sections():
     )
 
 
-# ---------- 经文（唯一源：经文/*.md，一山一篇 + 卦体） ----------
+# ---------- 经文（唯一源：Ⅴ-经文线/*.md，一山一篇 + 卦体） ----------
 
 def jingwen_files():
     """参与构建的经文文件。"""
@@ -1053,7 +1053,7 @@ def jw_pager(raw, cur_no):
 def build_jingwen(pages):
     """Ⅴ 经文线：一卦一页，两栏对照。
 
-    这条线不是从 内容/ 来的，是从 经文/ 来的——经文/*.md 是全站经文的
+    这条线的页面从 Ⅴ-经文线/ 生成——Ⅴ-经文线/*.md 是全站经文的
     唯一源，这里只是把它按卦铺开、把两栏并排放，供对读。
 
     每页四篇：卦体在前，三山按先后天次序跟上。每篇一张两栏对照卡，
@@ -1145,7 +1145,7 @@ def jw_section(gua, shift=2, with_title=False, heading="经文"):
 
 # ---------- 脑图节点里的「我的经文」：从经文唯一源自动同步 ----------
 # 老脑图里每座山挂着「我的经文：〔待补〕」，那是经文还没入库时留下的占位；
-# 新建的巽卦脑图干脆连节点都没有。网页导图与 导出/*.xmind 都读 脑图/*.md，
+# 新建的巽卦脑图干脆连节点都没有。网页导图与 导出/*.xmind 都读 Ⅳ-导图线/*.md，
 # 所以构建时把节点块同步写回 md（幂等），一次 build 两边一起变，不会各写一份。
 
 MIND_JW_HEAD = "- 我的经文"
@@ -1178,7 +1178,7 @@ def mind_jw_block(key, md):
 
 
 def sync_mind_jingwen():
-    """把 脑图/*.md 里的经文节点同步成经文唯一源的内容，写回 md。幂等。"""
+    """把 Ⅳ-导图线/*.md 里的经文节点同步成经文唯一源的内容，写回 md。幂等。"""
     JW = jingwen_by_key()
     changed = []
     for f in mind_files():
@@ -1246,7 +1246,7 @@ def sync_mind_jingwen():
 def jingwen_gua_order():
     """经文的卦序：跟 Ⅱ 卦山线的页面顺序走（坎、坤、震），不按八宫排。"""
     order = []
-    d = os.path.join(ROOT, "内容", "Ⅱ-卦山线")
+    d = os.path.join(ROOT, "Ⅱ-卦山线")
     if os.path.isdir(d):
         for f in sorted(os.listdir(d)):
             if not f.endswith(".md"):
@@ -1300,9 +1300,12 @@ def extract_lead(md, fallback=""):
 
 
 def collect_pages():
-    """扫描 内容/ 目录，返回页面元信息列表。"""
+    """扫描根目录下各线文件夹，返回正文页面元信息列表（Ⅳ/Ⅴ 另由专门逻辑生成）。"""
     pages = []
     for d, num, short, desc, color in SECTIONS:
+        # Ⅳ/Ⅴ 的页面由专门逻辑生成，这里不能当正文页收进来（否则会重复出页）
+        if d in (MIND_SECTION, JINGWEN_SECTION):
+            continue
         p = os.path.join(SRC_DIR, d)
         if not os.path.isdir(p):
             continue
@@ -1321,8 +1324,8 @@ def collect_pages():
 
 
 def build():
-    if not os.path.isdir(SRC_DIR):
-        print("找不到 内容/ 目录")
+    if not os.path.isdir(os.path.join(ROOT, "Ⅰ-课程线")):
+        print("找不到六条线目录，检查根目录结构")
         return
 
     if os.path.isdir(OUT_DIR):
@@ -1359,7 +1362,8 @@ def build():
 
     # 图片：只复制正文真正引用到的
     used = set()
-    for base in (SRC_DIR, MIND_DIR):
+    for d, *_ in SECTIONS:
+        base = os.path.join(ROOT, d)
         if not os.path.isdir(base):
             continue
         for f in glob.glob(os.path.join(base, "**", "*.md"), recursive=True):
@@ -1380,7 +1384,7 @@ def build():
 
     pages = collect_pages()
     if not pages:
-        print("内容/ 下没有 md 文件")
+        print("各线目录下没有 md 文件")
         return
 
     PAGE_TMPL = tpl("page.html")
@@ -1401,7 +1405,7 @@ def build():
                 k = pg["order"] - 2
                 body_html = hw_badge(HW_ITEMS[k] if 0 <= k < len(HW_ITEMS) else None) + body_html
 
-        # 经文：唯一源是 经文/*.md，投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处。
+        # 经文：唯一源是 Ⅴ-经文线/*.md，投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处。
         # Ⅲ 线总表页一次挂全；Ⅱ 线卦页在山章节里按 @@JW:条目@@ 就地插入；
         # Ⅳ 线脑图页挂本卦那套。
         if "@@JINGWEN_ALL@@" in body_html:
@@ -1494,13 +1498,13 @@ def build():
     sync_mind_jingwen()
     mind_pages = build_minds(pages)
 
-    # 经文（Ⅴ 经文线）同理：页子从 经文/ 来，章节索引页也要用
+    # 经文（Ⅴ 经文线）同理：页子从 Ⅴ-经文线/ 来，章节索引页也要用
     jw_pages = build_jingwen(pages)
 
     # 章节索引页
     for d, num, short, desc, color in SECTIONS:
         if d == MIND_SECTION:
-            # Ⅳ 导图线：条目是脑图页，不是 内容/ 下的正文
+            # Ⅳ 导图线：条目是脑图页，不走 collect_pages()
             items = [{"slug": m["slug"], "order": m["order"], "title": m["title"],
                       "file": m["file"], "lead": f"{m['nodes']} 个节点　·　{m['lead']}"} for m in mind_pages]
             cards = "".join(
@@ -1528,7 +1532,7 @@ def build():
                      '</div></li>'
                      '</ul></div>')
         elif d == JINGWEN_SECTION:
-            # Ⅴ 经文线：条目是经文卦页，不是 内容/ 下的正文
+            # Ⅴ 经文线：条目是经文卦页，不走 collect_pages()
             items = [{"slug": j["slug"], "order": j["order"], "title": j["title"],
                       "file": j["slug"], "lead": f'卦体 + 三山 · {j["lead"]}'} for j in jw_pages]
             cards = "".join(
@@ -1539,7 +1543,7 @@ def build():
                 for p in items
             )
             body = (f'<div class="cards">{cards}</div>' if cards
-                    else '<div class="empty-note">经文源还没建。先在 <code>经文/</code> 下放 md，这里会自动出现条目。</div>')
+                    else '<div class="empty-note">经文源还没建，这里会随内容自动出现条目。</div>')
             body += ('<div class="mind-how">'
                      '<span class="eyebrow">怎 么 用</span>'
                      '<h2>一卦一页，两栏对着读</h2>'
@@ -1553,7 +1557,7 @@ def build():
                      '<p>只放老师提供的版本。两栏不混写，也不用一处的内容顶另一处。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">源</span><div><h3>改一处，四处一起变</h3>'
-                     '<p>这份经文的唯一源是 <code>经文/</code> 下的 md。'
+                     '<p>这份经文全站只存一份。'
                      '卦山线各山章节、作业线总表、导图线图下、本线四页，都是它的投影。</p>'
                      '</div></li>'
                      '</ul></div>')
@@ -1629,7 +1633,7 @@ def mind_side(no, pages, minds=()):
 
 
 def build_minds(pages):
-    """把 脑图/*.md 渲染成 markmap 页面。"""
+    """把 Ⅳ-导图线/*.md 渲染成 markmap 页面。"""
     made = []
     if not os.path.isdir(MIND_DIR):
         return made
@@ -2265,13 +2269,13 @@ def _recent(pages, mind_pages, jw_pages):
     groups = {}
     for p in pages:
         groups.setdefault(p["section"], []).append(p)
-    # Ⅳ 导图线不在 内容/ 里，单独补一组，首页才能看到它
+    # Ⅳ 导图线不走 collect_pages()，单独补一组，首页才能看到它
     if mind_pages:
         groups[MIND_SECTION] = [
             {"slug": m["slug"], "title": m["title"], "num": "Ⅳ",
              "order": m["order"], "unit": "张"} for m in mind_pages
         ]
-    # Ⅴ 经文线同理：页子从 经文/ 来，也不在 内容/ 里
+    # Ⅴ 经文线同理：页子从 Ⅴ-经文线/ 来，也不走 collect_pages()
     if jw_pages:
         groups[JINGWEN_SECTION] = [
             {"slug": j["slug"], "title": j["title"], "num": "Ⅴ",
@@ -2321,7 +2325,7 @@ def _verse_leaf(jw_pages):
     原句不写死在模板里——经文只有一个源，改了 source 首页自动跟随。
     这里是首页内的一屏展示带，不是新页面，也不复述整篇经文。
     """
-    with open(os.path.join(ROOT, "经文", "壬山.md"), encoding="utf-8") as f:
+    with open(os.path.join(JINGWEN_DIR, "壬山.md"), encoding="utf-8") as f:
         lines = [l.strip() for l in f]
     mine, in_mine = [], False
     for l in lines:

@@ -6,7 +6,7 @@
 `git pull` 在沙箱里会被 SIGKILL。这里直接走 REST objects API，只上传不下载历史。
 
 分支分工：
-  main      —— 源码（内容/脑图/_工具/导出/_数据 的 md 与 json）
+  main      —— 源码（根目录六条线 / _工具 / 导出 / _数据 的 md 与 json）
   gh-pages  —— 站点/ 的构建产物，放在分支根目录，Pages 服务它
 
 用法：
