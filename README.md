@@ -69,38 +69,40 @@
 
 样式全部限定在 `.jw-scroll`（挂在 `.layout` 上），只影响 4 个卦页；`.jw-note` / `.jw-sub` / `.jw-tbd` 是另外三处投影共用的类名，一律带作用域前缀，绝不裸改。骑缝签按宽度分三档，见 `怎么用.md`。
 
-## 目录
+## 目录（按角色看，别按名字看）
 
-```
-内容/        唯一内容源（Markdown）
-  Ⅰ-课程线/  Ⅱ-卦山线/  Ⅲ-作业线/  附录/
-脑图/        Markdown 大纲 → xmind/mm/opml
-经文/        经文的唯一源（一山一篇 + 卦体，篇内两栏）
-_工具/       build.py（站点）、md2mind.py（导图）、deploy_gh.py（发布）
-_数据/       作业状态.json（作业与批阅状态的唯一数据源）
-导出/        xmind / mm / opml
-站点/        构建产物，不纳入版本库，由 gh-pages 分支发布
-```
+| 角色 | 目录 | 能改吗 |
+|---|---|---|
+| **内容源** | `内容/`（Ⅰ 课程线 / Ⅱ 卦山线 / Ⅲ 作业线 / 附录）、`经文/`（全站经文唯一源）、`脑图/`（导图大纲） | ✅ 只改这三处 |
+| **生成器** | `_工具/build.py`、`md2mind.py`、`deploy_gh.py`、`theme/`（样式与模板）、`vendor/` | 换版式才动 |
+| **产物** | `站点/`（50 页 HTML）、`导出/`（xmind / mm / opml） | ❌ 每次构建清空重建 |
+| **只读参考** | `_数据/`（161 张讲义图 + 校准笔记）、`_规划/`（v1–v4 方案）、`_样板/`（壬山旧样板） | 不参与构建 |
+| **说明** | `README.md`（对外介绍）、`怎么用.md`（给自己看的操作手册） | ✅ |
+
+⚠️ 本目录的 `经文/` 是可编辑 md 源；A_work 素材目录里也有一个 `经文/`，装的是 docx / PDF 底本，两者不是一回事。
+⚠️ `_数据/作业状态.json` 早期用于作业徽标与看板，作业线改版后页面已不再呈现，现仅作历史记录。
 
 ## 本地跑
 
 ```bash
-python3 _工具/build.py        # 生成 站点/
-python3 _工具/md2mind.py 脑图/ 导出/ --all
-cd 站点 && python3 -m http.server 8000
+python3 _工具/build.py                 # 生成 站点/
+python3 _工具/md2mind.py 脑图/ 导出/    # 只在改了脑图时跑
 ```
 
-只用标准库，无第三方依赖。
+双击 `站点/index.html` 就能看，不必起服务、不必联网。只用标准库，无第三方依赖。
 
 ## 发布
 
-`main` 存源码，`gh-pages` 存构建产物根目录，GitHub Pages 服务后者。改了内容重建后：
+`main` 存源码，`gh-pages` 存构建产物根目录，GitHub Pages 服务后者。改了源并重建后：
 
 ```bash
-python3 _工具/deploy_gh.py --site
+python3 _工具/deploy_gh.py              # 推 main（源码）+ gh-pages（站点）
 ```
 
-脚本走 REST objects API 而非 `git push`，因为本机 `git push` 会挂死。
+⚠️ **不要加 `--site`**：那只推 gh-pages，改过的 md 不会进 main，源码与站点会走样。`--dry` 只列将上传的文件、不联网。
+脚本走 REST objects API 而非 `git push`，因为本机 `git push` 会挂死。改样式后直接刷新即可：build.py 给 `style.css` 打了内容 md5 查询串，不用等 CDN 缓存。
+
+「改一个内容 → 改哪个文件 → 改完跑什么」的完整速查在 `怎么用.md`。
 
 ## 几条口径
 
