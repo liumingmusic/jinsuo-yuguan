@@ -1929,7 +1929,7 @@ def _compass(slan):
         # 留足空隙；短签压到两字，不再横着跨出 45° 扇区压到邻格。
         ga, gr = a1 + 22.5, (R_IN + R_MID) / 2 + 16
         gx, gy = _polar(cx, cy, gr, ga)
-        ix, iy = _polar(cx, cy, R_IN + 12, ga)
+        ix, iy = _polar(cx, cy, R_IN + 20, ga)
         gc = g["color"] if g["studied"] else "#b8b09f"
         short, full = GUA_IMAGE[g["g"]]
         tip = html.escape(f'{g["g"]}卦 · {g["no"]} · {g["fang"]}｜{full}', quote=True)
@@ -1961,8 +1961,8 @@ def _compass(slan):
             tcol, tw, imp = "#a8a191", "", ".84"
         ang = math.radians(m["deg"] + ROT)
         ux, uy = math.sin(ang), -math.cos(ang)
-        tx, ty = _polar(cx, cy, (R_MID + R_OUT) / 2 - 5, m["deg"] + ROT)
-        ix, iy = _polar(cx, cy, R_OUT - 7, m["deg"] + ROT)
+        tx, ty = _polar(cx, cy, (R_MID + R_OUT) / 2 - 14, m["deg"] + ROT)
+        ix, iy = _polar(cx, cy, R_OUT - 19, m["deg"] + ROT)
         short, full = SHAN_IMAGE[m["name"]]
         tip = html.escape(f'{m["name"]}山 · {STAT_LABEL[st]}｜{full}', quote=True)
         body = (
