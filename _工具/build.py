@@ -530,6 +530,48 @@ JS = """
       });
     });
   }
+  // 全图罗盘：悬停 / 键盘聚焦读意象，已成篇的扇区由 CSS 抬起放大。
+  // 触屏没有 hover，轻点未开讲的山或任一卦也能读到意象；可点的山照常进正文。
+  var compass = document.querySelector('.compass');
+  if(compass){
+    var tip = document.getElementById('lspTip');
+    var readout = document.getElementById('lspReadout');
+    var targets = [].slice.call(compass.querySelectorAll('[data-tip]'));
+    var defaultTip = readout ? readout.textContent : '';
+    var placeTip = function(el){
+      if(!tip) return;
+      var cb = compass.getBoundingClientRect(), eb = el.getBoundingClientRect();
+      var x = eb.left - cb.left + eb.width / 2, y = eb.top - cb.top;
+      var w = tip.offsetWidth, h = tip.offsetHeight;
+      tip.style.left = Math.max(6, Math.min(cb.width - w - 6, x - w / 2)) + 'px';
+      tip.style.top = Math.max(6, y - h - 12) + 'px';
+    };
+    var showTip = function(el){
+      var s = el.getAttribute('data-tip') || '';
+      if(tip){ tip.innerHTML = '<b>意象</b>' + s; tip.hidden = false; placeTip(el); }
+      if(readout) readout.textContent = s;
+    };
+    var hideTip = function(){
+      if(tip) tip.hidden = true;
+      if(readout) readout.textContent = defaultTip;
+    };
+    targets.forEach(function(el){
+      el.addEventListener('mouseenter', function(){ showTip(el); });
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('focusin', function(){ showTip(el); });
+      el.addEventListener('focusout', hideTip);
+      if(!el.querySelector('a')){
+        el.addEventListener('click', function(e){ e.preventDefault(); hideTip(); showTip(el); });
+      }
+    });
+    document.addEventListener('click', function(e){
+      if(tip && !tip.hidden && !compass.contains(e.target)) hideTip();
+    });
+    if(readout && window.matchMedia && window.matchMedia('(hover: none)').matches){
+      defaultTip = '卦看一段格局，山看十五度落点；轻点山或卦读一句意象。';
+      readout.textContent = defaultTip;
+    }
+  }
   // 页内目录滚动高亮（同时把当前小节名同步到折叠条的 .toc-cur）
   var heads = [].slice.call(document.querySelectorAll('.doc h2[id],.doc h3[id]'));
   var links = [].slice.call(document.querySelectorAll('.toc a'));
@@ -695,6 +737,48 @@ def mountains():
 
 
 STAT_LABEL = {"full": "已成篇", "taught": "已开讲", "none": "未开讲"}
+
+# 罗盘意象提要。已开讲十五山取自 Ⅱ 线各页「山性类象」与一句话收束；
+# 未开讲九山只用易学通行类象，悬停时注明，不冒充本课讲义。
+# 每山：(盘面短签, 悬停详解)。短签控制在四字以内，十五度一格放得下。
+SHAN_IMAGE = {
+    "壬": ("阳气", "阳水流动而蕴藏，藏精神与资本；主肾阳（气）、行动力与武贵。文气须借对宫丙水。"),
+    "子": ("财库", "阳水正位，兼具阴阳两重；主精气神、肾与家底，是家的「根器」，论存不论赚。"),
+    "癸": ("肾阴", "阴水，主肾阴、血与妇科；论理财守成，见砂女当家、见水妇难孕。"),
+    "丑": ("田土", "丑为牛、为金库，季冬湿土；主田土库藏与耕耘。未开讲，此处只列通行类象。"),
+    "艮": ("山止", "艮为山、为止、为少男；主鼻手关节，论定力与阻滞。未开讲，此处只列通行类象。"),
+    "寅": ("长生", "寅为虎、为长生，孟春木始；论生发与开创。未开讲，此处只列通行类象。"),
+    "甲": ("行动", "十干之首，阳木统震气；主胆肝与脑神经，论行动力、突破与长房。"),
+    "卯": ("人脉", "卯为冒，仲春琼林；主肝、四肢与毛发，论人脉桃花——用得好是人脉，用不好是烂桃花。"),
+    "乙": ("文昌", "阴木，甲木之辅，柔韧曲润；主肝与项发，论文昌、自处与依附沟通。"),
+    "辰": ("水库", "辰为震，季春木气最重；为水库，主皮肤肩背，论资源聚散与抢夺。"),
+    "巽": ("风评", "巽为木、为风、为长女；主神经气管与头发，论风评、进退与自强。"),
+    "巳": ("起", "巳为起，万物毕尽而起；主心眼咽喉，论拔尖、起运与换赛道。"),
+    "丙": ("太阳", "丙为太阳之火，主文明与礼；应目与胆。未开讲，此处只列通行类象。"),
+    "午": ("火正", "午为火之正位，仲夏；应心与目，论光明与名气。未开讲，此处只列通行类象。"),
+    "丁": ("灯烛", "丁为阴火、灯烛；应心血，论细察与文书。未开讲，此处只列通行类象。"),
+    "未": ("利润", "阴土，阴气已长；主脾胃肌肉与消化，论利润、副业与人脉信誉。"),
+    "坤": ("家运", "坤为地，主母与田土；应腹、胃肠与子宫，论家运、持家与妇科。"),
+    "申": ("链接", "申为伸展，孟秋万物成就；主大肠、肺与经络，论人际链接与文昌。"),
+    "庚": ("金刚", "庚为阳金，主刚决武断；应大肠与皮毛。未开讲，此处只列通行类象。"),
+    "酉": ("口舌", "酉为泽口，仲秋金正；应肺与咽喉，论口才与口舌。未开讲，此处只列通行类象。"),
+    "辛": ("珠玉", "辛为阴金、珠玉；应肺与皮肤，论精致与收敛。未开讲，此处只列通行类象。"),
+    "戌": ("磁场", "戌为灭，季秋肃杀归土；论磁场、疑滞与沟通上位者。"),
+    "乾": ("家风", "乾为天，金主刚健决断；主头胸肺与大肠，论家风、顶梁柱与文昌思辨。"),
+    "亥": ("气足", "亥为核，收藏内敛；论气足神足与内耗，也主思维深度与城府。"),
+}
+
+# 八卦意象：(盘面短签, 悬停详解)。卦名取后天方位与家庭象，非本课讲义的部分不另作发挥。
+GUA_IMAGE = {
+    "坎": ("水 · 肾 · 中男", "坎为水，一白居北；主肾与财库、中男。壬子癸三山，分讲气、神、血。"),
+    "艮": ("山 · 止 · 少男", "艮为山、为止、为少男，八白居东北；丑艮寅三山，本课未开讲。"),
+    "震": ("雷 · 动 · 长男", "震为雷，三碧居东；主长男与奋起。甲卯乙三山，讲行动、人脉与文昌。"),
+    "巽": ("风 · 入 · 长女", "巽为风，四绿居东南；主长女与进退。辰巽巳三山，讲水库、风评与起运。"),
+    "离": ("火 · 明 · 中女", "离为火，九紫居南；主中女与光明。丙午丁三山，本课未开讲。"),
+    "坤": ("地 · 顺 · 母", "坤为地，二黑居西南；主母与田土。未坤申三山，讲利润、家运与链接。"),
+    "兑": ("泽 · 悦 · 少女", "兑为泽，七赤居西；主少女与口舌。庚酉辛三山，本课未开讲。"),
+    "乾": ("天 · 健 · 父", "乾为天，六白居西北；主父与家风。戌乾亥三山，讲磁场、顶梁柱与气足神足。"),
+}
 
 
 def build_nav(current=""):
@@ -1829,46 +1913,69 @@ def _compass(slan):
                  f'dominant-baseline="central" font-family="Songti SC,serif" '
                  f'font-size="14" fill="#a67c3d" opacity=".9">{lab}</text>')
 
-    # 八卦带
+    # 八卦带：卦名 + 一行意象短签，整段可悬停看详解。
+    # ⚠️ 短签只是方位提示，不替代正文；字仍直立不旋转。
     for gi, g in enumerate(ALL_GUA):
         a1 = gi * 45 - 22.5 + ROT
         d = _sector(cx, cy, R_IN, R_MID, a1, a1 + 45)
         if g["studied"]:
-            o.append(f'<path d="{d}" fill="{g["color"]}" fill-opacity=".13" '
-                     f'stroke="#e4e0d4" stroke-width=".9"/>')
+            path = (f'<path d="{d}" fill="{g["color"]}" fill-opacity=".13" '
+                    f'stroke="#e4e0d4" stroke-width=".9"/>')
         else:
-            o.append(f'<path d="{d}" fill="#fbfaf6" stroke="#ece9df" stroke-width=".9"/>')
+            path = f'<path d="{d}" fill="#fbfaf6" stroke="#ece9df" stroke-width=".9"/>'
         ga, gr = a1 + 22.5, (R_IN + R_MID) / 2 + 8
         gx, gy = _polar(cx, cy, gr, ga)
+        ix, iy = _polar(cx, cy, R_IN + 21, ga)
         gc = g["color"] if g["studied"] else "#b8b09f"
-        o.append(f'<text x="{gx:.1f}" y="{gy:.1f}" text-anchor="middle" '
-                 f'dominant-baseline="central" font-family="Songti SC,serif" '
-                 f'font-size="26" fill="{gc}">{g["g"]}</text>')
+        short, full = GUA_IMAGE[g["g"]]
+        tip = html.escape(f'{g["g"]}卦 · {g["no"]} · {g["fang"]}｜{full}', quote=True)
+        o.append(
+            f'<g class="lsp-gua{" studied" if g["studied"] else ""}" data-tip="{tip}">'
+            + path
+            + f'<text x="{gx:.1f}" y="{gy:.1f}" text-anchor="middle" '
+              f'dominant-baseline="central" font-family="Songti SC,serif" '
+              f'font-size="26" fill="{gc}">{g["g"]}</text>'
+            + f'<text class="lsp-gua-im" x="{ix:.1f}" y="{iy:.1f}" text-anchor="middle" '
+              f'dominant-baseline="central" font-family="Songti SC,serif" '
+              f'font-size="10.5" fill="{gc}" opacity=".88">{short}</text>'
+            + '</g>')
 
-    # 二十四山带
+    # 二十四山带：山名 + 意象短签；已成篇整块可悬停凸出，点击仍进正文。
+    # --mx/--my 是向外抬起的位移，按山的角度算，CSS 只在 :hover 时用。
     for m in mountains():
         a1 = m["deg"] - 7.5 + ROT
         d = _sector(cx, cy, R_MID, R_OUT, a1, a1 + 15)
         st, col = m["st"], m["gua"]["color"]
         if st == "full":
             fill = f'fill="{col}" fill-opacity="1"'
-            tcol, tw = "#ffffff", ' font-weight="600"'
+            tcol, tw, imp = "#ffffff", ' font-weight="600"', ".86"
         elif st == "taught":
             fill = f'fill="{col}" fill-opacity=".20"'
-            tcol, tw = col, ""
+            tcol, tw, imp = col, "", ".78"
         else:
             fill = 'fill="#ffffff"'
-            tcol, tw = "#a8a191", ""
-        o.append(f'<path d="{d}" {fill} stroke="#e5e1d4" stroke-width=".9"/>')
+            tcol, tw, imp = "#a8a191", "", ".84"
+        ang = math.radians(m["deg"] + ROT)
+        ux, uy = math.sin(ang), -math.cos(ang)
         tx, ty = _polar(cx, cy, (R_MID + R_OUT) / 2, m["deg"] + ROT)
-        txt = (f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" '
-               f'dominant-baseline="central" font-family="Songti SC,serif" '
-               f'font-size="21" fill="{tcol}"{tw}>{m["name"]}</text>')
+        ix, iy = _polar(cx, cy, R_OUT - 15, m["deg"] + ROT)
+        short, full = SHAN_IMAGE[m["name"]]
+        tip = html.escape(f'{m["name"]}山 · {STAT_LABEL[st]}｜{full}', quote=True)
+        body = (
+            f'<path d="{d}" {fill} stroke="#e5e1d4" stroke-width=".9"/>'
+            f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" '
+            f'dominant-baseline="central" font-family="Songti SC,serif" '
+            f'font-size="21" fill="{tcol}"{tw}>{m["name"]}</text>'
+            f'<text class="lsp-mnt-im" x="{ix:.1f}" y="{iy:.1f}" text-anchor="middle" '
+            f'dominant-baseline="central" font-family="Songti SC,serif" '
+            f'font-size="10" fill="{tcol}" opacity="{imp}">{short}</text>')
         if st == "full" and slan.get(m["name"]):
-            o.append(f'<a href="{slan[m["name"]]}.html" class="mnt-link">'
-                     f'<title>{m["name"]}山 · {m["label"]}</title>{txt}</a>')
-        else:
-            o.append(txt)
+            body = (f'<a href="{slan[m["name"]]}.html" class="mnt-link" '
+                    f'aria-label="{html.escape(m["name"] + "山 · " + full, quote=True)}">'
+                    + body + '</a>')
+        o.append(
+            f'<g class="lsp-mnt {st}" data-tip="{tip}" '
+            f'style="--mx:{ux * 18:.1f}px;--my:{uy * 18:.1f}px">{body}</g>')
 
     # 内芯
     o.append('<radialGradient id="coreg" cx="50%" cy="42%" r="62%">'
