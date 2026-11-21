@@ -1279,8 +1279,9 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 /* 罗盘吃掉整个左栏。原先限死 860px，左栏 1144px 时两侧各空 142px，
    图跟右边的图例栏就离了。 */
 .compass svg{position:relative;display:block;width:100%;height:auto;max-width:1080px;margin:0 auto}
-.lsp a{cursor:pointer}
-.lsp a text{transition:fill .18s}
+.lsp a{cursor:pointer;text-decoration:none}
+.lsp a text{transition:fill .18s;text-decoration:none}
+.lsp a:hover,.lsp a:hover text{text-decoration:none}
 .lsp a:hover text{fill:#b8894a}
 /* 全图罗盘的意象短签与悬停抬起。只作用于这张静态盘；
    首屏背景转盘的文字层永远静止，不受这里影响。 */

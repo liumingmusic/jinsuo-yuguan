@@ -769,15 +769,17 @@ SHAN_IMAGE = {
 }
 
 # 八卦意象：(盘面短签, 悬停详解)。卦名取后天方位与家庭象，非本课讲义的部分不另作发挥。
+# 盘面短签只用两字卦德（乾健、坤顺、震动、巽入、坎陷、离明、艮止、兑悦），
+# 45° 一格放得下、不会跨到邻格；完整的卦象与人事意象在悬停详解里。
 GUA_IMAGE = {
-    "坎": ("水 · 肾 · 中男", "坎为水，一白居北；主肾与财库、中男。壬子癸三山，分讲气、神、血。"),
-    "艮": ("山 · 止 · 少男", "艮为山、为止、为少男，八白居东北；丑艮寅三山，本课未开讲。"),
-    "震": ("雷 · 动 · 长男", "震为雷，三碧居东；主长男与奋起。甲卯乙三山，讲行动、人脉与文昌。"),
-    "巽": ("风 · 入 · 长女", "巽为风，四绿居东南；主长女与进退。辰巽巳三山，讲水库、风评与起运。"),
-    "离": ("火 · 明 · 中女", "离为火，九紫居南；主中女与光明。丙午丁三山，本课未开讲。"),
-    "坤": ("地 · 顺 · 母", "坤为地，二黑居西南；主母与田土。未坤申三山，讲利润、家运与链接。"),
-    "兑": ("泽 · 悦 · 少女", "兑为泽，七赤居西；主少女与口舌。庚酉辛三山，本课未开讲。"),
-    "乾": ("天 · 健 · 父", "乾为天，六白居西北；主父与家风。戌乾亥三山，讲磁场、顶梁柱与气足神足。"),
+    "坎": ("水陷", "坎为水，一白居北；主肾与财库、中男。壬子癸三山，分讲气、神、血。"),
+    "艮": ("山止", "艮为山、为止、为少男，八白居东北；丑艮寅三山，本课未开讲。"),
+    "震": ("雷动", "震为雷，三碧居东；主长男与奋起。甲卯乙三山，讲行动、人脉与文昌。"),
+    "巽": ("风入", "巽为风，四绿居东南；主长女与进退。辰巽巳三山，讲水库、风评与起运。"),
+    "离": ("火明", "离为火，九紫居南；主中女与光明。丙午丁三山，本课未开讲。"),
+    "坤": ("地顺", "坤为地，二黑居西南；主母与田土。未坤申三山，讲利润、家运与链接。"),
+    "兑": ("泽悦", "兑为泽，七赤居西；主少女与口舌。庚酉辛三山，本课未开讲。"),
+    "乾": ("天健", "乾为天，六白居西北；主父与家风。戌乾亥三山，讲磁场、顶梁柱与气足神足。"),
 }
 
 
@@ -1923,9 +1925,11 @@ def _compass(slan):
                     f'stroke="#e4e0d4" stroke-width=".9"/>')
         else:
             path = f'<path d="{d}" fill="#fbfaf6" stroke="#ece9df" stroke-width=".9"/>'
-        ga, gr = a1 + 22.5, (R_IN + R_MID) / 2 + 8
+        # 卦名靠外、卦德靠内，两行中心距 36 单位（字号 26+10 的半高和只有 18），
+        # 留足空隙；短签压到两字，不再横着跨出 45° 扇区压到邻格。
+        ga, gr = a1 + 22.5, (R_IN + R_MID) / 2 + 16
         gx, gy = _polar(cx, cy, gr, ga)
-        ix, iy = _polar(cx, cy, R_IN + 21, ga)
+        ix, iy = _polar(cx, cy, R_IN + 12, ga)
         gc = g["color"] if g["studied"] else "#b8b09f"
         short, full = GUA_IMAGE[g["g"]]
         tip = html.escape(f'{g["g"]}卦 · {g["no"]} · {g["fang"]}｜{full}', quote=True)
@@ -1937,7 +1941,7 @@ def _compass(slan):
               f'font-size="26" fill="{gc}">{g["g"]}</text>'
             + f'<text class="lsp-gua-im" x="{ix:.1f}" y="{iy:.1f}" text-anchor="middle" '
               f'dominant-baseline="central" font-family="Songti SC,serif" '
-              f'font-size="10.5" fill="{gc}" opacity=".88">{short}</text>'
+              f'font-size="10" fill="{gc}" opacity=".88">{short}</text>'
             + '</g>')
 
     # 二十四山带：山名 + 意象短签；已成篇整块可悬停凸出，点击仍进正文。
@@ -1957,8 +1961,8 @@ def _compass(slan):
             tcol, tw, imp = "#a8a191", "", ".84"
         ang = math.radians(m["deg"] + ROT)
         ux, uy = math.sin(ang), -math.cos(ang)
-        tx, ty = _polar(cx, cy, (R_MID + R_OUT) / 2, m["deg"] + ROT)
-        ix, iy = _polar(cx, cy, R_OUT - 15, m["deg"] + ROT)
+        tx, ty = _polar(cx, cy, (R_MID + R_OUT) / 2 - 5, m["deg"] + ROT)
+        ix, iy = _polar(cx, cy, R_OUT - 7, m["deg"] + ROT)
         short, full = SHAN_IMAGE[m["name"]]
         tip = html.escape(f'{m["name"]}山 · {STAT_LABEL[st]}｜{full}', quote=True)
         body = (
@@ -1968,7 +1972,7 @@ def _compass(slan):
             f'font-size="21" fill="{tcol}"{tw}>{m["name"]}</text>'
             f'<text class="lsp-mnt-im" x="{ix:.1f}" y="{iy:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" font-family="Songti SC,serif" '
-            f'font-size="10" fill="{tcol}" opacity="{imp}">{short}</text>')
+            f'font-size="9.5" fill="{tcol}" opacity="{imp}">{short}</text>')
         if st == "full" and slan.get(m["name"]):
             body = (f'<a href="{slan[m["name"]]}.html" class="mnt-link" '
                     f'aria-label="{html.escape(m["name"] + "山 · " + full, quote=True)}">'
