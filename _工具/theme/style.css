@@ -71,6 +71,11 @@ body{
      避免整页被带出左右横滚，也挡掉 iOS 上边缘左右回弹的手势 */
   touch-action:pan-y;
 }
+/* 短页面（各线索引、附录索引）内容不足一屏时，让正文列吃掉剩余高度，
+   把 footer 压到视口底部；长页面照常随内容往下走。首页自有 hero 版式，不参与。 */
+body:not(.home){display:flex;flex-direction:column;min-height:100vh}
+body:not(.home) > .layout{flex:1 0 auto}
+body:not(.home) > .foot{flex:0 0 auto}
 a{color:var(--brand-2);text-decoration:none}
 a:hover{text-decoration:underline;text-underline-offset:3px}
 
