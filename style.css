@@ -1282,6 +1282,45 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 .lsp a{cursor:pointer}
 .lsp a text{transition:fill .18s}
 .lsp a:hover text{fill:#b8894a}
+/* 全图罗盘的意象短签与悬停抬起。只作用于这张静态盘；
+   首屏背景转盘的文字层永远静止，不受这里影响。 */
+.lsp .lsp-mnt,.lsp .lsp-gua{
+  transform-box:fill-box;transform-origin:center;
+  transition:transform .24s cubic-bezier(.2,.78,.26,1);
+}
+.lsp .lsp-mnt.full{cursor:pointer}
+.lsp .lsp-mnt.full path,.lsp .lsp-gua.studied path{
+  transition:stroke .18s,filter .18s,fill .18s;
+}
+.lsp .lsp-mnt.full:hover{transform:translate(var(--mx),var(--my)) scale(1.2)}
+.lsp .lsp-mnt.full:hover path{
+  stroke:#9b7338;stroke-width:1.6;
+  filter:drop-shadow(0 3px 7px rgba(22,58,66,.30));
+}
+.lsp .lsp-gua.studied:hover{transform:scale(1.08)}
+.lsp .lsp-gua.studied:hover path{stroke:#b08b4c;stroke-width:1.3}
+.lsp .lsp-mnt.none:hover path,.lsp .lsp-gua:not(.studied):hover path{fill:#f4efe3}
+.lsp .lsp-mnt-im,.lsp .lsp-gua-im{pointer-events:none;letter-spacing:.06em}
+.lsp-tip{
+  position:absolute;z-index:6;max-width:320px;min-width:190px;
+  padding:10px 13px;border:1px solid #d8c59b;border-radius:2px;
+  background:rgba(253,250,242,.985);box-shadow:0 10px 26px rgba(28,52,56,.18);
+  color:var(--ink-2);font-size:12.8px;line-height:1.72;pointer-events:none;
+}
+.lsp-tip b{
+  display:block;margin-bottom:3px;color:#9b7338;
+  font-family:var(--serif);font-size:11px;font-weight:600;letter-spacing:.22em;
+}
+.lsp-readout{
+  margin:8px 0 0;text-align:center;min-height:1.8em;
+  color:var(--ink-3);font-size:12.5px;line-height:1.7;
+}
+/* 窄盘上短签会缩到五六个像素，宁可不显示，改用轻点读全文 */
+@media (max-width:640px){
+  .lsp .lsp-mnt-im,.lsp .lsp-gua-im{display:none}
+  .lsp-readout{padding:0 10px;font-size:12px}
+  .lsp-tip{max-width:calc(100vw - 40px)}
+}
 .lsp-cap{
   margin:12px 0 0;text-align:center;
   font-size:12px;letter-spacing:.28em;text-indent:.28em;color:var(--ink-4);

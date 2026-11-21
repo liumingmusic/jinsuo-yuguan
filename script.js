@@ -32,6 +32,48 @@
       });
     });
   }
+  // 全图罗盘：悬停 / 键盘聚焦读意象，已成篇的扇区由 CSS 抬起放大。
+  // 触屏没有 hover，轻点未开讲的山或任一卦也能读到意象；可点的山照常进正文。
+  var compass = document.querySelector('.compass');
+  if(compass){
+    var tip = document.getElementById('lspTip');
+    var readout = document.getElementById('lspReadout');
+    var targets = [].slice.call(compass.querySelectorAll('[data-tip]'));
+    var defaultTip = readout ? readout.textContent : '';
+    var placeTip = function(el){
+      if(!tip) return;
+      var cb = compass.getBoundingClientRect(), eb = el.getBoundingClientRect();
+      var x = eb.left - cb.left + eb.width / 2, y = eb.top - cb.top;
+      var w = tip.offsetWidth, h = tip.offsetHeight;
+      tip.style.left = Math.max(6, Math.min(cb.width - w - 6, x - w / 2)) + 'px';
+      tip.style.top = Math.max(6, y - h - 12) + 'px';
+    };
+    var showTip = function(el){
+      var s = el.getAttribute('data-tip') || '';
+      if(tip){ tip.innerHTML = '<b>意象</b>' + s; tip.hidden = false; placeTip(el); }
+      if(readout) readout.textContent = s;
+    };
+    var hideTip = function(){
+      if(tip) tip.hidden = true;
+      if(readout) readout.textContent = defaultTip;
+    };
+    targets.forEach(function(el){
+      el.addEventListener('mouseenter', function(){ showTip(el); });
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('focusin', function(){ showTip(el); });
+      el.addEventListener('focusout', hideTip);
+      if(!el.querySelector('a')){
+        el.addEventListener('click', function(e){ e.preventDefault(); hideTip(); showTip(el); });
+      }
+    });
+    document.addEventListener('click', function(e){
+      if(tip && !tip.hidden && !compass.contains(e.target)) hideTip();
+    });
+    if(readout && window.matchMedia && window.matchMedia('(hover: none)').matches){
+      defaultTip = '卦看一段格局，山看十五度落点；轻点山或卦读一句意象。';
+      readout.textContent = defaultTip;
+    }
+  }
   // 页内目录滚动高亮（同时把当前小节名同步到折叠条的 .toc-cur）
   var heads = [].slice.call(document.querySelectorAll('.doc h2[id],.doc h3[id]'));
   var links = [].slice.call(document.querySelectorAll('.toc a'));
