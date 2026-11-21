@@ -50,7 +50,7 @@ VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
 # 顺序即导航顺序：Ⅰ 课程线 → Ⅱ 卦山线 → Ⅲ 作业线 → Ⅳ 导图线 → Ⅴ 经文线 → 附录
 SECTIONS = [
     ("Ⅰ-课程线", "Ⅰ", "课程线", "理法 · 技法 · 案例", "#2c6a7c"),
-    ("Ⅱ-卦山线", "Ⅱ", "卦山线", "坎 · 坤 · 震 · 巽 十二山", "#8a6a3a"),
+    ("Ⅱ-卦山线", "Ⅱ", "卦山线", "坎 · 坤 · 震 · 巽 · 乾 十五山", "#8a6a3a"),
     ("Ⅲ-作业线", "Ⅲ", "作业线", "回答原文 · 老师解答", "#7a4a52"),
     (MIND_SECTION, "Ⅳ", "导图线", "骨架 · 脉络 · 一卦一图", "#3f6b7a"),
     (JINGWEN_SECTION, "Ⅴ", "经文线", "我的经文 · 老师经文", "#5c4a72"),
@@ -675,8 +675,11 @@ ALL_GUA = [
                ("申", "链接 · 文昌", "full")]),
     dict(g="兑", sz="庚酉辛", fang="西", no="七赤", el="金", color="#6b6257", studied=False,
          note="少女、泽与口。", shan=None),
-    dict(g="乾", sz="戌乾亥", fang="西北", no="六白", el="金", color="#48525a", studied=False,
-         note="父、天与刚。", shan=None),
+    dict(g="乾", sz="戌乾亥", fang="西北", no="六白", el="金", color="#48525a", studied=True,
+         note="父、天与家风。三山中乾居中，主顶梁柱与文昌思辨。",
+         shan=[("戌", "磁场 · 沟通上位", "full"),
+               ("乾", "家风 · 顶梁柱", "full"),
+               ("亥", "气足神足 · 内耗", "full")]),
 ]
 
 # 每山在罗盘上的角度：子＝0°，顺时针递增，一山 15°
@@ -1260,7 +1263,7 @@ def jingwen_gua_order():
 def jw_all():
     """全部经文按卦分组，给 Ⅲ 作业线的《经文总表》页用。
 
-    按卦分组是因为一页装四卦十六篇，不分组就分不出谁是谁。
+    按卦分组是因为一页装五卦二十篇，不分组就分不出谁是谁。
     """
     JW = jingwen_by_key()
     out = []
@@ -1525,7 +1528,7 @@ def build():
                      '<p>默认只展开两级。点节点前的圆点看下一层，双指缩放、拖动平移，手机上同样适用。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">对</span><div><h3>每张图对应一座卦</h3>'
-                     '<p>坎、坤、震各一张，与卦山线里的条目一一对应。</p>'
+                     '<p>坎、坤、震、巽、乾各一张，与卦山线里的条目一一对应。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">据</span><div><h3>坎、坤有老师原图</h3>'
                      '<p>这两座卦另有老师版本的原图，已逐节点比对，差异记在备注，不与经文混在一起。</p>'
@@ -1729,7 +1732,7 @@ def shan_slug_map(pages):
             continue
         stem = os.path.splitext(pg["file"])[0]
         for ch in stem:
-            if ch in "壬子癸甲卯乙未坤申辰巽巳":
+            if ch in "壬子癸甲卯乙未坤申辰巽巳戌乾亥":
                 m.setdefault(ch, pg["slug"])
     return m
 
@@ -1817,7 +1820,7 @@ def _compass(slan):
     o.append('<line x1="330" y1="424" x2="430" y2="424" stroke="#e4ddca" stroke-width="1"/>')
     o.append('<text x="380" y="446" text-anchor="middle" font-size="12.5" '
              'letter-spacing="3" fill="#a67c3d" font-family="PingFang SC,sans-serif">'
-             '坎 · 坤 · 震 · 巽 已成篇</text>')
+             '坎 · 坤 · 震 · 巽 · 乾 已成篇</text>')
     o.append("</svg>")
     return "".join(o)
 

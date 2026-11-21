@@ -237,7 +237,7 @@ def main():
     if not site_only:
         ensure_repo()
         print("推 main（源码）...")
-        push_branch("main", src, "金锁玉关研习库：课程线 15 讲 / 卦山线四卦十二山 / 作业线 11 次 / 脑图 4 张 / 经文 16 篇")
+        push_branch("main", src, "金锁玉关研习库：课程线 20 讲 / 卦山线五卦十五山 / 作业线 11 次 / 导图 5 张 / 经文 20 篇")
     print("推 gh-pages（站点）...")
     push_branch("gh-pages", site, "发布站点：%d 个页面" % len(site))
     if not site_only:
