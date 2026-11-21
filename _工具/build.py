@@ -935,7 +935,9 @@ def jw_entry(key, md, shift=1, with_title=False):
 
 # 卦画：自上而下三爻，1 为阳（连），0 为阴（断）。纯 SVG，不依赖字体图标。
 TRIGRAM_ROWS = {"坎": (0, 1, 0), "坤": (0, 0, 0),
-                "震": (0, 0, 1), "巽": (1, 1, 0)}
+                "震": (0, 0, 1), "巽": (1, 1, 0),
+                "乾": (1, 1, 1), "兑": (0, 1, 1),
+                "离": (1, 0, 1), "艮": (1, 0, 0)}
 
 
 def _trigram(gua, cls="jw-tri"):
@@ -965,6 +967,70 @@ def _jw_front(gua):
             + '<span class="jw-front-rule"></span>'
             + f'<span class="seal">{_seal()}</span>'
             + '</div>')
+
+
+def _jw_compass(gua):
+    """Ⅴ 线卷首下的后天八卦小罗盘：二十四山刻度 + 八卦爻画，本卦高亮。
+
+    只作方位标识，不代替正文、不占两栏宽度、不加动画；用 SVG 爻画而不是
+    Unicode 八卦符号，免得某些设备缺字成豆腐块。角度沿用首页罗盘
+    （上南下北、左东右西），所以和 Ⅱ 线的方位口径一致。
+    """
+    info = next((g for g in ALL_GUA if g["g"] == gua), None)
+    if not info:
+        return ""
+    cx = cy = 70.0
+    o = ['<svg class="jw-compass" viewBox="0 0 140 140" role="img" '
+         f'aria-label="后天八卦方位罗盘，高亮{html.escape(gua)}卦">'
+         '<circle cx="70" cy="70" r="55" fill="#fdfaf2" stroke="#c9ae7a" stroke-width="1.1"/>'
+         '<circle cx="70" cy="70" r="46" fill="none" stroke="#ddcda9" stroke-width=".9"/>'
+         '<circle cx="70" cy="70" r="29" fill="none" stroke="#d8c6a1" stroke-width=".9"/>']
+    # 四正：上南下北、左东右西，与首页罗盘同一口径
+    for lab, deg in (("南", 0), ("西", 90), ("北", 180), ("东", 270)):
+        lx, ly = _polar(cx, cy, 63, deg)
+        o.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" '
+                 f'dominant-baseline="central" font-family="Songti SC,serif" '
+                 f'font-size="11" fill="#8a6a3a">{lab}</text>')
+    # 二十四山刻度：本卦三山用金色加粗，其余淡墨
+    for m in mountains():
+        deg = m["deg"] + ROT
+        on = m["gua"]["g"] == gua
+        x1, y1 = _polar(cx, cy, 47.5 if on else 49, deg)
+        x2, y2 = _polar(cx, cy, 54, deg)
+        o.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                 f'stroke="{"#a67c3d" if on else "#b7a98d"}" '
+                 f'stroke-width="{1.8 if on else .9}"/>')
+    # 八卦爻画：字不跟着转，保持直立可读
+    for gi, g in enumerate(ALL_GUA):
+        deg = gi * 45 + ROT
+        gx, gy = _polar(cx, cy, 38, deg)
+        on = g["g"] == gua
+        s = .46 if on else .38
+        fill = "#6f5429" if on else "#8f836c"
+        op = "1" if on else ".9"
+        rects = []
+        for i, yang in enumerate(TRIGRAM_ROWS[g["g"]]):
+            y = 4 + i * 10
+            if yang:
+                rects.append(f'<rect x="2" y="{y}" width="26" height="3.4" rx="1.4"/>')
+            else:
+                rects.append(f'<rect x="2" y="{y}" width="11" height="3.4" rx="1.4"/>'
+                             f'<rect x="17" y="{y}" width="11" height="3.4" rx="1.4"/>')
+        o.append(f'<g transform="translate({gx - 15 * s:.1f} {gy - 18 * s:.1f}) scale({s})" '
+                 f'fill="{fill}" opacity="{op}">{"".join(rects)}</g>')
+    # 针：指向本卦方位
+    nx, ny = _polar(cx, cy, 27, ALL_GUA.index(info) * 45 + ROT)
+    o.append(f'<line x1="70" y1="70" x2="{nx:.1f}" y2="{ny:.1f}" '
+             'stroke="#8a6a3a" stroke-width="1.5" opacity=".9"/>'
+             '<circle cx="70" cy="70" r="3" fill="#6f5429"/>'
+             '</svg>')
+    # 罗盘与方位题注并排嵌在纸带说明行右端，不另起一条带，省掉一片空白
+    return ('<span class="jw-note-compass">'
+            + "".join(o)
+            + '<span class="jw-compass-cap">'
+            + f'<b>{html.escape(info["no"] + info["g"] + "卦")}</b>'
+            + f'<small>{html.escape(info["fang"])} · {html.escape(info["el"])}</small>'
+            + '</span></span>')
 
 
 def jw_pair(key, md, shift=1):
@@ -1082,7 +1148,8 @@ def build_jingwen(pages):
         gua = it["gua"]
         body = (
             _jw_front(gua)
-            + f'<p class="jw-note">{JW_NOTE}</p>'
+            + f'<p class="jw-note"><span class="jw-note-text">{JW_NOTE}</span>'
+            + _jw_compass(gua) + '</p>'
             + jw_pair_gua(gua, shift=2)
         )
         sub = ('<p class="side-title">本 节</p><ul class="d-sub">'
@@ -1524,8 +1591,8 @@ def build():
                      '<h2>图和正文是同一套内容的两种排法</h2>'
                      '<p>不是另一份材料。正文按讲次铺开，图按层级收拢；看完图，回正文看细目。</p>'
                      '<ul class="mh-list">'
-                     '<li><span class="mh-k">看</span><div><h3>点圆点逐层展开</h3>'
-                     '<p>默认只展开两级。点节点前的圆点看下一层，双指缩放、拖动平移，手机上同样适用。</p>'
+                     '<li><span class="mh-k">看</span><div><h3>点圆点开合分支</h3>'
+                     '<p>默认展开两级，点圆点看下一层。开合时视图不跳，拖动平移、双指缩放；要看全图点「全屏看图」，或用「全部展开 / 收回到两级」。</p>'
                      '</div></li>'
                      '<li><span class="mh-k">对</span><div><h3>每张图对应一座卦</h3>'
                      '<p>坎、坤、震、巽、乾各一张，与卦山线里的条目一一对应。</p>'
