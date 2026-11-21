@@ -716,9 +716,24 @@ body.home .nav.scrolled .btn-line{border-color:var(--line);color:var(--ink-2);ba
   cursor:pointer;transition:.15s;
 }
 .mind-bar button:hover{border-color:var(--ink-4);color:var(--ink);background:var(--bg-3)}
+.mind-bar .mind-full-btn{border-color:rgba(166,124,61,.55);color:#7a5a2c;background:#faf5e9}
+.mind-bar .mind-full-btn:hover{border-color:#a67c3d;color:#5d4522;background:#f6edd9}
 .mind-bar .hint{margin-left:auto;font-size:12.2px;color:var(--ink-4);padding-right:4px}
 .mind-bar .hint-m{display:none}
 #mind{display:block;width:100%;height:min(76vh,820px);min-height:480px;background:var(--bg)}
+/* 全屏看图：原生 fullscreen 与不支持时的 fixed 回退共用一套版式。
+   镜头只在进入/退出时 fit 一次，开合分支不再让画面缩放。 */
+.mind-wrap:fullscreen,
+.mind-wrap.is-full{
+  position:fixed;inset:0;z-index:1200;display:flex;flex-direction:column;
+  width:100vw;height:100vh;margin:0;border:0;border-radius:0;
+  background:var(--bg);box-shadow:none;
+}
+.mind-wrap:fullscreen .mind-bar,
+.mind-wrap.is-full .mind-bar{flex:none;position:relative;z-index:2}
+.mind-wrap:fullscreen #mind,
+.mind-wrap.is-full #mind{flex:1;width:100%;height:auto;min-height:0}
+body:has(.mind-wrap.is-full){overflow:hidden}
 
 /* 脑图索引 */
 .mind-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:16px;margin-top:30px}
@@ -1985,12 +2000,23 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
 }
 .jw-scroll .jw-front .seal{width:32px;height:32px;opacity:.85;flex:none}
 
-/* --- 来源说明：与包首连成一整条纸，不再是一块孤立的现代提示条 --- */
+/* --- 来源说明：与包首连成一整条纸；右端嵌后天八卦罗盘 ---
+   罗盘纯 SVG 爻画与刻度，不动两栏经文、不动锚点、不另起一条带。 */
 .jw-scroll .doc > .jw-note{
-  margin:0 0 22px;padding:12px 20px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  margin:0 0 22px;padding:10px 20px;
   border:1px solid #e2d6ba;border-top:0;border-radius:0 0 3px 3px;
   background:#faf7ef;color:var(--ink-2);font-size:13.4px;
 }
+.jw-scroll .jw-note-text{flex:1 1 320px;min-width:0}
+.jw-scroll .jw-note-compass{display:flex;align-items:center;gap:8px;flex:none}
+.jw-scroll .jw-compass{display:block;width:92px;height:92px;flex:none}
+.jw-scroll .jw-compass-cap{display:flex;flex-direction:column;gap:5px;white-space:nowrap}
+.jw-scroll .jw-compass-cap b{
+  font-family:var(--serif);font-size:16px;font-weight:600;
+  letter-spacing:.14em;color:#7a5a2c;line-height:1.2;
+}
+.jw-scroll .jw-compass-cap small{font-size:11.5px;letter-spacing:.1em;color:var(--ink-4)}
 
 /* --- 每篇 = 一轴：题签外溢，卡片吃满正文列 --- */
 .jw-scroll .jw-entry{position:relative;margin:0 0 4px}
@@ -2156,6 +2182,11 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .jw-scroll .jw-front-tri{width:28px;height:32px;padding:4px}
   .jw-scroll .jw-front-word{font-size:14px;letter-spacing:.24em;text-indent:.24em}
   .jw-scroll .jw-front .seal{width:26px;height:26px}
+  .jw-scroll .doc > .jw-note{gap:10px;padding:10px 12px}
+  .jw-scroll .jw-note-compass{width:100%;justify-content:flex-start}
+  .jw-scroll .jw-compass{width:66px;height:66px}
+  .jw-scroll .jw-compass-cap b{font-size:13.5px;letter-spacing:.1em}
+  .jw-scroll .jw-compass-cap small{font-size:10.5px;letter-spacing:.06em}
   .jw-scroll .doc blockquote p{font-size:14.5px;letter-spacing:0}
   .jw-scroll .jw-pair-body > p > strong{font-size:13px;padding:2px 8px}
 }

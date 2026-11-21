@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>六白乾卦 · 戌乾亥 · 导图线 · 金锁玉关</title>
-<link rel="stylesheet" href="style.css?v=a68c5912">
+<link rel="stylesheet" href="style.css?v=eb3738ab">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -45,14 +45,16 @@
     <h1>六白乾卦 · 戌乾亥</h1>
     <p class="subtitle">Ⅳ 导图线　·　共 304 个节点</p>
 
-    <div class="mind-wrap">
+    <div class="mind-wrap" id="mindWrap">
       <div class="mind-bar">
-        <button onclick="fitNow()">适应窗口</button>
-        <button onclick="zoomBy(1.25)">放大</button>
-        <button onclick="zoomBy(0.8)">缩小</button>
-        <button onclick="toggleAll()">全部折叠 / 展开</button>
-        <span class="hint">默认只展开两级　·　点圆点展开下一层　·　滚轮缩放　·　拖拽平移</span>
-        <span class="hint-m">双指缩放　·　拖动平移</span>
+        <button type="button" onclick="fitNow()">适应窗口</button>
+        <button type="button" onclick="zoomBy(1.25)">放大</button>
+        <button type="button" onclick="zoomBy(0.8)">缩小</button>
+        <button type="button" onclick="expandAll()">全部展开</button>
+        <button type="button" onclick="foldBack()">收回到两级</button>
+        <button type="button" class="mind-full-btn" id="mindFull" onclick="toggleFull()">全屏看图</button>
+        <span class="hint">点圆点开合分支（视图不跟着跳）　·　拖拽平移　·　Ctrl + 滚轮缩放</span>
+        <span class="hint-m">点圆点开合分支　·　拖动平移　·　双指缩放</span>
       </div>
       <svg id="mind"></svg>
     </div>
@@ -469,7 +471,7 @@
 - 记住：乾不管你做不做，只管这个家往哪儿走；家风立不立，决定这个家往哪儿走
 </script>
 <script>
-var mm = null;
+var mm = null, nativeFs = false;
 function zoomBy(f){ if(mm) mm.rescale(f); }
 // 自适应缩放的唯一可靠来源是 markmap 自己算的 mm.state.rect（全部节点矩形并集）
 // 不要用 svg.querySelector('g').getBBox()：命中的是最外层高亮层，只会返回根节点大小，
@@ -484,21 +486,73 @@ function fitNow(ratio){
     var w = Math.max(1, r.x2 - r.x1), h = Math.max(1, r.y2 - r.y1);
     var s = Math.min(box.width / w, box.height / h) * (ratio || 0.95);
     if(!isFinite(s) || s <= 0) return 0;
-    s = Math.min(s, 1.25);
+    s = Math.min(s, 1.35);
     var tx = (box.width - w * s) / 2 - r.x1 * s;
     var ty = (box.height - h * s) / 2 - r.y1 * s;
     mm.svg.call(mm.zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
     return s;
   }catch(e){ return 0; }
 }
-function toggleAll(){
-  if(!mm) return;
-  var nodes = mm.state.data ? mm.state.data.children||[] : [];
-  var anyOpen = false;
-  (function walk(ns){ ns.forEach(function(n){ if(n.payload && n.payload.fold===0){ anyOpen=true; } walk(n.children||[]); }); })(nodes);
-  (function walk(ns){ ns.forEach(function(n){ if(n.payload) n.payload.fold = anyOpen?1:0; walk(n.children||[]); }); })(nodes);
+// 导图软件的手感：开合分支只改树，不改镜头。markmap 默认 autoFit 会在每次
+// renderData 后重新 fit——折掉一枝就把剩下的树放大居中，看着像整页在缩。
+// 这里只在初次进入、点「适应窗口」、进/出全屏时 fit，平时保持用户视角。
+function setFold(fn, refit){
+  if(!mm || !mm.state || !mm.state.data) return;
+  (function walk(n){
+    if(!n || !n.payload || !n.state) return;
+    n.payload = Object.assign({}, n.payload, {fold: fn(n) ? 1 : 0});
+    (n.children||[]).forEach(walk);
+  })(mm.state.data);
   mm.renderData();
+  if(refit) setTimeout(function(){ fitNow(); }, 30);
 }
+function expandAll(){ setFold(function(){ return false; }, false); }
+function foldBack(){ setFold(function(n){ return n.state.depth >= 3; }, true); }
+function mindWrap(){ return document.getElementById('mindWrap'); }
+function syncFullBtn(){
+  var b = document.getElementById('mindFull');
+  if(b) b.textContent = (document.fullscreenElement || mindWrap().classList.contains('is-full')) ? '退出全屏' : '全屏看图';
+}
+function toggleFull(){
+  var w = mindWrap();
+  if(!w) return;
+  if(document.fullscreenElement === w){
+    document.exitFullscreen();
+    return;
+  }
+  if(w.classList.contains('is-full')){
+    w.classList.remove('is-full');
+    nativeFs = false;
+    syncFullBtn();
+    setTimeout(function(){ fitNow(); }, 60);
+    return;
+  }
+  // 先落页面内固定层，保证移动端/受限环境点了就有效果；
+  // 原生全屏只是顺带隐藏浏览器栏的增强，失败也不影响已经打开的全图。
+  w.classList.add('is-full');
+  nativeFs = false;
+  syncFullBtn();
+  setTimeout(function(){ fitNow(); }, 60);
+  if(w.requestFullscreen && document.fullscreenEnabled){
+    w.requestFullscreen().catch(function(){ /* 固定层已经够用 */ });
+  }
+}
+document.addEventListener('fullscreenchange', function(){
+  var w = mindWrap();
+  if(document.fullscreenElement === w) nativeFs = true;
+  else if(nativeFs){
+    nativeFs = false;
+    if(w) w.classList.remove('is-full');
+  }
+  syncFullBtn();
+  setTimeout(function(){ fitNow(); }, 60);
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && mindWrap() && mindWrap().classList.contains('is-full')){
+    mindWrap().classList.remove('is-full'); syncFullBtn();
+    setTimeout(function(){ fitNow(); }, 60);
+  }
+});
 try{
   var src = document.getElementById('md-source').textContent;
   var T = window.markmap.Transformer, M = window.markmap.Markmap;
@@ -506,12 +560,19 @@ try{
   var res = t.transform(src);
   // 展开两级：只展开一级的话，手机上只剩一个根节点，等于没画
   var narrow = window.innerWidth < 700;
-  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.25, initialExpandLevel:2, spacingVertical:narrow?10:12, paddingX:16, colorFreezeLevel:2}, res.root);
+  mm = M.create('#mind', {autoFit:true, duration:0, maxInitialScale:1.35, initialExpandLevel:2, spacingVertical:narrow?10:12, paddingX:16, colorFreezeLevel:2}, res.root);
   window.mm = mm;
+  // 初次进入自动 fit 一次，之后交还镜头控制权
+  mm.setOptions({autoFit:false});
   requestAnimationFrame(function(){ fitNow(); });
   setTimeout(function(){ fitNow(); }, 300);
   setTimeout(function(){ fitNow(); }, 900);
-  window.addEventListener('resize', function(){ fitNow(); });
+  var lastW = window.innerWidth;
+  window.addEventListener('resize', function(){
+    // 只在窗口宽度真变了时重新适应；折叠分支造成的高度变化不触发
+    if(Math.abs(window.innerWidth - lastW) > 2){ lastW = window.innerWidth; fitNow(); }
+  });
+  syncFullBtn();
 }catch(e){
   document.getElementById('mind').insertAdjacentHTML('afterend','<p style="color:#a3543a">脑图渲染失败：'+e.message+'</p>');
 }
