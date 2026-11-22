@@ -60,6 +60,8 @@
         el.__home = el.parentNode;
       }
       el.__home.appendChild(el);            // 移到最后 = 画在最上层
+      // appendChild 会打断 :hover，凸显改由 class 驱动，移动后仍然生效
+      el.classList.add('is-hot');
       lifted = el;
     };
     var dropGua = function(el){
@@ -67,6 +69,7 @@
       // 插回原来的后一个兄弟之前；那个兄弟若已不在就退到末尾
       if(el.__next && el.__next.parentNode === el.__home) el.__home.insertBefore(el, el.__next);
       else el.__home.appendChild(el);
+      el.classList.remove('is-hot');
       el.__home = undefined; el.__next = undefined;
       if(lifted === el) lifted = null;
     };
