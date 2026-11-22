@@ -1299,9 +1299,15 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   stroke:#9b7338;stroke-width:1.6;
   filter:drop-shadow(0 3px 7px rgba(22,58,66,.30));
 }
-/* 八卦：原地凸显放大，不做向外位移；整块就地点亮、压深描边、带浮起阴影。
-   与山的「掀起来往外推」区分：卦是「亮起来撑大」。八个卦统一有反馈。 */
-.lsp .lsp-gua:hover{transform:scale(1.18)}
+/* 八卦：原地凸显放大，不做任何方向的平移。
+   关键：不能整块 g 一起 scale——g 的原点是包围盒中心，卦名偏在扇区内侧，
+   放大时文字会被推离原点，顶/底/左/右卦分别上/下/左/右移动约 4px（观感就是「上下移」）。
+   改为扇区 path、卦名 text、短签 text 各自以自身中心 scale，中心原地不动，只是撑大。 */
+.lsp .lsp-gua path,.lsp .lsp-gua text{
+  transform-box:fill-box;transform-origin:center;
+  transition:transform .24s cubic-bezier(.2,.78,.26,1),stroke .18s,filter .18s,fill .18s,fill-opacity .18s;
+}
+.lsp .lsp-gua:hover path,.lsp .lsp-gua:hover text{transform:scale(1.18)}
 .lsp .lsp-gua.studied:hover path{
   stroke:#9b7338;stroke-width:1.9;fill-opacity:.34;
   filter:drop-shadow(0 3px 9px rgba(22,58,66,.26));
