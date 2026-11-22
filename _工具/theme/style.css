@@ -1307,12 +1307,14 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   transform-box:fill-box;transform-origin:center;
   transition:transform .24s cubic-bezier(.2,.78,.26,1),stroke .18s,filter .18s,fill .18s,fill-opacity .18s;
 }
-.lsp .lsp-gua:hover path,.lsp .lsp-gua:hover text{transform:scale(1.18)}
-.lsp .lsp-gua.studied:hover path{
+/* 用 JS 加 .is-hot 而不是 :hover：提层时 appendChild 移动节点会打断 :hover 伪类，
+   实机上放大就不生效。class 跟着节点走，移动后仍在，凸显稳定。 */
+.lsp .lsp-gua.is-hot path,.lsp .lsp-gua.is-hot text{transform:scale(1.18)}
+.lsp .lsp-gua.studied.is-hot path{
   stroke:#9b7338;stroke-width:1.9;fill-opacity:.34;
   filter:drop-shadow(0 3px 9px rgba(22,58,66,.26));
 }
-.lsp .lsp-gua:not(.studied):hover path{
+.lsp .lsp-gua:not(.studied).is-hot path{
   fill:#eadfc8;stroke:#a67c3d;stroke-width:1.7;
   filter:drop-shadow(0 3px 9px rgba(22,58,66,.18));
 }

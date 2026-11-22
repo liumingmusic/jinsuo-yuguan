@@ -558,6 +558,8 @@ JS = """
         el.__home = el.parentNode;
       }
       el.__home.appendChild(el);            // 移到最后 = 画在最上层
+      // appendChild 会打断 :hover，凸显改由 class 驱动，移动后仍然生效
+      el.classList.add('is-hot');
       lifted = el;
     };
     var dropGua = function(el){
@@ -565,6 +567,7 @@ JS = """
       // 插回原来的后一个兄弟之前；那个兄弟若已不在就退到末尾
       if(el.__next && el.__next.parentNode === el.__home) el.__home.insertBefore(el, el.__next);
       else el.__home.appendChild(el);
+      el.classList.remove('is-hot');
       el.__home = undefined; el.__next = undefined;
       if(lifted === el) lifted = null;
     };
@@ -716,19 +719,19 @@ def fill(tmpl, **kw):
 # 八宫二十四山。顺序按顺时针，起于坎（正北）。
 # status: full=已成篇（正文页已写全） / taught=已开讲（课上讲过，正文页未建） / none=未开讲（本课未讲）
 ALL_GUA = [
-    dict(g="坎", sz="壬子癸", fang="北", no="一白", el="水", color="#1f4f5e", studied=True,
+    dict(g="坎", sz="壬子癸", fang="北", no="一白", el="水", color="#1e5266", studied=True,
          note="主财与肾。三山中子居中，主精气神。",
          shan=[("壬", "财富能力 · 财商", "full"),
                ("子", "财库 · 家运", "full"),
                ("癸", "理财 · 主阴", "full")]),
     dict(g="艮", sz="丑艮寅", fang="东北", no="八白", el="土", color="#6d6a46", studied=False,
          note="少男、山与止。", shan=None),
-    dict(g="震", sz="甲卯乙", fang="东", no="三碧", el="木", color="#3f6b52", studied=True,
+    dict(g="震", sz="甲卯乙", fang="东", no="三碧", el="木", color="#2f7a46", studied=True,
          note="主长男与奋起。三山中卯居中，主肝。",
          shan=[("甲", "行动力 · 长房", "full"),
                ("卯", "人脉 · 桃花", "full"),
                ("乙", "文昌 · 自处", "full")]),
-    dict(g="巽", sz="辰巽巳", fang="东南", no="四绿", el="木", color="#3b6b66", studied=True,
+    dict(g="巽", sz="辰巽巳", fang="东南", no="四绿", el="木", color="#6f7b2e", studied=True,
          note="长女、风与入。三山中巽居中，主风评与相互作用。",
          shan=[("辰", "水库与抢夺", "full"),
                ("巽", "风评 · 慕强与自强", "full"),
@@ -742,7 +745,7 @@ ALL_GUA = [
                ("申", "链接 · 文昌", "full")]),
     dict(g="兑", sz="庚酉辛", fang="西", no="七赤", el="金", color="#6b6257", studied=False,
          note="少女、泽与口。", shan=None),
-    dict(g="乾", sz="戌乾亥", fang="西北", no="六白", el="金", color="#48525a", studied=True,
+    dict(g="乾", sz="戌乾亥", fang="西北", no="六白", el="金", color="#6d4258", studied=True,
          note="父、天与家风。三山中乾居中，主顶梁柱与文昌思辨。",
          shan=[("戌", "磁场 · 沟通上位", "full"),
                ("乾", "家风 · 顶梁柱", "full"),
