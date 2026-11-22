@@ -546,40 +546,35 @@ JS = """
       tip.style.left = Math.max(6, Math.min(cb.width - w - 6, x - w / 2)) + 'px';
       tip.style.top = Math.max(6, y - h - 12) + 'px';
     };
-    // 八卦悬停时要真正凸显：SVG 后画的盖前画的，卦带在绘制顺序上靠前，
-    // 放大后会被相邻卦/山带压住。悬停时把该卦移到同层最后，离开时插回原位。
-    // 山带本来就在卦带之后绘制，且是向外抬起，不需要提层。
-    var lifted = null;
-    var liftGua = function(el){
-      if(!el.classList.contains('lsp-gua')) return;
-      if(lifted && lifted !== el) dropGua(lifted);
-      if(el.__home === undefined){
-        el.__next = el.nextSibling;
-        el.__home = el.parentNode;
-      }
-      el.__home.appendChild(el);            // 移到最后 = 画在最上层
-      // appendChild 会打断 :hover，凸显改由 class 驱动，移动后仍然生效
-      el.classList.add('is-hot');
-      lifted = el;
+    // 八卦悬停凸显：SVG 后画的盖前画的，原卦在绘制顺序上靠前会被邻卦/山带压住。
+    // ⚠️ 绝不 appendChild 移动原卦节点——那会派发 mouseleave/mouseenter，跟还原打架，
+    // 造成「移开不还原」。改为预置在最上层的浮起副本，悬停只切 display/class，
+    // 原节点、事件绑定、DOM 结构一律不动，进出完全对称。
+    var hotLayer = compass.querySelector('.lsp-gua-hot-layer');
+    var hotOn = null;                 // 当前点亮的副本
+    var clearHot = function(){
+      if(hotOn){ hotOn.classList.remove('is-on'); hotOn = null; }
     };
-    var dropGua = function(el){
-      if(!el || !el.__home) return;
-      // 插回原来的后一个兄弟之前；那个兄弟若已不在就退到末尾
-      if(el.__next && el.__next.parentNode === el.__home) el.__home.insertBefore(el, el.__next);
-      else el.__home.appendChild(el);
-      el.classList.remove('is-hot');
-      el.__home = undefined; el.__next = undefined;
-      if(lifted === el) lifted = null;
+    var showHot = function(el){
+      if(!hotLayer || !el.classList.contains('lsp-gua')) return;
+      var name = el.getAttribute('data-gua') || '';
+      var want = null;
+      [].slice.call(hotLayer.children).forEach(function(h){
+        if(h.getAttribute('data-gua') === name) want = h;
+      });
+      if(!want || hotOn === want) return;
+      clearHot();                       // 先灭掉上一个，杜绝切换时两个副本同时亮
+      want.classList.add('is-on');
+      hotOn = want;
     };
     var showTip = function(el){
-      liftGua(el);
+      showHot(el);
       var s = el.getAttribute('data-tip') || '';
       if(tip){ tip.innerHTML = '<b>意象</b>' + s; tip.hidden = false; placeTip(el); }
       if(readout) readout.textContent = s;
     };
     var hideTip = function(el){
-      if(el) dropGua(el);
-      else if(lifted) dropGua(lifted);
+      clearHot();
       if(tip) tip.hidden = true;
       if(readout) readout.textContent = defaultTip;
     };
@@ -1945,6 +1940,9 @@ def _compass(slan):
 
     # 八卦带：卦名 + 一行意象短签，整段可悬停看详解。
     # ⚠️ 短签只是方位提示，不替代正文；字仍直立不旋转。
+    # 同时为每个卦存一份「浮起副本」，最后统一画在最上层：悬停时只切换副本显示，
+    # 绝不移动原节点——移动 DOM 会派发 mouseleave/mouseenter，导致移开后不还原。
+    hot = []
     for gi, g in enumerate(ALL_GUA):
         a1 = gi * 45 - 22.5 + ROT
         d = _sector(cx, cy, R_IN, R_MID, a1, a1 + 45)
@@ -1961,16 +1959,20 @@ def _compass(slan):
         gc = g["color"] if g["studied"] else "#b8b09f"
         short, full = GUA_IMAGE[g["g"]]
         tip = html.escape(f'{g["g"]}卦 · {g["no"]} · {g["fang"]}｜{full}', quote=True)
+        name = (f'<text x="{gx:.1f}" y="{gy:.1f}" text-anchor="middle" '
+                f'dominant-baseline="central" font-family="Songti SC,serif" '
+                f'font-size="26" fill="{gc}">{g["g"]}</text>')
+        im = (f'<text class="lsp-gua-im" x="{ix:.1f}" y="{iy:.1f}" text-anchor="middle" '
+              f'dominant-baseline="central" font-family="Songti SC,serif" '
+              f'font-size="10" fill="{gc}" opacity=".88">{short}</text>')
         o.append(
-            f'<g class="lsp-gua{" studied" if g["studied"] else ""}" data-tip="{tip}">'
-            + path
-            + f'<text x="{gx:.1f}" y="{gy:.1f}" text-anchor="middle" '
-              f'dominant-baseline="central" font-family="Songti SC,serif" '
-              f'font-size="26" fill="{gc}">{g["g"]}</text>'
-            + f'<text class="lsp-gua-im" x="{ix:.1f}" y="{iy:.1f}" text-anchor="middle" '
-              f'dominant-baseline="central" font-family="Songti SC,serif" '
-              f'font-size="10" fill="{gc}" opacity=".88">{short}</text>'
-            + '</g>')
+            f'<g class="lsp-gua{" studied" if g["studied"] else ""}" '
+            f'data-gua="{g["g"]}" data-tip="{tip}">'
+            + path + name + im + '</g>')
+        hot.append(
+            f'<g class="lsp-gua-hot{" studied" if g["studied"] else ""}" '
+            f'data-gua="{g["g"]}">'
+            + path + name + im + '</g>')
 
     # 二十四山带：山名 + 意象短签；已成篇整块可悬停凸出，点击仍进正文。
     # --mx/--my 是向外抬起的位移，按山的角度算，CSS 只在 :hover 时用。
@@ -2027,6 +2029,10 @@ def _compass(slan):
     o.append('<text x="380" y="446" text-anchor="middle" font-size="12.5" '
              'letter-spacing="3" fill="#a67c3d" font-family="PingFang SC,sans-serif">'
              '坎 · 坤 · 震 · 巽 · 乾 已成篇</text>')
+
+    # 悬停浮起层：八个卦的高亮副本，最后绘制 = 盖住所有山带与邻卦。
+    # pointer-events:none 让鼠标事件穿透到下面的原卦，事件配对稳定。
+    o.append('<g class="lsp-gua-hot-layer" aria-hidden="true">' + "".join(hot) + '</g>')
     o.append("</svg>")
     return "".join(o)
 
