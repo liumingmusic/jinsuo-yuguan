@@ -546,22 +546,47 @@ JS = """
       tip.style.left = Math.max(6, Math.min(cb.width - w - 6, x - w / 2)) + 'px';
       tip.style.top = Math.max(6, y - h - 12) + 'px';
     };
+    // 八卦悬停时要真正凸显：SVG 后画的盖前画的，卦带在绘制顺序上靠前，
+    // 放大后会被相邻卦/山带压住。悬停时把该卦移到同层最后，离开时插回原位。
+    // 山带本来就在卦带之后绘制，且是向外抬起，不需要提层。
+    var lifted = null;
+    var liftGua = function(el){
+      if(!el.classList.contains('lsp-gua')) return;
+      if(lifted && lifted !== el) dropGua(lifted);
+      if(el.__home === undefined){
+        el.__next = el.nextSibling;
+        el.__home = el.parentNode;
+      }
+      el.__home.appendChild(el);            // 移到最后 = 画在最上层
+      lifted = el;
+    };
+    var dropGua = function(el){
+      if(!el || !el.__home) return;
+      // 插回原来的后一个兄弟之前；那个兄弟若已不在就退到末尾
+      if(el.__next && el.__next.parentNode === el.__home) el.__home.insertBefore(el, el.__next);
+      else el.__home.appendChild(el);
+      el.__home = undefined; el.__next = undefined;
+      if(lifted === el) lifted = null;
+    };
     var showTip = function(el){
+      liftGua(el);
       var s = el.getAttribute('data-tip') || '';
       if(tip){ tip.innerHTML = '<b>意象</b>' + s; tip.hidden = false; placeTip(el); }
       if(readout) readout.textContent = s;
     };
-    var hideTip = function(){
+    var hideTip = function(el){
+      if(el) dropGua(el);
+      else if(lifted) dropGua(lifted);
       if(tip) tip.hidden = true;
       if(readout) readout.textContent = defaultTip;
     };
     targets.forEach(function(el){
       el.addEventListener('mouseenter', function(){ showTip(el); });
-      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('mouseleave', function(){ hideTip(el); });
       el.addEventListener('focusin', function(){ showTip(el); });
-      el.addEventListener('focusout', hideTip);
+      el.addEventListener('focusout', function(){ hideTip(el); });
       if(!el.querySelector('a')){
-        el.addEventListener('click', function(e){ e.preventDefault(); hideTip(); showTip(el); });
+        el.addEventListener('click', function(e){ e.preventDefault(); hideTip(el); showTip(el); });
       }
     });
     document.addEventListener('click', function(e){
