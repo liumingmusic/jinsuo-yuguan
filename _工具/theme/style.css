@@ -2319,3 +2319,18 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .layout.sec-wide .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){.layout.sec-wide .cards{grid-template-columns:1fr}}
+
+/* Ⅳ/Ⅴ 独有的「怎么用」块：三条要点改成同款小卡片，文字不再横贯整行 */
+.layout.sec-wide .mind-how{margin-top:26px;padding:24px}
+.layout.sec-wide .mind-how>p{max-width:760px}
+.layout.sec-wide .mind-how .mh-list{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px;
+}
+.layout.sec-wide .mind-how .mh-list>li,
+.layout.sec-wide .mind-how .mh-list>li:first-child{
+  display:flex;gap:12px;align-items:flex-start;
+  margin:0;padding:16px;background:var(--bg);
+  border:1px solid var(--line);border-radius:10px;
+}
+@media (max-width:1240px){.layout.sec-wide .mind-how .mh-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.layout.sec-wide .mind-how .mh-list{grid-template-columns:1fr}}
