@@ -1290,17 +1290,27 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   transition:transform .24s cubic-bezier(.2,.78,.26,1);
 }
 .lsp .lsp-mnt.full{cursor:pointer}
-.lsp .lsp-mnt.full path,.lsp .lsp-gua.studied path{
-  transition:stroke .18s,filter .18s,fill .18s;
+.lsp .lsp-mnt path,.lsp .lsp-gua path{
+  transition:stroke .18s,filter .18s,fill .18s,fill-opacity .18s;
 }
+/* 山：整块向外抬起放大（掀起来） */
 .lsp .lsp-mnt.full:hover{transform:translate(var(--mx),var(--my)) scale(1.2)}
 .lsp .lsp-mnt.full:hover path{
   stroke:#9b7338;stroke-width:1.6;
   filter:drop-shadow(0 3px 7px rgba(22,58,66,.30));
 }
-.lsp .lsp-gua.studied:hover{transform:scale(1.08)}
-.lsp .lsp-gua.studied:hover path{stroke:#b08b4c;stroke-width:1.3}
-.lsp .lsp-mnt.none:hover path,.lsp .lsp-gua:not(.studied):hover path{fill:#f4efe3}
+/* 八卦：原地凸显放大，不做向外位移；整块就地点亮、压深描边、带浮起阴影。
+   与山的「掀起来往外推」区分：卦是「亮起来撑大」。八个卦统一有反馈。 */
+.lsp .lsp-gua:hover{transform:scale(1.18)}
+.lsp .lsp-gua.studied:hover path{
+  stroke:#9b7338;stroke-width:1.9;fill-opacity:.34;
+  filter:drop-shadow(0 3px 9px rgba(22,58,66,.26));
+}
+.lsp .lsp-gua:not(.studied):hover path{
+  fill:#eadfc8;stroke:#a67c3d;stroke-width:1.7;
+  filter:drop-shadow(0 3px 9px rgba(22,58,66,.18));
+}
+.lsp .lsp-mnt.none:hover path{fill:#f4efe3}
 .lsp .lsp-mnt-im,.lsp .lsp-gua-im{pointer-events:none;letter-spacing:.06em}
 .lsp-tip{
   position:absolute;z-index:6;max-width:320px;min-width:190px;
