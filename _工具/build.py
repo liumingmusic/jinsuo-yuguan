@@ -28,6 +28,10 @@ MIND_SECTION = "Ⅳ-导图线"
 # Ⅴ 经文线的「线名」：经文页从 Ⅴ-经文线/ 来，同样是根目录里独立的线文件夹。
 # 它是全站经文的专页——一卦一页，每篇两栏并排对读。
 JINGWEN_SECTION = "Ⅴ-经文线"
+# Ⅶ 可视化线：不是内容线，没有 md 目录，落地页由 build_vis_index() 直接生成。
+# 它只做两件事——体系鸟瞰（六线怎么咬合）与一山穿透（点山直达六线落点），
+# 全部数据从 ALL_GUA / 各页 slug 派生，绝不另存第二份内容。
+VIS_SECTION = "Ⅶ-可视化线"
 # 经文的唯一来源。Ⅴ-经文线/*.md 投影到 Ⅱ 卦山线、Ⅲ 作业线、Ⅳ 导图线三处，
 # 三处内容必须一致，所以只此一份 md，别处不要另写。
 #
@@ -56,6 +60,7 @@ SECTIONS = [
     (MIND_SECTION, "Ⅳ", "导图线", "骨架 · 脉络 · 一卦一图", "#3f6b7a"),
     (JINGWEN_SECTION, "Ⅴ", "经文线", "我的经文 · 老师经文", "#5c4a72"),
     ("Ⅵ-技法线", "Ⅵ", "技法线", "兼山 · 对宫 · 飘转 · 深挖", "#8d5b34"),
+    (VIS_SECTION, "Ⅶ", "可视化线", "体系鸟瞰 · 一山穿透", "#4a6b8a"),
     ("附录", "附", "附录", "技法 · 术语 · 速查", "#5a6068"),
 ]
 
@@ -498,6 +503,169 @@ def extract_title(md, fallback):
 
 # ============ 站点骨架 ============
 
+VIS_JS = r"""
+(function(){
+  var data = window.__VIS_DATA__;
+  var svg = document.getElementById('visNet');
+  var panel = document.getElementById('visPanel');
+  var tip = document.getElementById('visTip');
+  if(!data || !svg || !panel || !window.d3) return;
+  var d3v = window.d3;
+  var W = 760, H = 640, cx = 380, cy = 322;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var byId = {};
+  data.nodes.forEach(function(n){ byId[n.id] = n; });
+  var pos = {};
+  // 内环：六条线，均布
+  var lineNodes = data.nodes.filter(function(n){ return n.type === 'line'; });
+  lineNodes.forEach(function(n, i){
+    var a = -Math.PI / 2 + i * (2 * Math.PI / lineNodes.length);
+    pos[n.id] = {x: cx + Math.cos(a) * 96, y: cy + Math.sin(a) * 96};
+  });
+  // 中环：五卦，起于正上，顺时针
+  var guaNodes = data.nodes.filter(function(n){ return n.type === 'gua'; });
+  guaNodes.forEach(function(n, i){
+    var a = -Math.PI / 2 + i * (2 * Math.PI / guaNodes.length);
+    pos[n.id] = {x: cx + Math.cos(a) * 208, y: cy + Math.sin(a) * 208};
+  });
+  // 外环：每卦的三山，围绕本卦小幅展开
+  guaNodes.forEach(function(g, i){
+    var ga = -Math.PI / 2 + i * (2 * Math.PI / guaNodes.length);
+    var kids = data.nodes.filter(function(n){ return n.type === 'shan' && n.gua === g.name; });
+    kids.forEach(function(n, j){
+      var spread = (j - (kids.length - 1) / 2) * 0.34;
+      var a = ga + spread;
+      pos[n.id] = {x: cx + Math.cos(a) * 318, y: cy + Math.sin(a) * 318};
+    });
+  });
+
+  var root = d3v.select(svg);
+  var gLinks = root.append('g').attr('class', 'v-links');
+  var gNodes = root.append('g').attr('class', 'v-nodes');
+
+  gLinks.selectAll('line').data(data.links).enter().append('line')
+    .attr('x1', function(l){ return pos[l.s].x; })
+    .attr('y1', function(l){ return pos[l.s].y; })
+    .attr('x2', function(l){ return pos[l.t].x; })
+    .attr('y2', function(l){ return pos[l.t].y; })
+    .attr('stroke', function(l){ return l.color; })
+    .attr('class', 'v-link');
+
+  var node = gNodes.selectAll('g').data(data.nodes).enter().append('g')
+    .attr('class', function(n){ return 'v-node v-' + n.type; })
+    .attr('transform', function(n){ return 'translate(' + pos[n.id].x + ',' + pos[n.id].y + ')'; })
+    .attr('data-id', function(n){ return n.id; })
+    .attr('tabindex', function(n){ return n.type === 'shan' || n.type === 'line' ? 0 : null; })
+    .attr('role', function(n){ return n.type === 'shan' || n.type === 'line' ? 'button' : null; });
+
+  node.each(function(n){
+    var g = d3v.select(this);
+    if(n.type === 'line'){
+      g.append('circle').attr('r', 27).attr('class', 'v-disc')
+        .style('fill', '#eef1ee').style('stroke', '#9aa3a0');
+      g.append('text').attr('class', 'v-line-n').text(n.name);
+      g.append('text').attr('class', 'v-line-s').attr('y', 17).text(n.label);
+    } else if(n.type === 'gua'){
+      g.append('circle').attr('r', 33).attr('class', 'v-disc')
+        .style('fill', n.color).style('stroke', n.color);
+      g.append('text').attr('class', 'v-gua-n').text(n.name);
+      g.append('text').attr('class', 'v-gua-s').attr('y', 17).text(n.badge);
+    } else {
+      g.append('circle').attr('r', 22).attr('class', 'v-disc')
+        .style('fill', '#fbfaf6').style('stroke', n.color);
+      g.append('text').attr('class', 'v-shan-n').style('fill', n.color).text(n.name);
+      g.append('text').attr('class', 'v-shan-s').attr('y', 15).text(n.badge);
+    }
+  });
+
+  var center = gNodes.append('g').attr('class', 'v-center')
+    .attr('transform', 'translate(' + cx + ',' + cy + ')');
+  center.append('circle').attr('r', 46).attr('class', 'v-core');
+  center.append('text').attr('class', 'v-core-t').attr('y', -4).text('六线一体');
+  center.append('text').attr('class', 'v-core-s').attr('y', 15).text('点山看落点');
+
+  function showTip(n, evt){
+    if(!tip) return;
+    tip.textContent = n.type === 'shan' ? (n.name + '山 · ' + n.note)
+      : n.type === 'gua' ? (n.name + '卦 · ' + n.note) : (n.name + ' ' + n.label);
+    tip.hidden = false;
+    var box = svg.getBoundingClientRect();
+    var px = (pos[n.id].x / W) * box.width + box.left;
+    var py = (pos[n.id].y / H) * box.height + box.top;
+    var host = svg.parentNode.getBoundingClientRect();
+    tip.style.left = Math.max(8, Math.min(px - host.left, host.width - tip.offsetWidth - 8)) + 'px';
+    tip.style.top = Math.max(8, py - host.top - tip.offsetHeight - 14) + 'px';
+  }
+  function hideTip(){ if(tip) tip.hidden = true; }
+
+  function focus(n){
+    root.classed('v-focused', true);
+    var keep = {};
+    keep[n.id] = 1;
+    (n.type === 'gua' ? data.nodes.filter(function(x){ return x.gua === n.name; }) : []).forEach(function(x){ keep[x.id] = 1; });
+    data.links.forEach(function(l){
+      if(l.s === n.id || l.t === n.id || keep[l.s] || keep[l.t]) return;
+    });
+    node.classed('v-dim', function(x){ return !keep[x.id]; });
+    gLinks.selectAll('line').classed('v-dim', function(l){ return !keep[l.s] && !keep[l.t]; });
+    node.classed('v-pick', function(x){ return x.id === n.id; });
+  }
+  function clearFocus(){
+    root.classed('v-focused', false);
+    node.classed('v-dim', false).classed('v-pick', false);
+    gLinks.selectAll('line').classed('v-dim', false);
+  }
+
+  function renderShan(n){
+    var rows = n.targets.map(function(t){
+      return '<a class="vp-row" href="' + t.href + '">'
+        + '<span class="vp-n">' + t.n + '</span>'
+        + '<span class="vp-body"><b>' + t.t + '</b><em>' + t.d + '</em></span>'
+        + '<span class="vp-go" aria-hidden="true">→</span></a>';
+    }).join('');
+    panel.innerHTML = '<div class="vp-head"><span class="vp-badge" style="background:' + n.color + '">' + n.badge + '</span>'
+      + '<div><h2>' + n.name + '山</h2><p>' + n.gua + '卦 · ' + n.note + '</p></div></div>'
+      + '<p class="vp-label">在六条线里的落点</p><div class="vp-rows">' + rows + '</div>';
+  }
+  function renderGua(n){
+    var kids = data.nodes.filter(function(x){ return x.type === 'shan' && x.gua === n.name; });
+    var rows = kids.map(function(s){
+      return '<button type="button" class="vp-row vp-btn" data-go="' + s.id + '">'
+        + '<span class="vp-n" style="color:' + n.color + '">' + s.badge + '</span>'
+        + '<span class="vp-body"><b>' + s.name + '山</b><em>' + s.note + '</em></span>'
+        + '<span class="vp-go" aria-hidden="true">→</span></button>';
+    }).join('');
+    panel.innerHTML = '<div class="vp-head"><span class="vp-badge" style="background:' + n.color + '">' + n.name + '</span>'
+      + '<div><h2>' + n.name + '卦 · ' + n.badge + '</h2><p>' + n.note + '　统 ' + kids.length + ' 山</p></div></div>'
+      + '<p class="vp-label">这一卦统哪三山（点山看六线落点）</p><div class="vp-rows">' + rows + '</div>';
+    [].slice.call(panel.querySelectorAll('[data-go]')).forEach(function(b){
+      b.addEventListener('click', function(){
+        var s = byId[b.getAttribute('data-go')];
+        focus(s); renderShan(s);
+      });
+    });
+  }
+
+  // d3 v7 事件回调签名是 (event, datum)，第一个参数是事件不是数据。
+  node.on('mouseenter', function(ev, n){ focus(n); showTip(n); })
+      .on('mouseleave', function(){ clearFocus(); hideTip(); })
+      .on('click', function(ev, n){
+        if(n.type === 'shan'){ focus(n); renderShan(n); }
+        else if(n.type === 'gua'){ focus(n); renderGua(n); }
+        else if(n.type === 'line' && n.href){ window.location.href = n.href; }
+      })
+      .on('keydown', function(ev, n){
+        if(ev.key === 'Enter' || ev.key === ' '){
+          ev.preventDefault();
+          if(n.type === 'shan'){ focus(n); renderShan(n); }
+          else if(n.type === 'gua'){ focus(n); renderGua(n); }
+          else if(n.href){ window.location.href = n.href; }
+        }
+      });
+})();
+"""
+
 JS = """
 (function(){
   // 首页顶栏：滚过首屏转成实心
@@ -844,8 +1012,112 @@ def build_jifa_index(items, num):
     return "".join(out)
 
 
+def build_vis_index(pages, mind_pages, jw_pages):
+    """Ⅶ 可视化线落地页：体系鸟瞰（六线咬合）＋一山穿透（点山直达六线）。
+
+    这不是内容线，没有 md 目录，也不投影任何正文——所有数据从 ALL_GUA、
+    SHAN_IMAGE 与各页 slug 现场派生。首期只做选中高亮与路径渐显，
+    不做连续播放的内容演示动画（那一版等观感确认后再加）。
+    """
+    # 已讲五卦在 ALL_GUA 里的顺序即排布顺序；只取 studied 的，未讲卦不进图。
+    guas = [g for g in ALL_GUA if g["studied"]]
+    # 各线按山/按卦的真实页 slug
+    er_slug = shan_slug_map(pages)                       # 山 -> Ⅱ 卦山线页
+    liu_slug = {}                                        # 山 -> Ⅵ 技法线页
+    for pg in pages:
+        if pg["section"] == "Ⅵ-技法线":
+            for ch in pg["title"]:
+                if ch in "壬子癸未坤申甲卯乙辰巽巳戌乾亥":
+                    liu_slug.setdefault(ch, pg["slug"])
+    # Ⅳ 导图页、Ⅴ 经文页按卦取。title 形如「一白坎卦 · 壬子癸」，卦名不在首位，
+    # 要在标题里认八卦字，不能取 [0]（那是「一」「二」这类星号）。
+    GUA_CHARS = "坎坤震巽乾艮离兑"
+    def gua_of_title(title):
+        for ch in title:
+            if ch in GUA_CHARS:
+                return ch
+        return ""
+    mind_by_gua = {}
+    for m in mind_pages:
+        g = gua_of_title(m["title"])
+        if g:
+            mind_by_gua[g] = m["slug"]
+    jw_by_gua = {}
+    for j in jw_pages:
+        g = gua_of_title(j["title"])
+        if g:
+            jw_by_gua[g] = j["slug"]
+
+    nodes, links = [], []
+    for gi, g in enumerate(guas):
+        gname = g["g"]
+        nodes.append({"id": "G:" + gname, "type": "gua", "name": gname,
+                      "color": g["color"], "badge": g["no"],
+                      "label": GUA_IMAGE[gname][0], "fang": g["fang"],
+                      "note": g["note"]})
+        for si, (shan, shan_note, _) in enumerate(g["shan"]):
+            img = SHAN_IMAGE.get(shan, (shan, ""))[0]
+            nid = "S:" + shan
+            jw_slug = jw_by_gua.get(gname, "")
+            jw_anchor = f"jw-{gname}-{si + 1}-{shan}山"
+            targets = [
+                {"n": "Ⅰ", "t": "课程线", "href": "section-Ⅰ.html", "d": "这一山在哪些讲里出现"},
+                {"n": "Ⅱ", "t": "卦山线", "href": er_slug.get(shan, "section-Ⅱ.html") + ".html",
+                 "d": "山性 · 见水 · 见砂 · 七段讲透"},
+                {"n": "Ⅲ", "t": "作业线", "href": "section-Ⅲ.html", "d": "老师就这一山的批语与题目"},
+                {"n": "Ⅳ", "t": "导图线", "href": mind_by_gua.get(gname, "section-Ⅳ.html") + ".html",
+                 "d": gname + "卦三山骨架图"},
+                {"n": "Ⅴ", "t": "经文线", "href": (jw_slug + ".html#" + jw_anchor) if jw_slug else "section-Ⅴ.html",
+                 "d": "这一山的经文，两栏对读"},
+                {"n": "Ⅵ", "t": "技法线", "href": liu_slug.get(shan, "section-Ⅵ.html") + ".html",
+                 "d": "兼山 · 对宫 · 飘转 · 深挖"},
+            ]
+            nodes.append({"id": nid, "type": "shan", "name": shan, "gua": gname,
+                          "color": g["color"], "badge": img, "note": shan_note,
+                          "targets": targets})
+            links.append({"s": "G:" + gname, "t": nid, "color": g["color"]})
+        # 六条线都连到总览中心
+    for num, short in [("Ⅰ", "课程线"), ("Ⅱ", "卦山线"), ("Ⅲ", "作业线"),
+                       ("Ⅳ", "导图线"), ("Ⅴ", "经文线"), ("Ⅵ", "技法线")]:
+        nodes.append({"id": "L:" + num, "type": "line", "name": num, "label": short,
+                      "href": f"section-{num}.html", "color": "#7a8388"})
+
+    data = json.dumps({"nodes": nodes, "links": links}, ensure_ascii=False)
+    # 经文线第 5 个落点用了锚点，其余都是页级链接——校验脚本会核对它们都存在。
+    return (
+        '<div class="vis-sec">'
+        '<p class="vis-lead">先看清六条线怎么咬合，再点任意一座山，看它散在六条线里的落点。'
+        '这是全站唯一一张全局地图——不新增内容，只把已有的线连起来。</p>'
+        '<div class="vis-stage" id="visStage">'
+        '<svg id="visNet" viewBox="0 0 760 640" role="img" aria-label="六线与十五山关系总图"></svg>'
+        '<div class="vis-tip" id="visTip" hidden></div>'
+        '</div>'
+        '<div class="vis-panel" id="visPanel">'
+        '<p class="vis-ph">点图中任意一卦或一山：卦看它统哪三山，山看它通到哪六条线。</p>'
+        '</div>'
+        '<div class="vis-how">'
+        '<span class="eyebrow">怎 么 用</span>'
+        '<h2>一张图，两个动作</h2>'
+        '<ul class="mh-list">'
+        '<li><span class="mh-k">览</span><div><h3>看体系</h3>'
+        '<p>中心是六条线，五卦分列四周，每卦挂三山。悬停卦只高亮它自己那一组，看清谁统谁。</p>'
+        '</div></li>'
+        '<li><span class="mh-k">穿</span><div><h3>点山穿透</h3>'
+        '<p>点一座已讲的山，右边列出它在六条线里的落点，一点就到——省得挨个线翻。</p>'
+        '</div></li>'
+        '<li><span class="mh-k">界</span><div><h3>只连不改</h3>'
+        '<p>这里没有第二份内容，全是通向各线的入口；正文依旧只在它原来的那一条线里。</p>'
+        '</div></li>'
+        '</ul></div>'
+        f'<script>window.__VIS_DATA__={data};</script>'
+        '<script src="资源/vendor/d3.js"></script>'
+        '<script src="vis.js"></script>'
+        '</div>'
+    )
+
+
 def build_nav(current=""):
-    """顶栏导航：六条线 + 附录。"""
+    """顶栏导航：七条线 + 附录。"""
     parts = []
     for d, num, short, desc, color in SECTIONS:
         on = " on" if d == current else ""
@@ -1570,6 +1842,7 @@ def build():
         print("  ⚠ 缺少 theme/图标/，页面将没有站点图标"
               "（跑 python3 _工具/make_icons.py 生成）")
     open(os.path.join(OUT_DIR, "script.js"), "w", encoding="utf-8").write(JS)
+    open(os.path.join(OUT_DIR, "vis.js"), "w", encoding="utf-8").write(VIS_JS)
     for f in ("d3.js", "markmap-view.js", "markmap-lib.js"):
         s = os.path.join(VENDOR_SRC, f)
         if os.path.exists(s):
@@ -1784,6 +2057,11 @@ def build():
             items = [p for p in pages if p["section"] == d]
             body = build_jifa_index(items, num)
             sec_layout = " jifa-wide"
+        elif d == VIS_SECTION:
+            # Ⅶ 可视化线：无 md 目录，落地页即体系鸟瞰＋一山穿透
+            items = []
+            body = build_vis_index(pages, mind_pages, jw_pages)
+            sec_layout = " vis-wide"
         else:
             items = [p for p in pages if p["section"] == d]
             cards = "".join(
@@ -2521,6 +2799,9 @@ def _parts(pages, mind_pages, jw_pages):
     cards = []
     for d, num, short, desc, color in SECTIONS:
         if num == "附":
+            continue
+        if d == VIS_SECTION:
+            # Ⅶ 是视图不是内容线，不占「六条线怎么分」的卡片；入口在读法说明与导航里
             continue
         if d == MIND_SECTION:
             cnt, unit = len(mind_pages), "张"
