@@ -811,6 +811,39 @@ GUA_IMAGE = {
 }
 
 
+def build_jifa_index(items, num):
+    """Ⅵ 技法线索引页：按卦分组，同卦三山并排。只服务本线，不改其它线索引。"""
+    groups = [("坎", "壬子癸"), ("坤", "未坤申"), ("震", "甲卯乙"),
+              ("巽", "辰巽巳"), ("乾", "戌乾亥")]
+    by_gua = {g["g"]: g for g in ALL_GUA}
+    out = ['<div class="jifa-sec">',
+           '<p class="jifa-lead">一山一页，四格横查。同卦三山并排——先看兼山落在谁身上，'
+           '再看对宫把它推向哪边；飘转与深挖只记这一山的站位和落点。</p>']
+    for gi, (gname, _) in enumerate(groups, 1):
+        gua = by_gua[gname]
+        mines = [p for p in items if (gi - 1) * 3 < p["order"] <= gi * 3]
+        if not mines:
+            continue
+        cards = "".join(
+            f'<a class="card" href="{p["slug"]}.html">'
+            f'<div class="k">{num} · {p["order"]:02d}</div>'
+            f'<h3>{html.escape(p["title"])}</h3>'
+            f'<p>{html.escape(p["lead"] or p["slug"])}</p></a>'
+            for p in mines
+        )
+        out.append(
+            f'<section class="jifa-group" style="--gc:{gua["color"]}">'
+            f'<header class="jifa-gh">'
+            f'<span class="jifa-gbadge">{gname}</span>'
+            f'<div class="jifa-gmeta"><h2>{gname}卦 · {gua["sz"]}</h2>'
+            f'<p>{gua["no"]} · {gua["fang"]} · {GUA_IMAGE[gname][0]}　{gua["note"]}</p></div>'
+            f'<span class="jifa-gn">{len(mines)} 山</span></header>'
+            f'<div class="cards jifa-cards">{cards}</div></section>'
+        )
+    out.append('</div>')
+    return "".join(out)
+
+
 def build_nav(current=""):
     """顶栏导航：六条线 + 附录。"""
     parts = []
@@ -1687,6 +1720,7 @@ def build():
 
     # 章节索引页
     for d, num, short, desc, color in SECTIONS:
+        sec_layout = " two"
         if d == MIND_SECTION:
             # Ⅳ 导图线：条目是脑图页，不走 collect_pages()
             items = [{"slug": m["slug"], "order": m["order"], "title": m["title"],
@@ -1745,6 +1779,11 @@ def build():
                      '卦山线各山章节、作业线总表、导图线图下、本线四页，都是它的投影。</p>'
                      '</div></li>'
                      '</ul></div>')
+        elif d == "Ⅵ-技法线":
+            # Ⅵ 索引页按卦分组、三山并排；其它线仍走下面的通用卡片列
+            items = [p for p in pages if p["section"] == d]
+            body = build_jifa_index(items, num)
+            sec_layout = " jifa-wide"
         else:
             items = [p for p in pages if p["section"] == d]
             cards = "".join(
@@ -1768,7 +1807,7 @@ def build():
                     subtitle=html.escape(desc),
                     body=body,
                     toc_block="",
-                    layout_class=" two",
+                    layout_class=sec_layout,
                     pager='<span class="empty"></span>',
                     foot_line=f"{num} {short}",
                     foot_pos=f"本节共 {len(items)} 篇",
