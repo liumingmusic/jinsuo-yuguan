@@ -1287,8 +1287,11 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
    首屏背景转盘的文字层永远静止，不受这里影响。 */
 .lsp .lsp-mnt,.lsp .lsp-gua{
   transform-box:fill-box;transform-origin:center;
-  transition:transform .24s cubic-bezier(.2,.78,.26,1);
+  transition:transform .24s cubic-bezier(.2,.78,.26,1),opacity .16s;
 }
+/* 卦凸显时原卦整块淡出：只留最上层的实心浮层，杜绝原字/底字双层重影。
+   opacity:0 不影响命中，鼠标事件仍落在这个原卦上，进出完全对称。 */
+.lsp .lsp-gua.is-dim{opacity:0}
 .lsp .lsp-mnt.full{cursor:pointer}
 .lsp .lsp-mnt path,.lsp .lsp-gua path{
   transition:stroke .18s,filter .18s,fill .18s,fill-opacity .18s;
@@ -1313,12 +1316,14 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
 }
 .lsp .lsp-gua-hot path,.lsp .lsp-gua-hot text{transform:scale(1)}
 .lsp .lsp-gua-hot.is-on path,.lsp .lsp-gua-hot.is-on text{transform:scale(1.2)}
+/* 浮层底色由 build.py::_tint() 预混成不透明实色，CSS 不再改 fill/fill-opacity，
+   否则半透明会透出原卦文字又变成重影；这里只加描边和投影做出「抬起来」的观感。 */
 .lsp .lsp-gua-hot.studied.is-on path{
-  stroke:#9b7338;stroke-width:1.9;fill-opacity:.36;
+  stroke:#9b7338;stroke-width:1.9;
   filter:drop-shadow(0 4px 10px rgba(22,58,66,.30));
 }
 .lsp .lsp-gua-hot:not(.studied).is-on path{
-  fill:#eadfc8;stroke:#a67c3d;stroke-width:1.7;
+  stroke:#a67c3d;stroke-width:1.7;
   filter:drop-shadow(0 4px 10px rgba(22,58,66,.20));
 }
 .lsp .lsp-mnt.none:hover path{fill:#f4efe3}

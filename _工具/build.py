@@ -551,9 +551,10 @@ JS = """
     // 造成「移开不还原」。改为预置在最上层的浮起副本，悬停只切 display/class，
     // 原节点、事件绑定、DOM 结构一律不动，进出完全对称。
     var hotLayer = compass.querySelector('.lsp-gua-hot-layer');
-    var hotOn = null;                 // 当前点亮的副本
+    var hotOn = null, dimmed = null;    // 当前点亮的副本 / 同步淡出的原卦
     var clearHot = function(){
       if(hotOn){ hotOn.classList.remove('is-on'); hotOn = null; }
+      if(dimmed){ dimmed.classList.remove('is-dim'); dimmed = null; }
     };
     var showHot = function(el){
       if(!hotLayer || !el.classList.contains('lsp-gua')) return;
@@ -566,6 +567,8 @@ JS = """
       clearHot();                       // 先灭掉上一个，杜绝切换时两个副本同时亮
       want.classList.add('is-on');
       hotOn = want;
+      el.classList.add('is-dim');       // 原卦让位，只留实心浮层，不会两层字重影
+      dimmed = el;
     };
     var showTip = function(el){
       showHot(el);
@@ -1913,6 +1916,19 @@ def shan_slug_map(pages):
     return m
 
 
+def _tint(hex_color, base="#fbfaf6", ratio=.28):
+    """把卦色淡染进纸白，得到一块**不透明**的卦签底色。
+
+    浮起副本必须实心：半透明底会透出底下原卦的卦名与短签，放大后两层字
+    错开就成了「重影」；底色叠底色还会跟邻带混在一起。这里预先把卦色
+    按比例混进盘底纸色，既保留各卦的色彩区分，又能整个盖住原卦。
+    """
+    h = hex_color.lstrip("#")
+    c = [int(h[i:i + 2], 16) for i in (0, 2, 4)]
+    b = [int(base[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x * (1 - ratio) + y * ratio):02x}" for x, y in zip(b, c))
+
+
 def _compass(slan):
     """二十四山罗盘（后天八卦，上南下北）。卦带 45°，山带 15°，单字直立不旋转。"""
     cx = cy = 380.0
@@ -1969,10 +1985,17 @@ def _compass(slan):
             f'<g class="lsp-gua{" studied" if g["studied"] else ""}" '
             f'data-gua="{g["g"]}" data-tip="{tip}">'
             + path + name + im + '</g>')
+        # 浮层副本用不透明淡染底：原卦会在 JS 里同步淡出，两层不会同时露字。
+        # 未讲卦平时是浅灰字，浮层里换成卦本色深版，免得淡字压淡底看不清。
+        hot_path = (f'<path d="{d}" fill="{_tint(g["color"])}" '
+                    f'stroke="#e4e0d4" stroke-width=".9"/>')
+        repaint = f'fill="{gc}"'
+        hot_name = name.replace(repaint, f'fill="{g["color"]}"')
+        hot_im = im.replace(repaint, f'fill="{g["color"]}"')
         hot.append(
             f'<g class="lsp-gua-hot{" studied" if g["studied"] else ""}" '
             f'data-gua="{g["g"]}">'
-            + path + name + im + '</g>')
+            + hot_path + hot_name + hot_im + '</g>')
 
     # 二十四山带：山名 + 意象短签；已成篇整块可悬停凸出，点击仍进正文。
     # --mx/--my 是向外抬起的位移，按山的角度算，CSS 只在 :hover 时用。
