@@ -1720,7 +1720,7 @@ def build():
 
     # 章节索引页
     for d, num, short, desc, color in SECTIONS:
-        sec_layout = " two"
+        sec_layout = " sec-wide"
         if d == MIND_SECTION:
             # Ⅳ 导图线：条目是脑图页，不走 collect_pages()
             items = [{"slug": m["slug"], "order": m["order"], "title": m["title"],
