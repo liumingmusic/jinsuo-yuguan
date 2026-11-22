@@ -2329,3 +2329,77 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
 }
 @media (max-width:1240px){.layout.sec-wide .mind-how .mh-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.layout.sec-wide .mind-how .mh-list{grid-template-columns:1fr}}
+
+/* ===== Ⅶ 可视化线：体系鸟瞰＋一山穿透 ===== */
+.layout.vis-wide{grid-template-columns:1fr}
+.layout.vis-wide .doc{max-width:none}
+.vis-lead{max-width:820px;color:var(--ink-2);margin:0 0 20px}
+.vis-stage{
+  position:relative;width:100%;max-width:860px;margin:0 auto;
+  background:var(--bg);border:1px solid var(--line);border-radius:14px;
+  padding:14px 14px 6px;
+}
+.vis-stage svg#visNet{width:100%;height:auto;display:block;overflow:visible}
+.vis-tip{
+  position:absolute;z-index:4;max-width:300px;padding:9px 12px;
+  background:var(--ink);color:#f7f4eb;font-size:12px;line-height:1.55;
+  border-radius:8px;pointer-events:none;box-shadow:0 6px 18px rgba(20,30,28,.22);
+}
+.v-link{stroke-width:1.4;stroke-opacity:.42;transition:stroke-opacity .2s}
+.v-node{cursor:default}
+.v-node.v-shan,.v-node.v-line{cursor:pointer}
+.v-node .v-disc{stroke-width:1.6;transition:stroke-width .18s,filter .18s}
+.v-node text{text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.v-line-n{font-size:16px;font-weight:600;fill:#3c4644}
+.v-line-s{font-size:10px;fill:#6b7572}
+.v-gua-n{font-size:17px;font-weight:600;fill:#fff}
+.v-gua-s{font-size:10px;fill:#fff;opacity:.9}
+.v-shan-n{font-size:15px;font-weight:600}
+.v-shan-s{font-size:11px;fill:#5f6864;font-weight:500}
+.v-core{fill:var(--ink);stroke:var(--gold-2,#b9903f);stroke-width:1.2}
+.v-core-t{fill:#f7f4eb;font-size:14px;font-weight:600;text-anchor:middle}
+.v-core-s{fill:#cbb98c;font-size:10px;text-anchor:middle}
+svg#visNet.v-focused .v-link.v-dim{stroke-opacity:.08}
+svg#visNet.v-focused .v-node.v-dim{opacity:.28}
+.v-node.v-pick .v-disc{stroke-width:3}
+.v-node.v-line:hover .v-disc,.v-node.v-shan:hover .v-disc{stroke-width:3}
+@media (prefers-reduced-motion:reduce){
+  .v-link,.v-node .v-disc{transition:none}
+}
+
+/* 穿透面板 */
+.vis-panel{
+  max-width:860px;margin:18px auto 0;padding:20px 22px;
+  background:var(--bg);border:1px solid var(--line);border-radius:14px;min-height:132px;
+}
+.vis-ph{margin:0;color:var(--ink-2);line-height:1.7}
+.vp-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.vp-badge{
+  flex:none;width:46px;height:46px;border-radius:50%;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;
+}
+.vp-head h2{margin:0;font-size:19px;border:0;padding:0}
+.vp-head p{margin:3px 0 0;color:var(--ink-2);font-size:13px}
+.vp-label{margin:0 0 10px;font-size:12px;color:var(--ink-2);letter-spacing:.06em}
+.vp-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vp-row{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:12px 14px;background:#fff;border:1px solid var(--line);
+  border-radius:10px;text-decoration:none;color:inherit;cursor:pointer;
+  transition:border-color .16s,transform .16s;
+}
+.vp-row:hover{border-color:var(--gold-2,#b9903f);transform:translateY(-1px)}
+.vp-n{
+  flex:none;width:28px;height:28px;border-radius:7px;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;
+  color:var(--ink);
+}
+.vp-body{flex:1;min-width:0}
+.vp-body b{display:block;font-size:14px;font-weight:600}
+.vp-body em{display:block;font-style:normal;font-size:12px;color:var(--ink-2);margin-top:2px}
+.vp-go{flex:none;color:var(--ink-2);font-size:15px}
+.vis-how{max-width:860px;margin:26px auto 0}
+@media (max-width:640px){
+  .vp-rows{grid-template-columns:1fr}
+  .vis-stage{padding:8px 6px 4px}
+}
