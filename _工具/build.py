@@ -46,7 +46,8 @@ OUT_DIR = os.path.join(ROOT, "站点")
 IMG_DIR = os.path.join(ROOT, "_数据", "图片")
 VENDOR_SRC = os.path.join(ROOT, "_工具", "vendor")
 
-# 五条线的元信息：目录名 -> (编号, 标题, 短名, 主色)
+# 六条线的元信息：目录名 -> (编号, 标题, 短名, 主色)
+# Ⅵ 追加在 Ⅴ 之后、附录之前：现有五线的 num/slug/锚点一律不变。
 # 顺序即导航顺序：Ⅰ 课程线 → Ⅱ 卦山线 → Ⅲ 作业线 → Ⅳ 导图线 → Ⅴ 经文线 → 附录
 SECTIONS = [
     ("Ⅰ-课程线", "Ⅰ", "课程线", "理法 · 技法 · 案例", "#2c6a7c"),
@@ -54,6 +55,7 @@ SECTIONS = [
     ("Ⅲ-作业线", "Ⅲ", "作业线", "回答原文 · 老师解答", "#7a4a52"),
     (MIND_SECTION, "Ⅳ", "导图线", "骨架 · 脉络 · 一卦一图", "#3f6b7a"),
     (JINGWEN_SECTION, "Ⅴ", "经文线", "我的经文 · 老师经文", "#5c4a72"),
+    ("Ⅵ-技法线", "Ⅵ", "技法线", "兼山 · 对宫 · 飘转 · 深挖", "#8d5b34"),
     ("附录", "附", "附录", "技法 · 术语 · 速查", "#5a6068"),
 ]
 
@@ -810,7 +812,7 @@ GUA_IMAGE = {
 
 
 def build_nav(current=""):
-    """顶栏导航：五条线 + 附录。"""
+    """顶栏导航：六条线 + 附录。"""
     parts = []
     for d, num, short, desc, color in SECTIONS:
         on = " on" if d == current else ""
@@ -879,7 +881,7 @@ def drawer_sub(items, active_file=""):
 
 
 def foot_sections():
-    """页脚导航：五条线 + 附录，与顶栏完全一致。"""
+    """页脚导航：六条线 + 附录，与顶栏完全一致。"""
     return "".join(
         f'<a href="section-{num}.html">{num} {short}</a>' for d, num, short, desc, color in SECTIONS
     )
@@ -2501,7 +2503,7 @@ def _parts(pages, mind_pages, jw_pages):
 
 
 def _recent(pages, mind_pages, jw_pages):
-    """五条线轮流取样，避免首页只出现课程线。"""
+    """六条线轮流取样，避免首页只出现课程线。"""
     if not pages:
         return '<div class="empty-note">还没有正文。</div>'
     groups = {}
@@ -2621,7 +2623,7 @@ def build_index(pages, mind_pages, jw_pages):
                                     '<li><a href="#read"><span class="n">读</span>'
                                     '<span>四种读法</span></a></li>'
                                     '<li><a href="#lines"><span class="n">体</span>'
-                                    '<span>五条线怎么分</span></a></li></ul>'),
+                                    '<span>六条线怎么分</span></a></li></ul>'),
                 )
     open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8").write(page)
 
