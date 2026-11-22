@@ -2306,3 +2306,16 @@ body.drawer-open .nav-toggle .nt-close{display:inline}
   .jifa-sec .jifa-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){.jifa-sec .jifa-cards{grid-template-columns:1fr}}
+
+/* --- 各线落地页：卡片多列铺开，不再被 460px 上限卡成一竖列 --- */
+.layout.sec-wide{grid-template-columns:minmax(150px,196px) minmax(0,1fr)}
+.layout.sec-wide .cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+.layout.sec-wide .card{padding:18px 17px 16px}
+.layout.sec-wide .card h3{font-size:17px}
+.layout.sec-wide .card p{font-size:12.8px;line-height:1.75}
+@media (max-width:1240px){.layout.sec-wide .cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){
+  .layout.sec-wide{grid-template-columns:1fr}
+  .layout.sec-wide .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){.layout.sec-wide .cards{grid-template-columns:1fr}}
