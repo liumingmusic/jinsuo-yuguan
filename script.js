@@ -48,40 +48,35 @@
       tip.style.left = Math.max(6, Math.min(cb.width - w - 6, x - w / 2)) + 'px';
       tip.style.top = Math.max(6, y - h - 12) + 'px';
     };
-    // 八卦悬停时要真正凸显：SVG 后画的盖前画的，卦带在绘制顺序上靠前，
-    // 放大后会被相邻卦/山带压住。悬停时把该卦移到同层最后，离开时插回原位。
-    // 山带本来就在卦带之后绘制，且是向外抬起，不需要提层。
-    var lifted = null;
-    var liftGua = function(el){
-      if(!el.classList.contains('lsp-gua')) return;
-      if(lifted && lifted !== el) dropGua(lifted);
-      if(el.__home === undefined){
-        el.__next = el.nextSibling;
-        el.__home = el.parentNode;
-      }
-      el.__home.appendChild(el);            // 移到最后 = 画在最上层
-      // appendChild 会打断 :hover，凸显改由 class 驱动，移动后仍然生效
-      el.classList.add('is-hot');
-      lifted = el;
+    // 八卦悬停凸显：SVG 后画的盖前画的，原卦在绘制顺序上靠前会被邻卦/山带压住。
+    // ⚠️ 绝不 appendChild 移动原卦节点——那会派发 mouseleave/mouseenter，跟还原打架，
+    // 造成「移开不还原」。改为预置在最上层的浮起副本，悬停只切 display/class，
+    // 原节点、事件绑定、DOM 结构一律不动，进出完全对称。
+    var hotLayer = compass.querySelector('.lsp-gua-hot-layer');
+    var hotOn = null;                 // 当前点亮的副本
+    var clearHot = function(){
+      if(hotOn){ hotOn.classList.remove('is-on'); hotOn = null; }
     };
-    var dropGua = function(el){
-      if(!el || !el.__home) return;
-      // 插回原来的后一个兄弟之前；那个兄弟若已不在就退到末尾
-      if(el.__next && el.__next.parentNode === el.__home) el.__home.insertBefore(el, el.__next);
-      else el.__home.appendChild(el);
-      el.classList.remove('is-hot');
-      el.__home = undefined; el.__next = undefined;
-      if(lifted === el) lifted = null;
+    var showHot = function(el){
+      if(!hotLayer || !el.classList.contains('lsp-gua')) return;
+      var name = el.getAttribute('data-gua') || '';
+      var want = null;
+      [].slice.call(hotLayer.children).forEach(function(h){
+        if(h.getAttribute('data-gua') === name) want = h;
+      });
+      if(!want || hotOn === want) return;
+      clearHot();                       // 先灭掉上一个，杜绝切换时两个副本同时亮
+      want.classList.add('is-on');
+      hotOn = want;
     };
     var showTip = function(el){
-      liftGua(el);
+      showHot(el);
       var s = el.getAttribute('data-tip') || '';
       if(tip){ tip.innerHTML = '<b>意象</b>' + s; tip.hidden = false; placeTip(el); }
       if(readout) readout.textContent = s;
     };
     var hideTip = function(el){
-      if(el) dropGua(el);
-      else if(lifted) dropGua(lifted);
+      clearHot();
       if(tip) tip.hidden = true;
       if(readout) readout.textContent = defaultTip;
     };

@@ -1299,24 +1299,27 @@ h1 .src-note,h2 .src-note,h3 .src-note,h4 .src-note{vertical-align:.12em}
   stroke:#9b7338;stroke-width:1.6;
   filter:drop-shadow(0 3px 7px rgba(22,58,66,.30));
 }
-/* 八卦：原地凸显放大，不做任何方向的平移。
-   关键：不能整块 g 一起 scale——g 的原点是包围盒中心，卦名偏在扇区内侧，
-   放大时文字会被推离原点，顶/底/左/右卦分别上/下/左/右移动约 4px（观感就是「上下移」）。
-   改为扇区 path、卦名 text、短签 text 各自以自身中心 scale，中心原地不动，只是撑大。 */
-.lsp .lsp-gua path,.lsp .lsp-gua text{
+/* 八卦：悬停时点亮 SVG 最后一层里的「浮起副本」，原地凸显放大、不做任何平移。
+   ⚠️ 绝不移动原卦节点：appendChild 提层会派发 mouseleave/mouseenter，和还原打架导致
+   移开后不还原。改为预置副本层，JS 只切一个 is-on class，DOM 结构一动不动。
+   副本最后绘制，天然盖住邻卦和山带；pointer-events:none 让事件穿透到原卦。
+   用 opacity 淡入淡出（不用 display + requestAnimationFrame，弱环境下不推进）。 */
+.lsp .lsp-gua-hot-layer{pointer-events:none}
+.lsp .lsp-gua-hot{opacity:0;transition:opacity .18s}
+.lsp .lsp-gua-hot.is-on{opacity:1}
+.lsp .lsp-gua-hot path,.lsp .lsp-gua-hot text{
   transform-box:fill-box;transform-origin:center;
-  transition:transform .24s cubic-bezier(.2,.78,.26,1),stroke .18s,filter .18s,fill .18s,fill-opacity .18s;
+  transition:transform .22s cubic-bezier(.2,.78,.26,1),stroke .18s,filter .18s,fill .18s,fill-opacity .18s;
 }
-/* 用 JS 加 .is-hot 而不是 :hover：提层时 appendChild 移动节点会打断 :hover 伪类，
-   实机上放大就不生效。class 跟着节点走，移动后仍在，凸显稳定。 */
-.lsp .lsp-gua.is-hot path,.lsp .lsp-gua.is-hot text{transform:scale(1.18)}
-.lsp .lsp-gua.studied.is-hot path{
-  stroke:#9b7338;stroke-width:1.9;fill-opacity:.34;
-  filter:drop-shadow(0 3px 9px rgba(22,58,66,.26));
+.lsp .lsp-gua-hot path,.lsp .lsp-gua-hot text{transform:scale(1)}
+.lsp .lsp-gua-hot.is-on path,.lsp .lsp-gua-hot.is-on text{transform:scale(1.2)}
+.lsp .lsp-gua-hot.studied.is-on path{
+  stroke:#9b7338;stroke-width:1.9;fill-opacity:.36;
+  filter:drop-shadow(0 4px 10px rgba(22,58,66,.30));
 }
-.lsp .lsp-gua:not(.studied).is-hot path{
+.lsp .lsp-gua-hot:not(.studied).is-on path{
   fill:#eadfc8;stroke:#a67c3d;stroke-width:1.7;
-  filter:drop-shadow(0 3px 9px rgba(22,58,66,.18));
+  filter:drop-shadow(0 4px 10px rgba(22,58,66,.20));
 }
 .lsp .lsp-mnt.none:hover path{fill:#f4efe3}
 .lsp .lsp-mnt-im,.lsp .lsp-gua-im{pointer-events:none;letter-spacing:.06em}
