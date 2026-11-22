@@ -53,9 +53,10 @@
     // 造成「移开不还原」。改为预置在最上层的浮起副本，悬停只切 display/class，
     // 原节点、事件绑定、DOM 结构一律不动，进出完全对称。
     var hotLayer = compass.querySelector('.lsp-gua-hot-layer');
-    var hotOn = null;                 // 当前点亮的副本
+    var hotOn = null, dimmed = null;    // 当前点亮的副本 / 同步淡出的原卦
     var clearHot = function(){
       if(hotOn){ hotOn.classList.remove('is-on'); hotOn = null; }
+      if(dimmed){ dimmed.classList.remove('is-dim'); dimmed = null; }
     };
     var showHot = function(el){
       if(!hotLayer || !el.classList.contains('lsp-gua')) return;
@@ -68,6 +69,8 @@
       clearHot();                       // 先灭掉上一个，杜绝切换时两个副本同时亮
       want.classList.add('is-on');
       hotOn = want;
+      el.classList.add('is-dim');       // 原卦让位，只留实心浮层，不会两层字重影
+      dimmed = el;
     };
     var showTip = function(el){
       showHot(el);
